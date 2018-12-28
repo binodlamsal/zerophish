@@ -40,7 +40,7 @@ type CampaignResults struct {
 	Id      int64    `json:"id"`
 	Name    string   `json:"name"`
 	Status  string   `json:"status"`
-	Results []Result `json:"results, omitempty"`
+	Results []Result `json:"results,omitempty"`
 	Events  []Event  `json:"timeline,omitempty"`
 }
 
