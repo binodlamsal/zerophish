@@ -59,9 +59,26 @@ func API_Campaigns(w http.ResponseWriter, r *http.Request) {
 		JSONResponse(w, cs, http.StatusOK)
 	//POST: Create a new campaign and return it as JSON
 	case r.Method == "POST":
+		u, err := models.GetUser(ctx.Get(r, "user_id").(int64))
+
+		if err != nil {
+			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
+			return
+		}
+
+		if !u.CanCreateCampaign() {
+			JSONResponse(
+				w, models.Response{
+					Success: false,
+					Message: "It's not possible to create more campaigns for this subscription plan",
+				},
+				http.StatusConflict)
+			return
+		}
+
 		c := models.Campaign{}
 		// Put the request into a campaign
-		err := json.NewDecoder(r.Body).Decode(&c)
+		err = json.NewDecoder(r.Body).Decode(&c)
 		if err != nil {
 			JSONResponse(w, models.Response{Success: false, Message: "Invalid JSON structure"}, http.StatusBadRequest)
 			return
@@ -203,7 +220,6 @@ func API_Roles_Id(w http.ResponseWriter, r *http.Request) {
 
 // API_Tags returns all the list of the tags for email templates and landing pages in the site
 func API_Tags(w http.ResponseWriter, r *http.Request) {
-
 	switch {
 	case r.Method == "GET":
 		cs, err := models.GetTags(ctx.Get(r, "user_id").(int64))
@@ -211,6 +227,55 @@ func API_Tags(w http.ResponseWriter, r *http.Request) {
 			log.Error(err)
 		}
 		JSONResponse(w, cs, http.StatusOK)
+
+	case r.Method == "POST":
+		t := models.Tags{}
+		// Put the request into a page
+		err := json.NewDecoder(r.Body).Decode(&t)
+		if err != nil {
+			JSONResponse(w, models.Response{Success: false, Message: "Invalid request"}, http.StatusBadRequest)
+			return
+		}
+		err = models.PostTags(&t)
+		if err != nil {
+			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
+			return
+		}
+		JSONResponse(w, t, http.StatusCreated)
+	}
+}
+
+func API_Tags_Single(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, _ := strconv.ParseInt(vars["id"], 0, 64)
+	c, err := models.GetTagById(id)
+	if err != nil {
+		log.Error(err)
+		JSONResponse(w, models.Response{Success: false, Message: "Tag not found"}, http.StatusNotFound)
+		return
+	}
+	switch {
+	case r.Method == "GET":
+		JSONResponse(w, c, http.StatusOK)
+	case r.Method == "PUT":
+		t := models.Tags{}
+		err = json.NewDecoder(r.Body).Decode(&t)
+		if err != nil {
+			log.Error(err)
+		}
+		err = models.PutTags(&t)
+		if err != nil {
+			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusBadRequest)
+			return
+		}
+		JSONResponse(w, t, http.StatusOK)
+	case r.Method == "DELETE":
+		err = models.DeleteTags(id)
+		if err != nil {
+			JSONResponse(w, models.Response{Success: false, Message: "Error deleting campaign"}, http.StatusInternalServerError)
+			return
+		}
+		JSONResponse(w, models.Response{Success: true, Message: "Campaign deleted successfully!"}, http.StatusOK)
 	}
 }
 
@@ -318,20 +383,48 @@ func API_Groups(w http.ResponseWriter, r *http.Request) {
 		JSONResponse(w, gs, http.StatusOK)
 	//POST: Create a new group and return it as JSON
 	case r.Method == "POST":
+		uid := ctx.Get(r, "user_id").(int64)
+		u, err := models.GetUser(uid)
+
+		if err != nil {
+			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
+			return
+		}
+
+		if !u.CanCreateGroup() {
+			JSONResponse(
+				w, models.Response{
+					Success: false,
+					Message: "It's not possible to create more groups for this subscription plan",
+				},
+				http.StatusConflict)
+			return
+		}
+
 		g := models.Group{}
 		// Put the request into a group
-		err := json.NewDecoder(r.Body).Decode(&g)
+		err = json.NewDecoder(r.Body).Decode(&g)
 		if err != nil {
 			JSONResponse(w, models.Response{Success: false, Message: "Invalid JSON structure"}, http.StatusBadRequest)
 			return
 		}
-		_, err = models.GetGroupByName(g.Name, ctx.Get(r, "user_id").(int64))
+		_, err = models.GetGroupByName(g.Name, uid)
 		if err != gorm.ErrRecordNotFound {
 			JSONResponse(w, models.Response{Success: false, Message: "Group name already in use"}, http.StatusConflict)
 			return
 		}
 		g.ModifiedDate = time.Now().UTC()
-		g.UserId = ctx.Get(r, "user_id").(int64)
+		g.UserId = uid
+
+		if !u.CanHaveXTargetsInAGroup(len(g.Targets)) {
+			JSONResponse(w,
+				models.Response{
+					Success: false,
+					Message: fmt.Sprintf("It's not possible to have %d targets in a group for this subscription plan", len(g.Targets)),
+				}, http.StatusConflict)
+			return
+		}
+
 		err = models.PostGroup(&g)
 		if err != nil {
 			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusBadRequest)
@@ -358,9 +451,10 @@ func API_Groups_Summary(w http.ResponseWriter, r *http.Request) {
 // API_Groups_Id returns details about the requested group.
 // If the group is not valid, API_Groups_Id returns null.
 func API_Groups_Id(w http.ResponseWriter, r *http.Request) {
+	uid := ctx.Get(r, "user_id").(int64)
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 0, 64)
-	g, err := models.GetGroup(id, ctx.Get(r, "user_id").(int64))
+	g, err := models.GetGroup(id, uid)
 	if err != nil {
 		JSONResponse(w, models.Response{Success: false, Message: "Group not found"}, http.StatusNotFound)
 		return
@@ -384,7 +478,24 @@ func API_Groups_Id(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		g.ModifiedDate = time.Now().UTC()
-		g.UserId = ctx.Get(r, "user_id").(int64)
+		g.UserId = uid
+
+		u, err := models.GetUser(uid)
+
+		if err != nil {
+			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
+			return
+		}
+
+		if !u.CanHaveXTargetsInAGroup(len(g.Targets)) {
+			JSONResponse(w,
+				models.Response{
+					Success: false,
+					Message: fmt.Sprintf("It's not possible to have %d targets in a group for this subscription plan", len(g.Targets)),
+				}, http.StatusConflict)
+			return
+		}
+
 		err = models.PutGroup(&g)
 		if err != nil {
 			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusBadRequest)
@@ -889,6 +1000,73 @@ func API_Send_Test_Email(w http.ResponseWriter, r *http.Request) {
 	}
 	JSONResponse(w, models.Response{Success: true, Message: "Email Sent"}, http.StatusOK)
 	return
+}
+
+// API_Plans handles requests for the /api/plans/ endpoint
+func API_Plans(w http.ResponseWriter, r *http.Request) {
+	switch {
+	case r.Method == "GET":
+		plans, err := models.GetPlans()
+		if err != nil {
+			log.Error(err)
+		}
+		JSONResponse(w, plans, http.StatusOK)
+	//POST: Create a new page and return it as JSON
+	case r.Method == "POST":
+		plan := models.Plan{}
+		// Put the request into a page
+		err := json.NewDecoder(r.Body).Decode(&plan)
+		if err != nil {
+			JSONResponse(w, models.Response{Success: false, Message: "Invalid request"}, http.StatusBadRequest)
+			return
+		}
+
+		_, err = models.GetPlanByName(plan.Name)
+
+		if err != gorm.ErrRecordNotFound {
+			JSONResponse(w, models.Response{Success: false, Message: "Plan name already in use"}, http.StatusConflict)
+			log.Error(err)
+			return
+		}
+
+		err = models.PostPlan(&plan)
+
+		if err != nil {
+			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
+			return
+		}
+
+		JSONResponse(w, plan, http.StatusCreated)
+	}
+}
+
+// API_Subscriptions handles requests for the /api/subscriptions/ endpoint
+func API_Subscriptions(w http.ResponseWriter, r *http.Request) {
+	switch {
+	case r.Method == "GET":
+		subscriptions, err := models.GetSubscriptions()
+		if err != nil {
+			log.Error(err)
+		}
+		JSONResponse(w, subscriptions, http.StatusOK)
+	case r.Method == "POST":
+		subscription := models.Subscription{}
+
+		err := json.NewDecoder(r.Body).Decode(&subscription)
+		if err != nil {
+			JSONResponse(w, models.Response{Success: false, Message: "Invalid request"}, http.StatusBadRequest)
+			return
+		}
+
+		err = models.PostSubscription(&subscription)
+
+		if err != nil {
+			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
+			return
+		}
+
+		JSONResponse(w, subscription, http.StatusCreated)
+	}
 }
 
 // JSONResponse attempts to set the status code, c, and marshal the given interface, d, into a response that

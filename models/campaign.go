@@ -40,7 +40,7 @@ type CampaignResults struct {
 	Id      int64    `json:"id"`
 	Name    string   `json:"name"`
 	Status  string   `json:"status"`
-	Results []Result `json:"results, omitempty"`
+	Results []Result `json:"results,omitempty"`
 	Events  []Event  `json:"timeline,omitempty"`
 }
 
@@ -561,6 +561,13 @@ func DeleteCampaign(id int64) error {
 		log.Error(err)
 		return err
 	}
+
+	err = db.Where("campaign_id=?", id).Delete(&MailLog{}).Error
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
 	// Delete the campaign
 	err = db.Delete(&Campaign{Id: id}).Error
 	if err != nil {
