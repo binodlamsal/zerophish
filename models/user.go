@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 // Roles
 const (
 	Administrator = 1
@@ -164,6 +166,66 @@ func GetUsers(uid int64) ([]User, error) {
 	}
 
 	return users, err
+}
+
+// IsAdministrator tells if this user is administrator
+func (u User) IsAdministrator() bool {
+	role, err := GetUserRole(u.Id)
+
+	if err != nil {
+		return false
+	}
+
+	return role.Is(Administrator)
+}
+
+// IsSubscribed tells if this user is subscribed to a plan and the subscription is not expired
+func (u User) IsSubscribed() bool {
+	s := Subscription{}
+
+	if db.Where("user_id = ?", u.Id).First(&s).Error == nil {
+		if s.ExpirationDate.After(time.Now().UTC()) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// CanCreateCampaign tells if this user is allowed to create a campaign,
+// the decision is made based on user's subscription status and plan
+func (u User) CanCreateCampaign() bool {
+	var count int64
+	db.Model(&Campaign{}).Where("user_id = ?", u.Id).Count(&count)
+
+	if u.IsAdministrator() || u.IsSubscribed() || count < 1 {
+		return true
+	}
+
+	return false
+}
+
+// CanCreateGroup tells if this user is allowed to create a group (of target users),
+// the decision is made based on user's subscription status and plan
+func (u User) CanCreateGroup() bool {
+	var count int64
+	db.Model(&Group{}).Where("user_id = ?", u.Id).Count(&count)
+
+	if u.IsAdministrator() || u.IsSubscribed() || count < 1 {
+		return true
+	}
+
+	return false
+}
+
+// CanHaveXTargetsInAGroup tells if this user is allowed to have X targets in a group,
+// the decision is made based on user's subscription status and plan
+func (u User) CanHaveXTargetsInAGroup(targets int) bool {
+	if u.IsAdministrator() || u.IsSubscribed() || targets <= 150 {
+		return true
+	}
+
+	return false
 }
 
 // GetRoles returns all available roles
