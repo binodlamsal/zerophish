@@ -99,7 +99,15 @@ func RequireAPIKey(handler http.Handler) http.HandlerFunc {
 func RequireRoles(rids []int64) func(http.Handler) http.HandlerFunc {
 	return func(handler http.Handler) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
-			uid := ctx.Get(r, "user").(models.User).Id
+			var uid int64
+			user := ctx.Get(r, "user")
+
+			if user != nil {
+				uid = user.(models.User).Id
+			} else {
+				uid = ctx.Get(r, "user_id").(int64)
+			}
+
 			role, err := models.GetUserRole(uid)
 
 			if err != nil || !role.IsOneOf(rids) {
