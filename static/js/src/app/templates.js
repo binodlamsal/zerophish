@@ -90,7 +90,7 @@ function edit(e) {
 
     //fill the categories by the API
     $("#category").find('option').not(':first').remove();
-    api.tags.get().success(function(s) {
+    api.phishtags.get().success(function(s) {
         $.each(s, function(e, ss) {
 
             var sel = '';
