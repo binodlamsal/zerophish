@@ -42,3 +42,14 @@ func GetPlanByName(name string) (Plan, error) {
 
 	return plan, err
 }
+
+// GetPlanNameById returns plan name for the given plan id or an empty string if no plan found
+func GetPlanNameById(id int64) string {
+	plan := Plan{}
+
+	if db.Where("id=?", id).First(&plan).Error != nil {
+		return ""
+	}
+
+	return plan.Name
+}

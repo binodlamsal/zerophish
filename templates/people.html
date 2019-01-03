@@ -30,8 +30,9 @@
 
                     <th class="col-md-3">Username</th>
                     <th class="col-md-3">Email</th>
-                    <th class="col-md-3">Roles</th>
-                    <th class="col-md-3 no-sort"></th>
+                    <th class="col-md-2">Roles</th>
+                    <th class="col-md-2">Subscription</th>
+                    <th class="col-md-1 no-sort"></th>
                 </tr>
             </thead>
             <tbody>
@@ -81,6 +82,22 @@
                     <input type="hidden" name="id" id = "hidden_uid" value="">
                     <input type="hidden" name="hash" id = "hidden_hash" value="">
                     <input type="hidden" name="hash" id = "hidden_api_key" value="">
+
+                    {{if eq .Role "Administrator"}}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="control-label" for="subscription">Subscription Plan:</label>
+                            <select class="form-control" placeholder="Plan" name="plan_id" id="plan_id">
+                                <option value="">None</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="control-label" for="url">Expiration Date:</label>
+                            <input type="text" class="form-control" name="expiration_date" id="expiration_date" disabled />
+                        </div>
+                    </div>
+                    <br>
+                    {{end}}
 
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal" onclick="dismiss()">Close</button>
