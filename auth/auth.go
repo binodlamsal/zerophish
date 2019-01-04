@@ -207,7 +207,12 @@ func ChangePasswordByadmin(r *http.Request) error {
 	newPassword := ud.New_password
 	confirmPassword := ud.Confirm_new_password
 
-	u := models.User{}
+	u, err := models.GetUser(ud.Id)
+
+	if err != nil {
+		return err
+	}
+
 	u.Id = ud.Id
 	u.Email = ud.Email
 	u.Username = ud.Username
