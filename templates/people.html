@@ -83,7 +83,7 @@
                     <input type="hidden" name="hash" id = "hidden_hash" value="">
                     <input type="hidden" name="hash" id = "hidden_api_key" value="">
 
-                    {{if eq .Role "Administrator"}}
+                    {{if .CanManageSubscriptions}}
                     <div class="row">
                         <div class="col-md-6">
                             <label class="control-label" for="subscription">Subscription Plan:</label>

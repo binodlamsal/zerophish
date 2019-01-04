@@ -63,7 +63,7 @@ func CreateAdminRouter() http.Handler {
 	api.HandleFunc("/templates/{id:[0-9]+}", Use(API_Templates_Id, mid.RequireAPIKey))
 	api.HandleFunc("/pages/", Use(API_Pages, mid.RequireAPIKey))
 	api.HandleFunc("/pages/{id:[0-9]+}", Use(API_Pages_Id, mid.RequireAPIKey))
-	api.HandleFunc("/plans/", Use(API_Plans, mid.RequireRoles([]int64{models.Administrator}), mid.RequireAPIKey))
+	api.HandleFunc("/plans/", Use(API_Plans, mid.RequireRoles([]int64{models.Administrator, models.Partner}), mid.RequireAPIKey))
 	api.HandleFunc("/subscriptions/", Use(API_Subscriptions, mid.RequireRoles([]int64{models.Administrator}), mid.RequireAPIKey))
 	api.HandleFunc("/smtp/", Use(API_SMTP, mid.RequireAPIKey))
 	api.HandleFunc("/sendingdomains", Use(API_SMTP_domains, mid.RequireAPIKey))
@@ -192,12 +192,18 @@ func Campaigns(w http.ResponseWriter, r *http.Request) {
 func People(w http.ResponseWriter, r *http.Request) {
 	// Example of using session - will be removed.
 	params := struct {
-		User    models.User
-		Role    string
-		Title   string
-		Flashes []interface{}
-		Token   string
-	}{Title: "People", User: ctx.Get(r, "user").(models.User), Role: "", Token: csrf.Token(r)}
+		User                   models.User
+		Role                   string
+		Title                  string
+		Flashes                []interface{}
+		Token                  string
+		CanManageSubscriptions bool
+	}{
+		Title: "People",
+		User:  ctx.Get(r, "user").(models.User),
+		Role:  "", Token: csrf.Token(r),
+		CanManageSubscriptions: false,
+	}
 
 	role, err := models.GetUserRole(params.User.Id)
 
@@ -206,6 +212,7 @@ func People(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params.Role = role.Name()
+	params.CanManageSubscriptions = params.User.CanManageSubscriptions()
 	getTemplate(r, w, "people").ExecuteTemplate(w, "base", params)
 }
 

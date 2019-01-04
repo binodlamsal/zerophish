@@ -262,8 +262,7 @@ func ChangePasswordByadmin(r *http.Request) error {
 	//Second save the user roles again
 	err = models.PutUserRole(&ur)
 
-	// Only admins can manage subscriptions
-	if currentUser.IsAdministrator() {
+	if currentUser.CanManageSubscriptions() {
 		s := u.GetSubscription()
 
 		if s != nil {
