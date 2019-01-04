@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"time"
 
 	"crypto/rand"
 
@@ -184,17 +185,20 @@ func ChangePassword(r *http.Request) error {
 }
 
 func ChangePasswordByadmin(r *http.Request) error {
-	u := ctx.Get(r, "user").(models.User)
+	currentUser := ctx.Get(r, "user").(models.User)
+
 	type Usersdata struct {
-		Id                   int64  `json:"id"`
-		Username             string `json:"username"`
-		Email                string `json:"email" `
-		New_password         string `json:"new_password" `
-		Confirm_new_password string `json:"confirm_new_password" `
-		Role                 int64  `json:"role" `
-		Hash                 string `json:"-"`
-		ApiKey               string `json:"api_key"`
-		Partner              int64  `json:"partner" `
+		Id                   int64     `json:"id"`
+		Username             string    `json:"username"`
+		Email                string    `json:"email" `
+		New_password         string    `json:"new_password" `
+		Confirm_new_password string    `json:"confirm_new_password" `
+		Role                 int64     `json:"role" `
+		Hash                 string    `json:"-"`
+		ApiKey               string    `json:"api_key"`
+		Partner              int64     `json:"partner"`
+		PlanId               int64     `json:"plan_id"`
+		ExpirationDate       time.Time `json:"expiration_date"`
 	}
 
 	var ud = new(Usersdata)
@@ -203,6 +207,7 @@ func ChangePasswordByadmin(r *http.Request) error {
 	newPassword := ud.New_password
 	confirmPassword := ud.Confirm_new_password
 
+	u := models.User{}
 	u.Id = ud.Id
 	u.Email = ud.Email
 	u.Username = ud.Username
@@ -251,6 +256,51 @@ func ChangePasswordByadmin(r *http.Request) error {
 
 	//Second save the user roles again
 	err = models.PutUserRole(&ur)
+
+	// Only admins can manage subscriptions
+	if currentUser.IsAdministrator() {
+		s := u.GetSubscription()
+
+		if s != nil {
+			if ud.PlanId != s.PlanId {
+				if ud.PlanId != 0 {
+					err = s.ChangePlan(ud.PlanId)
+
+					if err != nil {
+						return err
+					}
+				} else {
+					err = models.DeleteSubscription(s.Id)
+
+					if err != nil {
+						return err
+					}
+				}
+			}
+
+			if ud.ExpirationDate != s.ExpirationDate {
+				err = s.ChangeExpirationDate(ud.ExpirationDate)
+
+				if err != nil {
+					return err
+				}
+			}
+		} else {
+			if ud.PlanId != 0 {
+				subscription := &models.Subscription{
+					UserId:         u.Id,
+					PlanId:         ud.PlanId,
+					ExpirationDate: ud.ExpirationDate,
+				}
+
+				err = models.PostSubscription(subscription)
+
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
 
 	return nil
 }

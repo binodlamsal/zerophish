@@ -180,14 +180,23 @@ func (u User) IsAdministrator() bool {
 	return role.Is(Administrator)
 }
 
-// IsSubscribed tells if this user is subscribed to a plan and the subscription is not expired
-func (u User) IsSubscribed() bool {
+// GetSubscription returns user subscription or nil if there is none
+func (u User) GetSubscription() *Subscription {
 	s := Subscription{}
 
 	if db.Where("user_id = ?", u.Id).First(&s).Error == nil {
-		if s.ExpirationDate.After(time.Now().UTC()) {
-			return true
-		}
+		return &s
+	}
+
+	return nil
+}
+
+// IsSubscribed tells if this user is subscribed to a plan and the subscription is not expired
+func (u User) IsSubscribed() bool {
+	s := u.GetSubscription()
+
+	if s != nil && s.ExpirationDate.After(time.Now().UTC()) {
+		return true
 	}
 
 	return false
@@ -249,9 +258,21 @@ func DeleteUserRoles(uid int64) error {
 	return err
 }
 
+// DeleteUserSubscriptions deletes all subscriptions of a given uid
+func DeleteUserSubscriptions(uid int64) error {
+	err = db.Delete(Subscription{}, "user_id = ?", uid).Error
+	return err
+}
+
 // DeleteUser deletes the specified user
 func DeleteUser(uid int64) error {
 	if err := db.Delete(&User{Id: uid}).Error; err != nil {
+		return err
+	}
+
+	err = DeleteUserSubscriptions(uid)
+
+	if err != nil {
 		return err
 	}
 

@@ -99,12 +99,13 @@ func API_Campaigns(w http.ResponseWriter, r *http.Request) {
 
 // API_Users returns a list of Users if requested via GET.
 func API_Users(w http.ResponseWriter, r *http.Request) {
-	type userWithRole struct {
+	type userWithRoleAndSubscription struct {
 		models.User
-		Role string `json:"role"`
+		Role         string               `json:"role"`
+		Subscription *models.Subscription `json:"subscription"`
 	}
 
-	type response []userWithRole
+	type response []userWithRoleAndSubscription
 	resp := response{}
 
 	switch {
@@ -126,7 +127,7 @@ func API_Users(w http.ResponseWriter, r *http.Request) {
 				roleName = role.Name()
 			}
 
-			resp = append(resp, userWithRole{user, roleName})
+			resp = append(resp, userWithRoleAndSubscription{user, roleName, user.GetSubscription()})
 		}
 
 		JSONResponse(w, resp, http.StatusOK)
