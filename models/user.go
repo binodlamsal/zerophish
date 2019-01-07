@@ -180,6 +180,17 @@ func (u User) IsAdministrator() bool {
 	return role.Is(Administrator)
 }
 
+// IsParnter tells if this user is partner
+func (u User) IsParnter() bool {
+	role, err := GetUserRole(u.Id)
+
+	if err != nil {
+		return false
+	}
+
+	return role.Is(Partner)
+}
+
 // GetSubscription returns user subscription or nil if there is none
 func (u User) GetSubscription() *Subscription {
 	s := Subscription{}
@@ -232,6 +243,16 @@ func (u User) CanCreateGroup() bool {
 // the decision is made based on user's subscription status and plan
 func (u User) CanHaveXTargetsInAGroup(targets int) bool {
 	if u.IsAdministrator() || u.IsSubscribed() || targets <= 150 {
+		return true
+	}
+
+	return false
+}
+
+// CanManageSubscriptions tells if this user is allowed to manage customers' subscriptions,
+// the decision is made based on user's subscription status and plan
+func (u User) CanManageSubscriptions() bool {
+	if u.IsAdministrator() || (u.IsParnter() && u.IsSubscribed()) {
 		return true
 	}
 
