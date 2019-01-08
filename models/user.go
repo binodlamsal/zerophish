@@ -126,7 +126,6 @@ func GetUserByUsername(username string) (User, error) {
 
 // PutUser updates the given user
 func PutUser(u *User) error {
-
 	err := db.Save(u).Error
 	return err
 }
@@ -189,6 +188,45 @@ func (u User) IsParnter() bool {
 	}
 
 	return role.Is(Partner)
+}
+
+// IsCustomer tells if this user is customer
+func (u User) IsCustomer() bool {
+	role, err := GetUserRole(u.Id)
+
+	if err != nil {
+		return false
+	}
+
+	return role.Is(Customer)
+}
+
+// IsChildUser tells if this user is child user
+func (u User) IsChildUser() bool {
+	role, err := GetUserRole(u.Id)
+
+	if err != nil {
+		return false
+	}
+
+	return role.Is(ChildUser)
+}
+
+// GetLogo returns logo which was assigned to this partner/customer account or nil
+func (u User) GetLogo() *Logo {
+	l := Logo{}
+
+	if u.IsParnter() {
+		if db.Where("user_id = ?", u.Id).First(&l).Error == nil {
+			return &l
+		}
+	} else if u.IsChildUser() || u.IsCustomer() {
+		if db.Where("user_id = ?", u.Partner).First(&l).Error == nil {
+			return &l
+		}
+	}
+
+	return nil
 }
 
 // GetSubscription returns user subscription or nil if there is none
