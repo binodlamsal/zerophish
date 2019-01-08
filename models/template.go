@@ -136,7 +136,7 @@ func GetTemplate(id int64, uid int64) (Template, error) {
 // GetTemplateByName returns the template, if it exists, specified by the given name and user_id.
 func GetTemplateByName(n string, uid int64) (Template, error) {
 	t := Template{}
-	err := db.Where("user_id=? and name=?", uid, n).Or("public = ?", 1).Find(&t).Error
+	err := db.Where("user_id=? and name=?", uid, n).Or("public = ? and name=?", 1, n).Find(&t).Error
 	if err != nil {
 		log.Error(err)
 		return t, err
