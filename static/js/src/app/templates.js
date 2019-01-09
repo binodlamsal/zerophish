@@ -137,6 +137,17 @@ function copy(e) {
     }), -1 != t.html.indexOf("{{.Tracker}}") ? $("#use_tracker_checkbox").prop("checked", !0) : $("#use_tracker_checkbox").prop("checked", !1)
 }
 
+function preview(e) {
+    t = templates[e];
+    console.log(t);
+    $("#modalforpreview .tempname").html(t.name);
+    if(t.html != ""){
+        $("#modalforpreview .modal-body").html(t.html);
+    } else {
+        $("#modalforpreview .modal-body").html(t.text);
+    }     
+}
+
 function importEmail() {
     raw = $("#email_content").val(), convert_links = $("#convert_links_checkbox").prop("checked"), raw ? api.import_email({
         content: raw,
@@ -173,7 +184,7 @@ function load() {
                  rating = '<span> &#9733; &#9734; &#9734; &#9734; &#9734;</span>';
             } 
 
-            templateTable.row.add([escapeHtml(t.name), rating, moment(t.modified_date).format("MMMM Do YYYY, h:mm:ss a"), "<div class='pull-right'><span data-toggle='modal' data-backdrop='static' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Edit Template' onclick='edit(" + e + ")'>                    <i class='fa fa-pencil'></i>                    </button></span>\t\t    <span data-toggle='modal' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Copy Template' onclick='copy(" + e + ")'>                    <i class='fa fa-copy'></i>                    </button></span>                    <button class='btn btn-danger' data-toggle='tooltip' data-placement='left' title='Delete Template' onclick='deleteTemplate(" + e + ")'>                    <i class='fa fa-trash-o'></i>                    </button></div>"]).draw()
+            templateTable.row.add([escapeHtml(t.name), rating, moment(t.modified_date).format("MMMM Do YYYY, h:mm:ss a"), "<div class='pull-right'><span data-toggle='modal' data-backdrop='static' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Edit Template' onclick='edit(" + e + ")'>                    <i class='fa fa-pencil'></i>                    </button></span>\t\t    <span data-toggle='modal' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Copy Template' onclick='copy(" + e + ")'>                    <i class='fa fa-copy'></i>                    </button></span>  \t\t    <span data-toggle='modal' data-target='#modalforpreview'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Preview Template' onclick='preview(" + e + ")'>                    <i class='fa fa-eye'></i>                    </button></span>                    <button class='btn btn-danger' data-toggle='tooltip' data-placement='left' title='Delete Template' onclick='deleteTemplate(" + e + ")'>                    <i class='fa fa-trash-o'></i>                    </button></div>"]).draw()
         }), $('[data-toggle="tooltip"]').tooltip()) : $("#emptyMessage").show()
     }).error(function() {
         $("#loading").hide(), errorFlash("Error fetching templates")
