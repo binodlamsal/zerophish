@@ -150,38 +150,59 @@ func GenerateSecureKey() string {
 
 func ChangePassword(r *http.Request) error {
 	u := ctx.Get(r, "user").(models.User)
-	//currentPw := r.FormValue("current_password")
-	//newPassword := r.FormValue("new_password")
-	//confirmPassword := r.FormValue("confirm_new_password")
-
 	r.ParseForm()                               // Parses the request body
 	currentPw := r.Form.Get("current_password") // x will be "" if parameter is not set
 	newPassword := r.Form.Get("new_password")
 	confirmPassword := r.Form.Get("confirm_new_password")
 
-	// Check the current password
-	err := bcrypt.CompareHashAndPassword([]byte(u.Hash), []byte(currentPw))
-	if err != nil {
-		return ErrInvalidPassword
+	if newPassword != "" {
+		// Check the current password
+		err := bcrypt.CompareHashAndPassword([]byte(u.Hash), []byte(currentPw))
+		if err != nil {
+			return ErrInvalidPassword
+		}
+		// Check that the new password isn't blank
+		if newPassword == "" {
+			return ErrEmptyPassword
+		}
+		// Check that new passwords match
+		if newPassword != confirmPassword {
+			return ErrPasswordMismatch
+		}
+		// Generate the new hash
+		h, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+		if err != nil {
+			return err
+		}
+		u.Hash = string(h)
 	}
-	// Check that the new password isn't blank
-	if newPassword == "" {
-		return ErrEmptyPassword
+
+	err := models.PutUser(&u)
+	return err
+}
+
+func ChangeLogo(r *http.Request) error {
+	u := ctx.Get(r, "user").(models.User)
+	r.ParseForm()
+	logo := r.Form.Get("logo")
+
+	if logo == "" {
+		return nil
 	}
-	// Check that new passwords match
-	if newPassword != confirmPassword {
-		return ErrPasswordMismatch
+
+	l := u.GetLogo()
+
+	if l == nil {
+		l = &models.Logo{UserId: u.Id, Data: logo}
+	} else {
+		if logo == "DELETE" {
+			return models.DeleteLogo(l.Id)
+		}
+
+		l.Data = logo
 	}
-	// Generate the new hash
-	h, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
-	if err != nil {
-		return err
-	}
-	u.Hash = string(h)
-	if err = models.PutUser(&u); err != nil {
-		return err
-	}
-	return nil
+
+	return models.PutLogo(l)
 }
 
 func ChangePasswordByadmin(r *http.Request) error {

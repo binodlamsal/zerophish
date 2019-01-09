@@ -81,6 +81,31 @@
                             class="form-control" />
                     </div>
                 </div>
+
+                {{if eq role "Partner"}}
+                <br />
+                <div class="row">
+                    <label for="logo" class="col-sm-2 control-label form-label">Logo:</label>
+                    <div class="col-md-3">
+                        <div class="input-group">
+                            <span class="input-group-btn">
+                                <span class="btn btn-default btn-file">
+                                    Browse… <input type="file" id="logo-input">
+                                </span>
+                            </span>
+                            <input type="text" class="form-control" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <button class="btn" id="reset">Reset</button>
+                    </div>
+                    <div class="col-md-2">
+                        <img id="logo-preview" src="/logo"/>
+                    </div>
+                    <input type="hidden" value="" id="logo" name="logo">
+                </div>
+                {{end}}
+
                 <input type="hidden" name="csrf_token" value="{{.Token}}" />
                 <br />
                 <button class="btn btn-primary" type="submit"><i class="fa fa-save"></i> Save</button>

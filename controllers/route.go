@@ -37,6 +37,7 @@ func CreateAdminRouter() http.Handler {
 	router.HandleFunc("/settings", Use(Settings, mid.RequireLogin))
 	router.HandleFunc("/people", Use(People, mid.RequireRoles([]int64{models.Administrator, models.Partner, models.ChildUser}), mid.RequireLogin))
 	router.HandleFunc("/roles", Use(Roles, mid.RequireRoles([]int64{models.Administrator}), mid.RequireLogin))
+	router.HandleFunc("/logo", Use(Logo))
 	// Create the API routes
 	api := router.PathPrefix("/api").Subrouter()
 	api = api.StrictSlash(true)
@@ -327,22 +328,50 @@ func Settings(w http.ResponseWriter, r *http.Request) {
 		}{Title: "Settings", Version: config.Version, User: ctx.Get(r, "user").(models.User), Token: csrf.Token(r)}
 		getTemplate(r, w, "settings").ExecuteTemplate(w, "base", params)
 	case r.Method == "POST":
-		err := auth.ChangePassword(r)
 		msg := models.Response{Success: true, Message: "Settings Updated Successfully"}
-		if err == auth.ErrInvalidPassword {
-			msg.Message = "Invalid Password"
-			msg.Success = false
-			JSONResponse(w, msg, http.StatusBadRequest)
-			return
-		}
+		err := auth.ChangeLogo(r)
+
 		if err != nil {
 			msg.Message = err.Error()
 			msg.Success = false
 			JSONResponse(w, msg, http.StatusBadRequest)
 			return
 		}
+
+		err = auth.ChangePassword(r)
+
+		if err == auth.ErrInvalidPassword {
+			msg.Message = "Invalid Password"
+			msg.Success = false
+			JSONResponse(w, msg, http.StatusBadRequest)
+			return
+		}
+
+		if err != nil {
+			msg.Message = err.Error()
+			msg.Success = false
+			JSONResponse(w, msg, http.StatusBadRequest)
+			return
+		}
+
 		JSONResponse(w, msg, http.StatusOK)
 	}
+}
+
+// Logo serves custom logo image (if any) or the default logo
+func Logo(w http.ResponseWriter, r *http.Request) {
+	u, ok := ctx.Get(r, "user").(models.User)
+
+	if ok {
+		l := u.GetLogo()
+
+		if l != nil {
+			l.Serve(w)
+			return
+		}
+	}
+
+	http.Redirect(w, r, "/images/logo_inv_small.png", 302)
 }
 
 // Login handles the authentication flow for a user. If credentials are valid,
