@@ -13,12 +13,18 @@ const (
 
 // User represents the user model for gophish.
 type User struct {
-	Id       int64  `json:"id"`
-	Username string `json:"username" sql:"not null;unique"`
-	Email    string `json:"email" sql:"not null;unique"`
-	Partner  int64  `json:"partner" sql:"not null"`
-	Hash     string `json:"-"`
-	ApiKey   string `json:"api_key" sql:"not null;unique"`
+	Id              int64     `json:"id"`
+	Username        string    `json:"username" sql:"not null;unique"`
+	Email           string    `json:"email" sql:"not null;unique"`
+	Partner         int64     `json:"partner" sql:"not null"`
+	Hash            string    `json:"-"`
+	ApiKey          string    `json:"api_key" sql:"not null;unique"`
+	Avatar          string    `json:"avatar" sql:"not null"`
+	EmailVerifiedAt time.Time `json:"email_verified_at" sql:"not null"`
+	CreatedAt       time.Time `json:"created_at" sql:"not null"`
+	UpdatedAt       time.Time `json:"updated_at" sql:"not null"`
+	LastLoginAt     time.Time `json:"last_login_at" sql:"not null"`
+	LastLoginIp     string    `json:"last_login_ip" sql:"not null"`
 }
 
 // Role represents the role model for gophish.

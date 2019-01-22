@@ -61,6 +61,11 @@ func Login(r *http.Request) (bool, models.User, error) {
 	if err != nil {
 		return false, models.User{}, ErrInvalidPassword
 	}
+
+	//update the user and set last login time
+	u.LastLoginAt = time.Now().UTC()
+	err = models.PutUser(&u)
+
 	return true, u, nil
 }
 
@@ -107,6 +112,8 @@ func Register(r *http.Request) (bool, error) {
 	u.Email = newEmail
 	u.Hash = string(h)
 	u.ApiKey = GenerateSecureKey()
+	u.CreatedAt = time.Now().UTC()
+	u.UpdatedAt = time.Now().UTC()
 
 	if api != "1" {
 		currentUser := ctx.Get(r, "user").(models.User)
@@ -176,6 +183,7 @@ func ChangePassword(r *http.Request) error {
 		}
 		u.Hash = string(h)
 	}
+	u.UpdatedAt = time.Now().UTC()
 
 	err := models.PutUser(&u)
 	return err
@@ -239,6 +247,7 @@ func ChangePasswordByadmin(r *http.Request) error {
 	u.Username = ud.Username
 	u.ApiKey = ud.ApiKey
 	u.Partner = ud.Partner
+	u.UpdatedAt = time.Now().UTC()
 
 	// Check the current password
 
