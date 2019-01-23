@@ -1,6 +1,13 @@
 package models
 
-import "time"
+import (
+	"net/http"
+	"strconv"
+	"time"
+
+	log "github.com/binodlamsal/gophish/logger"
+	"github.com/vincent-petithory/dataurl"
+)
 
 // Roles
 const (
@@ -19,11 +26,12 @@ type User struct {
 	Partner         int64     `json:"partner" sql:"not null"`
 	Hash            string    `json:"-"`
 	ApiKey          string    `json:"api_key" sql:"not null;unique"`
-	Avatar          string    `json:"avatar" sql:"not null"`
-	EmailVerifiedAt time.Time `json:"email_verified_at" sql:"not null"`
-	CreatedAt       time.Time `json:"created_at" sql:"not null"`
-	UpdatedAt       time.Time `json:"updated_at" sql:"not null"`
-	LastLoginAt     time.Time `json:"last_login_at" sql:"not null"`
+	FullName        string    `json:"full_name" sql:"not null"`
+	Avatar          string    `json:"avatar"`
+	EmailVerifiedAt time.Time `json:"email_verified_at"`
+	CreatedAt       time.Time `json:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
+	LastLoginAt     time.Time `json:"last_login_at"`
 	LastLoginIp     string    `json:"last_login_ip" sql:"not null"`
 }
 
@@ -349,4 +357,34 @@ func GetUserPartners() ([]User, error) {
 	u := []User{}
 	err = db.Raw("SELECT * FROM users u LEFT JOIN users_role ur ON (u.id = ur.uid) where ur.rid in (?, ?)", 1, 2).Scan(&u).Error
 	return u, err
+}
+
+// ServeAvatar writes proper headers and content of this user's avatar image to the given ResponseWriter
+func (u User) ServeAvatar(w http.ResponseWriter) {
+	dataURL, err := dataurl.DecodeString(u.Avatar)
+
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	w.Header().Set("Content-Type", dataURL.MediaType.ContentType())
+	w.Header().Set("Content-Length", strconv.Itoa(len(dataURL.Data)))
+	w.Write(dataURL.Data)
+}
+
+func (u *User) BeforeSave() (err error) {
+	if u.EmailVerifiedAt.IsZero() {
+		u.EmailVerifiedAt = time.Now().UTC()
+	}
+
+	if u.CreatedAt.IsZero() {
+		u.CreatedAt = time.Now().UTC()
+	}
+
+	if u.LastLoginAt.IsZero() {
+		u.LastLoginAt = time.Now().UTC()
+	}
+
+	return
 }

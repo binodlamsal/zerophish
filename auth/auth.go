@@ -184,6 +184,15 @@ func ChangePassword(r *http.Request) error {
 		u.Hash = string(h)
 	}
 	u.UpdatedAt = time.Now().UTC()
+	u.FullName = r.Form.Get("full_name")
+
+	if r.Form.Get("avatar") != "" {
+		if r.Form.Get("avatar") == "DELETE" {
+			u.Avatar = ""
+		} else {
+			u.Avatar = r.Form.Get("avatar")
+		}
+	}
 
 	err := models.PutUser(&u)
 	return err
@@ -219,6 +228,7 @@ func ChangePasswordByadmin(r *http.Request) error {
 	type Usersdata struct {
 		Id                   int64     `json:"id"`
 		Username             string    `json:"username"`
+		FullName             string    `json:"full_name"`
 		Email                string    `json:"email" `
 		New_password         string    `json:"new_password" `
 		Confirm_new_password string    `json:"confirm_new_password" `
@@ -245,6 +255,7 @@ func ChangePasswordByadmin(r *http.Request) error {
 	u.Id = ud.Id
 	u.Email = ud.Email
 	u.Username = ud.Username
+	u.FullName = ud.FullName
 	u.ApiKey = ud.ApiKey
 	u.Partner = ud.Partner
 	u.UpdatedAt = time.Now().UTC()

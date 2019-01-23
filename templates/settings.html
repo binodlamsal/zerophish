@@ -61,6 +61,13 @@
                 </div>
                 <br />
                 <div class="row">
+                    <label for="full_name" class="col-sm-2 control-label form-label">Full Name:</label>
+                    <div class="col-md-6">
+                        <input type="text" id="full_name" name="full_name" value="{{.User.FullName}}" class="form-control" />
+                    </div>
+                </div>
+                <br />
+                <div class="row">
                     <label for="current_password" class="col-sm-2 control-label form-label">Old Password:</label>
                     <div class="col-md-6">
                         <input type="password" id="current_password" name="current_password" autocomplete="off" class="form-control" />
@@ -82,6 +89,28 @@
                     </div>
                 </div>
 
+                <br />
+                <div class="row">
+                    <label for="logo" class="col-sm-2 control-label form-label">Avatar:</label>
+                    <div class="col-md-3">
+                        <div class="input-group">
+                            <span class="input-group-btn">
+                                <span class="btn btn-default btn-file avatar">
+                                    Browse… <input type="file" id="avatar-input">
+                                </span>
+                            </span>
+                            <input type="text" class="form-control" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <button class="btn avatar" id="reset-avatar">Reset</button>
+                    </div>
+                    <div class="col-md-2">
+                        <img id="avatar-preview" src="/avatars/{{.User.Id}}"/>
+                    </div>
+                    <input type="hidden" value="" id="avatar" name="avatar">
+                </div>
+
                 {{if eq role "Partner"}}
                 <br />
                 <div class="row">
@@ -89,7 +118,7 @@
                     <div class="col-md-3">
                         <div class="input-group">
                             <span class="input-group-btn">
-                                <span class="btn btn-default btn-file">
+                                <span class="btn btn-default btn-file logo">
                                     Browse… <input type="file" id="logo-input">
                                 </span>
                             </span>
@@ -97,7 +126,7 @@
                         </div>
                     </div>
                     <div class="col-md-1">
-                        <button class="btn" id="reset">Reset</button>
+                        <button class="btn logo" id="reset-logo">Reset</button>
                     </div>
                     <div class="col-md-2">
                         <img id="logo-preview" src="/logo"/>
