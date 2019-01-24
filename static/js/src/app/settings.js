@@ -37,7 +37,7 @@ $(document).ready(function() {
       localStorage.setItem("gophish.use_map", JSON.stringify(this.checked));
     });
 
-  $(document).on("change", ".btn-file :file", function() {
+  $(document).on("change", ".btn-file .logo :file", function() {
     var input = $(this),
       label = input
         .val()
@@ -46,7 +46,16 @@ $(document).ready(function() {
     input.trigger("fileselect", [label]);
   });
 
-  $(".btn-file :file").on("fileselect", function(event, label) {
+  $(document).on("change", ".btn-file .avatar :file", function() {
+    var input = $(this),
+      label = input
+        .val()
+        .replace(/\\/g, "/")
+        .replace(/.*\//, "");
+    input.trigger("fileselect", [label]);
+  });
+
+  $(".btn-file .logo :file").on("fileselect", function(event, label) {
     var input = $(this)
         .parents(".input-group")
         .find(":text"),
@@ -59,18 +68,33 @@ $(document).ready(function() {
     }
   });
 
-  function readURL(input) {
+  $(".btn-file .avatar :file").on("fileselect", function(event, label) {
+    var input = $(this)
+        .parents(".input-group")
+        .find(":text"),
+      log = label;
+
+    if (input.length) {
+      input.val(log);
+    } else {
+      if (log) alert(log);
+    }
+  });
+
+  function readURL(input, type) {
     if (input.files && input.files[0]) {
       if (input.files[0].size * 1.4 > 65000) {
-        alert("The logo image file is too large (must not exceed 64KB)");
+        alert(
+          "The " + type + " image file is too large (must not exceed 64KB)"
+        );
         return;
       }
 
       var reader = new FileReader();
 
       reader.onload = function(e) {
-        $("#logo-preview").attr("src", e.target.result);
-        $("#logo").val(e.target.result);
+        $("#" + type + "-preview").attr("src", e.target.result);
+        $("#" + type).val(e.target.result);
       };
 
       reader.readAsDataURL(input.files[0]);
@@ -78,10 +102,14 @@ $(document).ready(function() {
   }
 
   $("#logo-input").change(function() {
-    readURL(this);
+    readURL(this, "logo");
   });
 
-  $("button#reset").click(function(e) {
+  $("#avatar-input").change(function() {
+    readURL(this, "avatar");
+  });
+
+  $("button#reset-logo").click(function(e) {
     e.preventDefault();
 
     $("#logo-preview").attr(
@@ -89,5 +117,15 @@ $(document).ready(function() {
       "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
     );
     $("#logo").val("DELETE");
+  });
+
+  $("button#reset-avatar").click(function(e) {
+    e.preventDefault();
+
+    $("#avatar-preview").attr(
+      "src",
+      "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
+    );
+    $("#avatar").val("DELETE");
   });
 });

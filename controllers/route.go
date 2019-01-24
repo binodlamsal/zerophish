@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"github.com/binodlamsal/gophish/auth"
 	"github.com/binodlamsal/gophish/config"
@@ -38,6 +39,7 @@ func CreateAdminRouter() http.Handler {
 	router.HandleFunc("/people", Use(People, mid.RequireRoles([]int64{models.Administrator, models.Partner, models.ChildUser}), mid.RequireLogin))
 	router.HandleFunc("/roles", Use(Roles, mid.RequireRoles([]int64{models.Administrator}), mid.RequireLogin))
 	router.HandleFunc("/logo", Use(Logo))
+	router.HandleFunc("/avatars/{id:[0-9]+}", Use(Avatars_Id))
 	// Create the API routes
 	api := router.PathPrefix("/api").Subrouter()
 	api = api.StrictSlash(true)
@@ -372,6 +374,22 @@ func Logo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/images/logo_inv_small.png", 302)
+}
+
+// Avatars_Id serves avatar image by the given user id or the default avatar
+func Avatars_Id(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, _ := strconv.ParseInt(vars["id"], 0, 64)
+	user, err := models.GetUser(id)
+
+	if err == nil {
+		if user.Avatar != "" {
+			user.ServeAvatar(w)
+			return
+		}
+	}
+
+	http.Redirect(w, r, "/images/noavatar.png", 302)
 }
 
 // Login handles the authentication flow for a user. If credentials are valid,

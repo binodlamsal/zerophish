@@ -4,6 +4,7 @@ function save(e) {
   var t = {};
 
   t.username = $("#username").val();
+  t.full_name = $("#full_name").val();
   t.email = $("#email").val();
   t.current_password = $("#curpassword").val();
   t.new_password = $("#password").val();
@@ -72,6 +73,7 @@ function edit(index) {
     $("input[type=text], textarea").val("");
 
     $("#username").val(e.username);
+    $("#full_name").val(e.full_name);
     $("#email").val(e.email);
     $("#hidden_hash").val(e.hash);
     $("#hidden_uid").val(e.id);
@@ -315,7 +317,11 @@ $(document).ready(function() {
 
                 peopleTable.row
                   .add([
-                    a.username,
+                    '<img style="max-height: 40px" src="' +
+                      (a.avatar || "/images/noavatar.png") +
+                      '"> ' +
+                      a.username,
+                    a.full_name,
                     a.email,
                     a.role,
                     a.subscription
