@@ -5,9 +5,11 @@ import (
 	"html/template"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 
 	"github.com/binodlamsal/gophish/auth"
+	"github.com/binodlamsal/gophish/chocolatechip"
 	"github.com/binodlamsal/gophish/config"
 	ctx "github.com/binodlamsal/gophish/context"
 	log "github.com/binodlamsal/gophish/logger"
@@ -24,6 +26,7 @@ func CreateAdminRouter() http.Handler {
 	router := mux.NewRouter()
 	// Base Front-end routes
 	router.HandleFunc("/", Use(Base, mid.RequireLogin))
+	router.HandleFunc("/sso", SSO)
 	router.HandleFunc("/login", Login)
 	router.HandleFunc("/logout", Use(Logout, mid.RequireLogin))
 	router.HandleFunc("/campaigns", Use(Campaigns, mid.RequireLogin))
@@ -390,6 +393,57 @@ func Avatars_Id(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/images/noavatar.png", 302)
+}
+
+// SSO handles user authentication via encrypted CHOCOLATECHIPSSL cookie.
+// If an email address extracted from such cookie belongs to an existing user
+// then a session is created for that user.
+func SSO(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		log.Error("Unsupported HTTP method")
+		http.Redirect(w, r, "/login", 302)
+		return
+	}
+
+	cookie, err := r.Cookie("CHOCOLATECHIPSSL")
+
+	if err != nil {
+		log.Error("Missing CHOCOLATECHIPSSL cookie")
+		http.Redirect(w, r, "/login", 302)
+		return
+	}
+
+	email, err := chocolatechip.GetPropFromEncryptedCookie("mail", cookie.Value, os.Getenv("SSO_KEY"))
+
+	if err != nil {
+		log.Error(err)
+		http.Redirect(w, r, "/login", 302)
+		return
+	}
+
+	user, err := models.GetUserByUsername(email)
+
+	if err != nil {
+		log.Error(err)
+		http.Redirect(w, r, "/login", 302)
+		return
+	}
+
+	session := ctx.Get(r, "session").(*sessions.Session)
+	session.Values["id"] = user.Id
+	session.Save(r, w)
+	next := "/"
+	url, err := url.Parse(r.FormValue("next"))
+
+	if err == nil {
+		path := url.Path
+
+		if path != "" {
+			next = path
+		}
+	}
+
+	http.Redirect(w, r, next, 302)
 }
 
 // Login handles the authentication flow for a user. If credentials are valid,
