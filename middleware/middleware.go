@@ -4,12 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/binodlamsal/gophish/auth"
+	"github.com/binodlamsal/gophish/chocolatechip"
 	ctx "github.com/binodlamsal/gophish/context"
+	log "github.com/binodlamsal/gophish/logger"
 	"github.com/binodlamsal/gophish/models"
 	"github.com/gorilla/csrf"
+	"github.com/gorilla/sessions"
 )
 
 var CSRFExemptPrefixes = []string{
@@ -130,6 +134,42 @@ func RequireLogin(handler http.Handler) http.HandlerFunc {
 			q := r.URL.Query()
 			q.Set("next", r.URL.Path)
 			http.Redirect(w, r, fmt.Sprintf("/login?%s", q.Encode()), 302)
+		}
+	}
+}
+
+// SSO handles user authentication via encrypted CHOCOLATECHIPSSL cookie.
+// If an email address extracted from such cookie belongs to an existing user
+// then a session is created for that user.
+func SSO(handler http.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		defer handler.ServeHTTP(w, r)
+
+		if u := ctx.Get(r, "user"); u == nil {
+			cookie, err := r.Cookie("CHOCOLATECHIPSSL")
+
+			if err != nil {
+				return
+			}
+
+			email, err := chocolatechip.GetPropFromEncryptedCookie("mail", cookie.Value, os.Getenv("SSO_KEY"))
+
+			if err != nil {
+				log.Error(err)
+				return
+			}
+
+			user, err := models.GetUserByUsername(email)
+
+			if err != nil {
+				log.Error(err)
+				return
+			}
+
+			session := ctx.Get(r, "session").(*sessions.Session)
+			session.Values["id"] = user.Id
+			session.Save(r, w)
+			http.Redirect(w, r, r.URL.Path, 302)
 		}
 	}
 }
