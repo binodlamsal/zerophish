@@ -5,11 +5,10 @@ import (
 	"html/template"
 	"net/http"
 	"net/url"
-	"os"
 	"strconv"
+	"time"
 
 	"github.com/binodlamsal/gophish/auth"
-	"github.com/binodlamsal/gophish/chocolatechip"
 	"github.com/binodlamsal/gophish/config"
 	ctx "github.com/binodlamsal/gophish/context"
 	log "github.com/binodlamsal/gophish/logger"
@@ -25,22 +24,21 @@ import (
 func CreateAdminRouter() http.Handler {
 	router := mux.NewRouter()
 	// Base Front-end routes
-	router.HandleFunc("/", Use(Base, mid.RequireLogin))
-	router.HandleFunc("/sso", SSO)
+	router.HandleFunc("/", Use(Base, mid.RequireLogin, mid.SSO))
 	router.HandleFunc("/login", Login)
-	router.HandleFunc("/logout", Use(Logout, mid.RequireLogin))
-	router.HandleFunc("/campaigns", Use(Campaigns, mid.RequireLogin))
-	router.HandleFunc("/campaigns/{id:[0-9]+}", Use(CampaignID, mid.RequireLogin))
-	router.HandleFunc("/templates", Use(Templates, mid.RequireLogin))
-	router.HandleFunc("/users", Use(Users, mid.RequireLogin))
-	router.HandleFunc("/landing_pages", Use(LandingPages, mid.RequireLogin))
-	router.HandleFunc("/sending_profiles", Use(SendingProfiles, mid.RequireRoles([]int64{models.Administrator}), mid.RequireLogin))
-	router.HandleFunc("/our_domains", Use(SendingDomains, mid.RequireRoles([]int64{models.Administrator}), mid.RequireLogin))
-	router.HandleFunc("/categories", Use(PhishingCategories, mid.RequireRoles([]int64{models.Administrator}), mid.RequireLogin))
-	router.HandleFunc("/register", Use(Register, mid.RequireRoles([]int64{models.Administrator, models.Partner, models.ChildUser}), mid.RequireLogin))
-	router.HandleFunc("/settings", Use(Settings, mid.RequireLogin))
-	router.HandleFunc("/people", Use(People, mid.RequireRoles([]int64{models.Administrator, models.Partner, models.ChildUser}), mid.RequireLogin))
-	router.HandleFunc("/roles", Use(Roles, mid.RequireRoles([]int64{models.Administrator}), mid.RequireLogin))
+	router.HandleFunc("/logout", Use(Logout, mid.RequireLogin, mid.SSO))
+	router.HandleFunc("/campaigns", Use(Campaigns, mid.RequireLogin, mid.SSO))
+	router.HandleFunc("/campaigns/{id:[0-9]+}", Use(CampaignID, mid.RequireLogin, mid.SSO))
+	router.HandleFunc("/templates", Use(Templates, mid.RequireLogin, mid.SSO))
+	router.HandleFunc("/users", Use(Users, mid.RequireLogin, mid.SSO))
+	router.HandleFunc("/landing_pages", Use(LandingPages, mid.RequireLogin, mid.SSO))
+	router.HandleFunc("/sending_profiles", Use(SendingProfiles, mid.RequireRoles([]int64{models.Administrator}), mid.RequireLogin, mid.SSO))
+	router.HandleFunc("/our_domains", Use(SendingDomains, mid.RequireRoles([]int64{models.Administrator}), mid.RequireLogin, mid.SSO))
+	router.HandleFunc("/categories", Use(PhishingCategories, mid.RequireRoles([]int64{models.Administrator}), mid.RequireLogin, mid.SSO))
+	router.HandleFunc("/register", Use(Register, mid.RequireRoles([]int64{models.Administrator, models.Partner, models.ChildUser}), mid.RequireLogin, mid.SSO))
+	router.HandleFunc("/settings", Use(Settings, mid.RequireLogin, mid.SSO))
+	router.HandleFunc("/people", Use(People, mid.RequireRoles([]int64{models.Administrator, models.Partner, models.ChildUser}), mid.RequireLogin, mid.SSO))
+	router.HandleFunc("/roles", Use(Roles, mid.RequireRoles([]int64{models.Administrator}), mid.RequireLogin, mid.SSO))
 	router.HandleFunc("/logo", Use(Logo))
 	router.HandleFunc("/avatars/{id:[0-9]+}", Use(Avatars_Id))
 	// Create the API routes
@@ -395,57 +393,6 @@ func Avatars_Id(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/images/noavatar.png", 302)
 }
 
-// SSO handles user authentication via encrypted CHOCOLATECHIPSSL cookie.
-// If an email address extracted from such cookie belongs to an existing user
-// then a session is created for that user.
-func SSO(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
-		log.Error("Unsupported HTTP method")
-		http.Redirect(w, r, "/login", 302)
-		return
-	}
-
-	cookie, err := r.Cookie("CHOCOLATECHIPSSL")
-
-	if err != nil {
-		log.Error("Missing CHOCOLATECHIPSSL cookie")
-		http.Redirect(w, r, "/login", 302)
-		return
-	}
-
-	email, err := chocolatechip.GetPropFromEncryptedCookie("mail", cookie.Value, os.Getenv("SSO_KEY"))
-
-	if err != nil {
-		log.Error(err)
-		http.Redirect(w, r, "/login", 302)
-		return
-	}
-
-	user, err := models.GetUserByUsername(email)
-
-	if err != nil {
-		log.Error(err)
-		http.Redirect(w, r, "/login", 302)
-		return
-	}
-
-	session := ctx.Get(r, "session").(*sessions.Session)
-	session.Values["id"] = user.Id
-	session.Save(r, w)
-	next := "/"
-	url, err := url.Parse(r.FormValue("next"))
-
-	if err == nil {
-		path := url.Path
-
-		if path != "" {
-			next = path
-		}
-	}
-
-	http.Redirect(w, r, next, 302)
-}
-
 // Login handles the authentication flow for a user. If credentials are valid,
 // a session is created
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -501,12 +448,19 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Logout destroys the current user session
+// Logout destroys the current user session and deletes the SSO cookie (if any)
 func Logout(w http.ResponseWriter, r *http.Request) {
 	session := ctx.Get(r, "session").(*sessions.Session)
 	delete(session.Values, "id")
 	Flash(w, r, "success", "You have successfully logged out")
 	session.Save(r, w)
+
+	if cookie, err := r.Cookie("CHOCOLATECHIPSSL"); err == nil {
+		cookie.Value = ""
+		cookie.Expires = time.Unix(0, 0)
+		http.SetCookie(w, cookie)
+	}
+
 	http.Redirect(w, r, "/login", 302)
 }
 
