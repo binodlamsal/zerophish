@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
+	"time"
 
 	"github.com/binodlamsal/gophish/auth"
-	"github.com/binodlamsal/gophish/chocolatechip"
+	"github.com/binodlamsal/gophish/bakery"
 	ctx "github.com/binodlamsal/gophish/context"
 	log "github.com/binodlamsal/gophish/logger"
 	"github.com/binodlamsal/gophish/models"
@@ -152,17 +152,26 @@ func SSO(handler http.Handler) http.HandlerFunc {
 				return
 			}
 
-			email, err := chocolatechip.GetPropFromEncryptedCookie("mail", cookie.Value, os.Getenv("SSO_KEY"))
+			c, err := bakery.ParseCookie(cookie.Value)
 
 			if err != nil {
 				log.Error(err)
 				return
 			}
 
-			user, err := models.GetUserByUsername(email)
+			if !c.IsChocolateChip {
+				log.Error("Bad type of SSO cookie")
+				return
+			}
+
+			user, err := models.GetUserByUsername(c.User)
 
 			if err != nil {
 				log.Error(err)
+				cookie.Value = ""
+				cookie.Expires = time.Unix(0, 0)
+				cookie.MaxAge = -1
+				http.SetCookie(w, cookie)
 				return
 			}
 

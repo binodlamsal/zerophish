@@ -5,10 +5,12 @@ import (
 	"html/template"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"time"
 
 	"github.com/binodlamsal/gophish/auth"
+	"github.com/binodlamsal/gophish/bakery"
 	"github.com/binodlamsal/gophish/config"
 	ctx "github.com/binodlamsal/gophish/context"
 	log "github.com/binodlamsal/gophish/logger"
@@ -19,13 +21,19 @@ import (
 	"github.com/gorilla/sessions"
 )
 
+func init() {
+	bakery.SetKey(os.Getenv("SSO_KEY"))
+}
+
 // CreateAdminRouter creates the routes for handling requests to the web interface.
 // This function returns an http.Handler to be used in http.ListenAndServe().
 func CreateAdminRouter() http.Handler {
 	router := mux.NewRouter()
 	// Base Front-end routes
 	router.HandleFunc("/", Use(Base, mid.RequireLogin, mid.SSO))
-	router.HandleFunc("/login", Login)
+	router.HandleFunc("/login", SSO_Login)
+	router.HandleFunc("/bakery/login", SSO_Login)
+	router.HandleFunc("/sso/mock", SSO_Mock)
 	router.HandleFunc("/logout", Use(Logout, mid.RequireLogin, mid.SSO))
 	router.HandleFunc("/campaigns", Use(Campaigns, mid.RequireLogin, mid.SSO))
 	router.HandleFunc("/campaigns/{id:[0-9]+}", Use(CampaignID, mid.RequireLogin, mid.SSO))
@@ -393,6 +401,129 @@ func Avatars_Id(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/images/noavatar.png", 302)
 }
 
+// SSO_Login handles Bakery Single Sign-On authentication flow for a user.
+// If credentials are valid, a session is created.
+func SSO_Login(w http.ResponseWriter, r *http.Request) {
+	params := struct {
+		User    models.User
+		Title   string
+		Flashes []interface{}
+		Token   string
+	}{Title: "Login", Token: csrf.Token(r)}
+
+	session := ctx.Get(r, "session").(*sessions.Session)
+
+	switch {
+	case r.Method == "GET":
+		if _, err := r.Cookie("CHOCOLATECHIPSSL"); err == nil {
+			http.Redirect(w, r, "/", 302)
+			return
+		}
+
+		if cookie, err := r.Cookie("OATMEALSSL"); err == nil {
+			c, err := bakery.ParseCookie(cookie.Value)
+
+			if err != nil {
+				log.Error(err)
+			} else if c.Error != "" {
+				log.Error(c.Error)
+				Flash(w, r, "danger", c.Error)
+			}
+
+			cookie.Value = ""
+			cookie.Expires = time.Unix(0, 0)
+			cookie.MaxAge = -1
+			cookie.Domain = auth.SSODomain
+			cookie.Path = "/"
+			cookie.Secure = true
+			http.SetCookie(w, cookie)
+		}
+
+		params.Flashes = session.Flashes()
+		session.Save(r, w)
+		templates := template.New("template")
+
+		_, err := templates.ParseFiles("templates/login.html", "templates/flashes.html")
+
+		if err != nil {
+			log.Error(err)
+		}
+
+		template.Must(templates, err).ExecuteTemplate(w, "base", params)
+	case r.Method == "POST":
+		username, password := r.FormValue("username"), r.FormValue("password")
+		cookie, err := bakery.CreateOatmealCookie(username, password, "login", auth.SSOSlaveURL)
+
+		if err != nil {
+			Flash(w, r, "danger", err.Error())
+			params.Flashes = session.Flashes()
+			session.Save(r, w)
+			templates := template.New("template")
+
+			if _, err := templates.ParseFiles("templates/login.html", "templates/flashes.html"); err != nil {
+				log.Error(err)
+			}
+
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.WriteHeader(http.StatusUnauthorized)
+			template.Must(templates, err).ExecuteTemplate(w, "base", params)
+		} else {
+			http.SetCookie(
+				w, &http.Cookie{
+					Name:    "OATMEALSSL",
+					Value:   cookie,
+					Domain:  auth.SSODomain,
+					Path:    "/",
+					Expires: time.Now().Add(1 * time.Hour),
+				},
+			)
+
+			http.Redirect(w, r, auth.SSOMasterLoginURL, 302)
+		}
+	}
+}
+
+func SSO_Mock(w http.ResponseWriter, r *http.Request) {
+	authenticated := true
+
+	if authenticated {
+		cookie, err := bakery.CreateChocolatechipCookie("eugene")
+
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		} else {
+			http.SetCookie(
+				w, &http.Cookie{
+					Name:    "CHOCOLATECHIPSSL",
+					Value:   cookie,
+					Domain:  ".localhost",
+					Expires: time.Now().Add(1 * time.Hour),
+					Path:    "/",
+				},
+			)
+
+			if cookie, err := r.Cookie("OATMEALSSL"); err == nil {
+				cookie.Value = ""
+				cookie.Expires = time.Unix(0, 0)
+				cookie.MaxAge = -1
+				http.SetCookie(w, cookie)
+			}
+		}
+	} else {
+		http.SetCookie(
+			w, &http.Cookie{
+				Name:    "OATMEALSSL",
+				Value:   `OTdjNmY1NzdiMjQ4YThjYzFlMjgzNjhjOTc3ZTUzNGVkN2RiN2I2YjllNzllMWZkZDIwZmY4YWViOWM1ZTIwMqWAFEmG%2FNutdJ93u4DxZKCMaMv1iB5au61d7RxCfvmj9gqjP5spZ4DzTnw3xpyvQUgiHaNlZbsI69quyt7hnqVNP2jq5Ev%2FsSvpFWno6KeyisZkPc7hs7LwfXeng7aYEMNbSl8O9j90G9eNYMVi8nTpqTF%2F3B4d2IBBIjlj2ym1wlWuJIuAs2pLU8vyb5wQkK5%2BaqQsNImTuC8CItkVYEqXKPRU4obtUy4%2FqpYqM04mO5%2FUtIW1QgzltHgPpsrmvvOw8NmOuAzLhJqp1aX1FWubum9TTCrWkNyHGkGdg8oZnh90Cu8WzTx%2F8Zsh63iPiV3U7FYz2oAQgV0d4TJtCGlnt95j1tukOvNYmNI1WRj6GaUcKthHhyqD3zU6WyBuiYYrlWcjuM4d%2FXHzs7dSc4AlUKCCaMPFgaOrAMzw4I9ROqlLQUDv3QGiGb24TWyvJw%3D%3D`,
+				Domain:  ".localhost",
+				Expires: time.Now().Add(1 * time.Hour),
+				Path:    "/",
+			},
+		)
+	}
+
+	http.Redirect(w, r, "https://localhost:3333/bakery/login", 302)
+}
+
 // Login handles the authentication flow for a user. If credentials are valid,
 // a session is created
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -458,6 +589,11 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 	if cookie, err := r.Cookie("CHOCOLATECHIPSSL"); err == nil {
 		cookie.Value = ""
 		cookie.Expires = time.Unix(0, 0)
+		cookie.MaxAge = -1
+		cookie.Domain = auth.SSODomain
+		cookie.Path = "/"
+		cookie.Secure = true
+		cookie.HttpOnly = true
 		http.SetCookie(w, cookie)
 	}
 

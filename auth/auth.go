@@ -21,6 +21,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+const SSODomain = ".everycloudtech.com"                                 // ".localhost"
+const SSOSlaveURL = "https://awareness-test.everycloudtech.com:3333/"   // "https://localhost:3333/"
+const SSOMasterLoginURL = "https://www.everycloudtech.com/bakery/login" // "https://localhost:3333/sso/mock"
+
 //init registers the necessary models to be saved in the session later
 func init() {
 	gob.Register(&models.User{})
@@ -157,32 +161,7 @@ func GenerateSecureKey() string {
 
 func ChangePassword(r *http.Request) error {
 	u := ctx.Get(r, "user").(models.User)
-	r.ParseForm()                               // Parses the request body
-	currentPw := r.Form.Get("current_password") // x will be "" if parameter is not set
-	newPassword := r.Form.Get("new_password")
-	confirmPassword := r.Form.Get("confirm_new_password")
-
-	if newPassword != "" {
-		// Check the current password
-		err := bcrypt.CompareHashAndPassword([]byte(u.Hash), []byte(currentPw))
-		if err != nil {
-			return ErrInvalidPassword
-		}
-		// Check that the new password isn't blank
-		if newPassword == "" {
-			return ErrEmptyPassword
-		}
-		// Check that new passwords match
-		if newPassword != confirmPassword {
-			return ErrPasswordMismatch
-		}
-		// Generate the new hash
-		h, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
-		if err != nil {
-			return err
-		}
-		u.Hash = string(h)
-	}
+	r.ParseForm() // Parses the request body
 	u.UpdatedAt = time.Now().UTC()
 	u.FullName = r.Form.Get("full_name")
 
