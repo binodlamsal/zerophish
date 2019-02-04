@@ -37,9 +37,10 @@ type User struct {
 
 // Role represents the role model for gophish.
 type Role struct {
-	Rid    int64  `json:"rid"`
-	Name   string `json:"name" sql:"not null;unique"`
-	Weight string `json:"weight" sql:"not null;unique"`
+	Rid         int64  `json:"rid"`
+	Name        string `json:"name" sql:"not null;unique"`
+	DisplayName string `json:"display_name" sql:"not null"`
+	Weight      string `json:"weight" sql:"not null;unique"`
 }
 
 // UserRole represents the user role model for gophish.
@@ -91,6 +92,18 @@ func (ur UserRole) Name() string {
 	}
 
 	return role.Name
+}
+
+// DisplayName returns this role's display name
+func (ur UserRole) DisplayName() string {
+	role := Role{}
+	err := db.Where("rid = ?", ur.Rid).First(&role).Error
+
+	if err != nil {
+		return "Unknown"
+	}
+
+	return role.DisplayName
 }
 
 // Is tells if this role id matches the given one

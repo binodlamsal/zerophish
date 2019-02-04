@@ -22,7 +22,7 @@
                   <a href="/sending_profiles">Sending Profiles</a>
               </li> -->
 
-              {{if eq role "Administrator"}}
+              {{if eq role "admin"}}
               <li {{if eq page "sending_domains"}}class="active"{{end}}>
                   <a href="/our_domains">Our Domains</a>
               </li>
@@ -33,19 +33,19 @@
                   <a href="/settings">Settings</a>
               </li>
 
-              {{if or (eq role "Administrator") (eq role "Partner") (eq role "Child User")}}
+              {{if or (eq role "admin") (eq role "partner") (eq role "child_user")}}
               <li {{if eq page "people"}}class="active"{{end}}>
                   <a href="/people">People</a>
               </li>
               {{end}}
 
-              {{if eq role "Administrator"}}
+              {{if eq role "admin"}}
               <li {{if eq page "roles"}}class="active"{{end}}>
                   <a href="/roles">Roles</a>
               </li>
               {{end}}
 
-              {{if eq role "Administrator"}}
+              {{if eq role "admin"}}
               <li {{if eq page "categories"}}class="active"{{end}}>
                   <a href="/categories">Categories</a>
               </li>

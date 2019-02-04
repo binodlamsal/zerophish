@@ -124,7 +124,7 @@ func API_Users(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				roleName = "Unknown"
 			} else {
-				roleName = role.Name()
+				roleName = role.DisplayName()
 			}
 
 			resp = append(resp, userWithRoleAndSubscription{user, roleName, user.GetSubscription()})

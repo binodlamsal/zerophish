@@ -23,7 +23,7 @@
             </div>
             <br />
 
-            {{if or (eq role "Administrator") (eq role "Partner") (eq role "Child User")}}
+            {{if or (eq role "admin") (eq role "partner") (eq role "child_user")}}
             <div class="row">
                 <label class="col-sm-2 control-label form-label">Register a New User</label>
                 <div class="col-md-6">
@@ -111,7 +111,7 @@
                     <input type="hidden" value="" id="avatar" name="avatar">
                 </div>
 
-                {{if eq role "Partner"}}
+                {{if eq role "partner"}}
                 <br />
                 <div class="row">
                     <label for="logo" class="col-sm-2 control-label form-label">Logo:</label>
