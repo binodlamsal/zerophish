@@ -179,6 +179,8 @@ func SSO(handler http.Handler) http.HandlerFunc {
 			session.Values["id"] = user.Id
 			session.Save(r, w)
 			http.Redirect(w, r, r.URL.Path, 302)
+		} else if _, err := r.Cookie("CHOCOLATECHIPSSL"); err != nil {
+			http.Redirect(w, r, "logout", 302)
 		}
 	}
 }

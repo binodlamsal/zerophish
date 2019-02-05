@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/binodlamsal/gophish/auth"
@@ -33,8 +34,8 @@ func CreateAdminRouter() http.Handler {
 	router.HandleFunc("/", Use(Base, mid.RequireLogin, mid.SSO))
 	router.HandleFunc("/login", SSO_Login)
 	router.HandleFunc("/bakery/login", SSO_Login)
-	router.HandleFunc("/sso/mock", SSO_Mock)
-	router.HandleFunc("/logout", Use(Logout, mid.RequireLogin, mid.SSO))
+	// router.HandleFunc("/sso/mock", SSO_Mock)
+	router.HandleFunc("/logout", Use(Logout))
 	router.HandleFunc("/campaigns", Use(Campaigns, mid.RequireLogin, mid.SSO))
 	router.HandleFunc("/campaigns/{id:[0-9]+}", Use(CampaignID, mid.RequireLogin, mid.SSO))
 	router.HandleFunc("/templates", Use(Templates, mid.RequireLogin, mid.SSO))
@@ -579,22 +580,27 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Logout destroys the current user session and deletes the SSO cookie (if any)
+// Logout destroys the current user session and deletes the SSO cookies (if any)
 func Logout(w http.ResponseWriter, r *http.Request) {
-	session := ctx.Get(r, "session").(*sessions.Session)
-	delete(session.Values, "id")
-	Flash(w, r, "success", "You have successfully logged out")
-	session.Save(r, w)
+	if session, ok := ctx.Get(r, "session").(*sessions.Session); ok {
+		delete(session.Values, "id")
+		Flash(w, r, "success", "You have successfully logged out")
+		session.Save(r, w)
+	}
 
-	if cookie, err := r.Cookie("CHOCOLATECHIPSSL"); err == nil {
-		cookie.Value = ""
-		cookie.Expires = time.Unix(0, 0)
-		cookie.MaxAge = -1
-		cookie.Domain = auth.SSODomain
-		cookie.Path = "/"
-		cookie.Secure = true
-		cookie.HttpOnly = true
-		http.SetCookie(w, cookie)
+	for _, c := range r.Cookies() {
+		if c.Name == "CHOCOLATECHIPSSL" ||
+			strings.HasPrefix(c.Name, "SESS") ||
+			strings.HasPrefix(c.Name, "SSESS") {
+			c.Value = ""
+			c.Expires = time.Unix(0, 0)
+			c.MaxAge = -1
+			c.Domain = auth.SSODomain
+			c.Path = "/"
+			c.Secure = true
+			c.HttpOnly = true
+			http.SetCookie(w, c)
+		}
 	}
 
 	http.Redirect(w, r, "/login", 302)
