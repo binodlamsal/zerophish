@@ -175,6 +175,33 @@
     </div>
 </div>
 
+<!-- Modal For Import Email -->
+<div class="modal fade" id="importEmailModal" tabindex="-1" role="dialog" aria-labelledby="modalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <!-- New Email Modal -->
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="importEmailModalLabel">Import Email</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="modal.flashes"></div>
+                <label class="control-label" for="email">Email Content:</label>
+                <div class="form-group">
+                    <textarea rows="10" id="email_content" class="gophish-editor form-control" placeholder="Raw Email Source"></textarea>
+                </div>
+                <div class="checkbox checkbox-primary">
+                    <input id="convert_links_checkbox" type="checkbox" checked>
+                    <label for="convert_links_checkbox">Change Links to Point to Landing Page</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-default">Cancel</button>
+                <button type="button" class="btn btn-primary" id="modalSubmit" onclick="importEmail()">Import</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 {{end}}
 {{define "scripts"}}
