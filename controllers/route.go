@@ -488,7 +488,7 @@ func SSO_Mock(w http.ResponseWriter, r *http.Request) {
 	authenticated := true
 
 	if authenticated {
-		cookie, err := bakery.CreateChocolatechipCookie("eugene")
+		cookie, err := bakery.CreateChocolatechipCookie("nonexistentcustomer@test.com", "Security Awareness User")
 
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -583,9 +583,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 // Logout destroys the current user session and deletes the SSO cookies (if any)
 func Logout(w http.ResponseWriter, r *http.Request) {
 	if session, ok := ctx.Get(r, "session").(*sessions.Session); ok {
-		delete(session.Values, "id")
-		Flash(w, r, "success", "You have successfully logged out")
-		session.Save(r, w)
+		if _, ok := session.Values["id"]; ok {
+			delete(session.Values, "id")
+			Flash(w, r, "success", "You have successfully logged out")
+			session.Save(r, w)
+		}
 	}
 
 	for _, c := range r.Cookies() {

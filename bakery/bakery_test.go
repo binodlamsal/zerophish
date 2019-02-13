@@ -11,12 +11,13 @@ func init() {
 }
 
 func TestParseChocolatechipCookie(t *testing.T) {
-	const cookie = "M2E2MGM4MTM4YWFmNjllYmNmNjkyNGU2ODRhNDQ3Njg0ZTNjZWE0MmJjMzI0YmRlNDEzNTViZmEwZjZiYzJlNqq4tJdJVyJ6rVJcr%2FWqSKAA3EqVA%2Fh%2BnzvbSFzzB29iOnbH240WZB%2B5TFtw%2BR6Vx66CtEOLD7mRE%2F0RppI0RJoh8dYCvQLBWYO7l7zSD7krMucFObkak0ovhpkkNnuhH7b0v9venKFJvGozJckppFl60nNQPWHGjgF4mWIPzol%2FrV%2FSsg5rXEB%2FCprUZGHflv9AAkbqNpeoBP8I4a8NbWuTafjO19RIUOmhYqPGuySbfl8FmHYr5qu%2B8s2HqbnyrSHSCthvTifBD3oHM1dd9KcJxNpA95csNg7db1ZEa59SY%2FmfVSc3kEM8UlwVV5u9NQ%3D%3D"
+	const cookie = "MTc1NTFiMTk1ZDNhOTI3MWI0ODJjNjZhNzU2NTIyZDg3OThhN2FjNzdkZjVjZjVhNzY0NjIwZjUzMDgxYmJmMeBEgMt30umvtAH1pS5C%2FwToeDSXyIdmoKFcA7tcZRtfG7lAy26I%2FCXZdS00mNYYgF9i9%2BUpDoMJFp6eV5Nqo4Kia%2BapleibFgUTl5kadvLv9CDrMIyX56YaFzZSonAuXPfeLNo1k1Wz%2FrfzEAEc0PKWju9lrhqF4SrPKBmbfdT0r1aN4gstYfdMr%2FtTZOoWBlVV%2F%2FcuZ%2FANQtDQ3FMu9GBqxi6z%2BAPEVyC8YZrmFQE%2FLXOIH0INq1HLKrlLdBmwIp0XKjww6fltwW3mbJBpnb8eqWKF1bjOpHK0EQ%2B8aunoPeznjWiBUQM1YhKiD6rt6gM8tfjx%2BHt2c0xOqn5JbfInV2eDceN2jcWMXa8F%2Fgd4TYPNNr3o9297UpIMbPWIeaBcf4n82xy%2BEklHGEVybgfhsmPdXLuRDM6rkU6Grb7i"
 	c, err := ParseCookie(cookie)
 	assert.NoError(t, err)
 	assert.True(t, c.IsChocolateChip)
 	assert.False(t, c.IsOatmeal)
-	assert.Equal(t, "eugene.mastervip@gmail.com", c.User)
+	assert.Equal(t, "gophishusertest@ec.com", c.User)
+	assert.Equal(t, "Partner", c.Role)
 	assert.Empty(t, c.Error)
 }
 

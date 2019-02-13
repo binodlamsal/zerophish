@@ -33,6 +33,7 @@ type User struct {
 	UpdatedAt       time.Time `json:"updated_at"`
 	LastLoginAt     time.Time `json:"last_login_at"`
 	LastLoginIp     string    `json:"last_login_ip" sql:"not null"`
+	LastUserAgent   string    `json:"last_user_agent"`
 }
 
 // Role represents the role model for gophish.

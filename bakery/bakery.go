@@ -17,12 +17,17 @@ import (
 	"github.com/elliotchance/phpserialize"
 )
 
+var ErrUnknownCookieType = errors.New("bakery: unknown cookie type")
+var ErrUnknownUserRole = errors.New("bakery: could not determine user role")
+var ErrUnknownUserEmail = errors.New(`bakery: could not determine user email`)
+
 // Cookie contains props of a Bakery SSO cookie
 type Cookie struct {
 	Raw             string
 	IsOatmeal       bool
 	IsChocolateChip bool
 	User            string
+	Role            string
 	Error           string
 }
 
@@ -61,21 +66,31 @@ func ParseCookie(cookie string) (*Cookie, error) {
 		c.IsOatmeal = false
 		c.IsChocolateChip = true
 	} else {
-		return nil, errors.New("bakery: unknown cookie type")
+		return nil, ErrUnknownCookieType
 	}
 
 	if c.IsChocolateChip {
-		m := regexp.MustCompile(`"mail";s:\d+:"(\S+?)";`).FindStringSubmatch(serialized)
+		mm := regexp.MustCompile(`"mail";s:\d+:"(\S+?)";`).FindStringSubmatch(serialized)
 
-		if len(m) < 2 {
-			return nil, errors.New(`bakery: could not find "mail" property`)
+		rm := regexp.
+			MustCompile(`"roles";a:\d+:{.*"(administrator|Partner|Security Awareness User|Child User|LMS User)";.*}`).
+			FindStringSubmatch(serialized)
+
+		if len(mm) < 2 {
+			return nil, ErrUnknownUserEmail
 		}
 
-		c.User = m[1]
+		if len(rm) < 2 {
+			return nil, ErrUnknownUserRole
+		}
+
+		c.User, c.Role = mm[1], rm[1]
 	}
 
 	if c.IsOatmeal {
-		m := regexp.MustCompile(`s:6:"errors";a:\d+:{s:\d+:"\S+?";s:\d+:"([^<>=;}]+).*?";}`).FindStringSubmatch(serialized)
+		m := regexp.
+			MustCompile(`s:6:"errors";a:\d+:{s:\d+:"\S+?";s:\d+:"([^<>=;}]+).*?";}`).
+			FindStringSubmatch(serialized)
 
 		if len(m) >= 2 {
 			c.Error = m[1]
@@ -117,10 +132,15 @@ func CreateOatmealCookie(username, password, destination, slave string) (string,
 
 // CreateChocolatechipCookie generates an HMAC-signed cookie encrypted with AES-128 (ECB mode).
 // Such cookie is to be used with Drupal Bakery SSO module for transferring user credentials.
-func CreateChocolatechipCookie(username string) (string, error) {
+func CreateChocolatechipCookie(username string, role string) (string, error) {
 	props := map[interface{}]interface{}{
 		"data": map[string]interface{}{
 			"mail": username,
+		},
+
+		"roles": map[int]string{
+			2: "authenticated user",
+			6: role,
 		},
 
 		"mail":      username,
