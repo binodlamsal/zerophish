@@ -20,6 +20,7 @@ import (
 var ErrUnknownCookieType = errors.New("bakery: unknown cookie type")
 var ErrUnknownUserRole = errors.New("bakery: could not determine user role")
 var ErrUnknownUserEmail = errors.New(`bakery: could not determine user email`)
+var ErrUnknownUsername = errors.New(`bakery: could not determine username`)
 
 // Cookie contains props of a Bakery SSO cookie
 type Cookie struct {
@@ -27,6 +28,7 @@ type Cookie struct {
 	IsOatmeal       bool
 	IsChocolateChip bool
 	User            string
+	Email           string
 	Role            string
 	Error           string
 }
@@ -70,11 +72,16 @@ func ParseCookie(cookie string) (*Cookie, error) {
 	}
 
 	if c.IsChocolateChip {
+		um := regexp.MustCompile(`"name";s:\d+:"(\S+?)";`).FindStringSubmatch(serialized)
 		mm := regexp.MustCompile(`"mail";s:\d+:"(\S+?)";`).FindStringSubmatch(serialized)
 
 		rm := regexp.
 			MustCompile(`"roles";a:\d+:{.*"(administrator|Partner|Security Awareness User|Child User|LMS User)";.*}`).
 			FindStringSubmatch(serialized)
+
+		if len(um) < 2 {
+			return nil, ErrUnknownUsername
+		}
 
 		if len(mm) < 2 {
 			return nil, ErrUnknownUserEmail
@@ -84,7 +91,7 @@ func ParseCookie(cookie string) (*Cookie, error) {
 			return nil, ErrUnknownUserRole
 		}
 
-		c.User, c.Role = mm[1], rm[1]
+		c.User, c.Email, c.Role = um[1], mm[1], rm[1]
 	}
 
 	if c.IsOatmeal {

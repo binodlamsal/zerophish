@@ -182,7 +182,7 @@ func SSO(handler http.Handler) http.HandlerFunc {
 			}
 
 			user := models.User{}
-			user, err = models.GetUserByUsername(c.User)
+			user, err = models.GetUserByUsername(c.Email)
 
 			if err != nil {
 				rid, ok := roles[c.Role]
@@ -192,7 +192,7 @@ func SSO(handler http.Handler) http.HandlerFunc {
 					return
 				}
 
-				newUser, err := usersync.CreateUser(c.User, c.User, "qwerty", int64(rid))
+				newUser, err := usersync.CreateUser(c.User, c.Email, "qwerty", int64(rid))
 
 				if err != nil {
 					logoutWithError(err)
