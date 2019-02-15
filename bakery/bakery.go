@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/elliotchance/phpserialize"
+	"github.com/binodlamsal/gophish/phpserialize"
 )
 
 var ErrUnknownCookieType = errors.New("bakery: unknown cookie type")
@@ -128,7 +128,6 @@ func CreateOatmealCookie(username, password, destination, slave string) (string,
 	}
 
 	serializedProps, err := phpserialize.Marshal(props, nil)
-	serializedProps = []byte(strings.Replace(string(serializedProps), `\`, "", -1))
 
 	if err != nil {
 		return "", err
