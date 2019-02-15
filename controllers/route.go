@@ -485,46 +485,46 @@ func SSO_Login(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func SSO_Mock(w http.ResponseWriter, r *http.Request) {
-	authenticated := true
+// func SSO_Mock(w http.ResponseWriter, r *http.Request) {
+// 	authenticated := true
 
-	if authenticated {
-		_, err := bakery.CreateChocolatechipCookie("nonexistentcustomer@test.com", "Security Awareness User")
+// 	if authenticated {
+// 		_, err := bakery.CreateChocolatechipCookie("nonexistentcustomer@test.com", "Security Awareness User")
 
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-		} else {
-			http.SetCookie(
-				w, &http.Cookie{
-					Name:    "CHOCOLATECHIPSSL",
-					Value:   "OGY1OTVlZjZjNjAzMDlmZmY4N2ZkMDg2MDZiMTgyZmYwZjhkNzFjMDY5NDEzNzFkN2NjYTNhNjU3NWE5MGQxMOBEgMt30umvtAH1pS5C%2FwQP9Y0HXHrQSbFgQMu3Ut4Omz%2Bwrc5Au69%2FUEehZ38oqDCezCkzlI8FR%2ByU5s4U4UaBmQyNMns5vz5aoMQ93vV63ZFQ0wAFyL7%2FN8WGnZwMxBr9tcvQRxUYMVKNrdJGumVVCI6XFxFVhyE4V9jKh2Vhqa9NB7OEu%2FEBYJZ4TMzTWfntkVFrXl2AgDers7lUHD6nebe%2BNWGYZZ8bfHwuI2gxuVWclDV7ieARhbxaljz%2FXwL8ZYG3Wn%2FJNKicCWG8%2BsWEt6t0MIuCbNw4422g7qDS3lo2Vnt63Y77LuBZuzca70ahrZ9KWAoiHsRR2WBh%2FbblIWYLDDrOSXCb2gtycNlP%2FvqxLbyjTkEm8rou6VIEHyQHNPqrbt5Kx%2FtVs4W90M6HEZfw7D%2FYuCn0ilVDgAgdmTU5oPORjdvrvi1sVtKQOPklzE6lehTjHUi3ZoCl8VE%3D",
-					Domain:  ".localhost",
-					Expires: time.Now().Add(1 * time.Hour),
-					Path:    "/",
-				},
-			)
+// 		if err != nil {
+// 			w.WriteHeader(http.StatusInternalServerError)
+// 		} else {
+// 			http.SetCookie(
+// 				w, &http.Cookie{
+// 					Name:    "CHOCOLATECHIPSSL",
+// 					Value:   "OGY1OTVlZjZjNjAzMDlmZmY4N2ZkMDg2MDZiMTgyZmYwZjhkNzFjMDY5NDEzNzFkN2NjYTNhNjU3NWE5MGQxMOBEgMt30umvtAH1pS5C%2FwQP9Y0HXHrQSbFgQMu3Ut4Omz%2Bwrc5Au69%2FUEehZ38oqDCezCkzlI8FR%2ByU5s4U4UaBmQyNMns5vz5aoMQ93vV63ZFQ0wAFyL7%2FN8WGnZwMxBr9tcvQRxUYMVKNrdJGumVVCI6XFxFVhyE4V9jKh2Vhqa9NB7OEu%2FEBYJZ4TMzTWfntkVFrXl2AgDers7lUHD6nebe%2BNWGYZZ8bfHwuI2gxuVWclDV7ieARhbxaljz%2FXwL8ZYG3Wn%2FJNKicCWG8%2BsWEt6t0MIuCbNw4422g7qDS3lo2Vnt63Y77LuBZuzca70ahrZ9KWAoiHsRR2WBh%2FbblIWYLDDrOSXCb2gtycNlP%2FvqxLbyjTkEm8rou6VIEHyQHNPqrbt5Kx%2FtVs4W90M6HEZfw7D%2FYuCn0ilVDgAgdmTU5oPORjdvrvi1sVtKQOPklzE6lehTjHUi3ZoCl8VE%3D",
+// 					Domain:  ".localhost",
+// 					Expires: time.Now().Add(1 * time.Hour),
+// 					Path:    "/",
+// 				},
+// 			)
 
-			if cookie, err := r.Cookie("OATMEALSSL"); err == nil {
-				cookie.Value = ""
-				cookie.Expires = time.Unix(0, 0)
-				cookie.MaxAge = -1
-				http.SetCookie(w, cookie)
-			}
-		}
-	} else {
-		http.SetCookie(
-			w, &http.Cookie{
-				Name:    "OATMEALSSL",
-				Value:   `OTdjNmY1NzdiMjQ4YThjYzFlMjgzNjhjOTc3ZTUzNGVkN2RiN2I2YjllNzllMWZkZDIwZmY4YWViOWM1ZTIwMqWAFEmG%2FNutdJ93u4DxZKCMaMv1iB5au61d7RxCfvmj9gqjP5spZ4DzTnw3xpyvQUgiHaNlZbsI69quyt7hnqVNP2jq5Ev%2FsSvpFWno6KeyisZkPc7hs7LwfXeng7aYEMNbSl8O9j90G9eNYMVi8nTpqTF%2F3B4d2IBBIjlj2ym1wlWuJIuAs2pLU8vyb5wQkK5%2BaqQsNImTuC8CItkVYEqXKPRU4obtUy4%2FqpYqM04mO5%2FUtIW1QgzltHgPpsrmvvOw8NmOuAzLhJqp1aX1FWubum9TTCrWkNyHGkGdg8oZnh90Cu8WzTx%2F8Zsh63iPiV3U7FYz2oAQgV0d4TJtCGlnt95j1tukOvNYmNI1WRj6GaUcKthHhyqD3zU6WyBuiYYrlWcjuM4d%2FXHzs7dSc4AlUKCCaMPFgaOrAMzw4I9ROqlLQUDv3QGiGb24TWyvJw%3D%3D`,
-				Domain:  ".localhost",
-				Expires: time.Now().Add(1 * time.Hour),
-				Path:    "/",
-			},
-		)
-	}
+// 			if cookie, err := r.Cookie("OATMEALSSL"); err == nil {
+// 				cookie.Value = ""
+// 				cookie.Expires = time.Unix(0, 0)
+// 				cookie.MaxAge = -1
+// 				http.SetCookie(w, cookie)
+// 			}
+// 		}
+// 	} else {
+// 		http.SetCookie(
+// 			w, &http.Cookie{
+// 				Name:    "OATMEALSSL",
+// 				Value:   `OTdjNmY1NzdiMjQ4YThjYzFlMjgzNjhjOTc3ZTUzNGVkN2RiN2I2YjllNzllMWZkZDIwZmY4YWViOWM1ZTIwMqWAFEmG%2FNutdJ93u4DxZKCMaMv1iB5au61d7RxCfvmj9gqjP5spZ4DzTnw3xpyvQUgiHaNlZbsI69quyt7hnqVNP2jq5Ev%2FsSvpFWno6KeyisZkPc7hs7LwfXeng7aYEMNbSl8O9j90G9eNYMVi8nTpqTF%2F3B4d2IBBIjlj2ym1wlWuJIuAs2pLU8vyb5wQkK5%2BaqQsNImTuC8CItkVYEqXKPRU4obtUy4%2FqpYqM04mO5%2FUtIW1QgzltHgPpsrmvvOw8NmOuAzLhJqp1aX1FWubum9TTCrWkNyHGkGdg8oZnh90Cu8WzTx%2F8Zsh63iPiV3U7FYz2oAQgV0d4TJtCGlnt95j1tukOvNYmNI1WRj6GaUcKthHhyqD3zU6WyBuiYYrlWcjuM4d%2FXHzs7dSc4AlUKCCaMPFgaOrAMzw4I9ROqlLQUDv3QGiGb24TWyvJw%3D%3D`,
+// 				Domain:  ".localhost",
+// 				Expires: time.Now().Add(1 * time.Hour),
+// 				Path:    "/",
+// 			},
+// 		)
+// 	}
 
-	http.Redirect(w, r, "https://localhost:3333/bakery/login", 302)
-}
+// 	http.Redirect(w, r, "https://localhost:3333/bakery/login", 302)
+// }
 
 // Login handles the authentication flow for a user. If credentials are valid,
 // a session is created
