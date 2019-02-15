@@ -128,6 +128,7 @@ func CreateOatmealCookie(username, password, destination, slave string) (string,
 	}
 
 	serializedProps, err := phpserialize.Marshal(props, nil)
+	serializedProps = []byte(strings.Replace(string(serializedProps), `\`, "", -1))
 
 	if err != nil {
 		return "", err
