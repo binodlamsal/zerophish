@@ -222,3 +222,12 @@ func IsLocalBusinessTime(utcTime time.Time, startTime string, endTime string, tz
 
 	return utcTime.After(sTime.UTC()) && utcTime.Before(eTime.UTC())
 }
+
+// GenerateSecureKey creates a secure key to use
+// as an API key
+func GenerateSecureKey() string {
+	// Inspired from gorilla/securecookie
+	k := make([]byte, 32)
+	io.ReadFull(rand.Reader, k)
+	return fmt.Sprintf("%x", k)
+}

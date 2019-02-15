@@ -47,6 +47,7 @@
             {{template "flashes" .Flashes}}
             <input type="text" name="username" class="form-control top-input" placeholder="Username" required autofocus/>
             <input type="text" name="email" class="form-control top-input" placeholder="Email address" required autofocus/>
+            <input type="text" name="full_name" class="form-control top-input" placeholder="Full Name" />
 
             {{if .Roles}}
                 <select  name="roles" id= "roles" class="form-control top-input" required autofocus />

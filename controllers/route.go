@@ -17,6 +17,7 @@ import (
 	log "github.com/binodlamsal/gophish/logger"
 	mid "github.com/binodlamsal/gophish/middleware"
 	"github.com/binodlamsal/gophish/models"
+	"github.com/binodlamsal/gophish/util"
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
@@ -90,7 +91,7 @@ func CreateAdminRouter() http.Handler {
 	router.PathPrefix("/").Handler(http.FileServer(UnindexedFileSystem{http.Dir("./static/")}))
 
 	// Setup CSRF Protection
-	csrfHandler := csrf.Protect([]byte(auth.GenerateSecureKey()),
+	csrfHandler := csrf.Protect([]byte(util.GenerateSecureKey()),
 		csrf.FieldName("csrf_token"),
 		csrf.Secure(config.Conf.AdminConf.UseTLS))
 	csrfRouter := csrfHandler(router)

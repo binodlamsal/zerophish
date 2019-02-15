@@ -4,17 +4,15 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
 	"net/http"
 	"strconv"
 	"time"
 
-	"crypto/rand"
-
 	ctx "github.com/binodlamsal/gophish/context"
 	log "github.com/binodlamsal/gophish/logger"
 	"github.com/binodlamsal/gophish/models"
+	"github.com/binodlamsal/gophish/usersync"
+	"github.com/binodlamsal/gophish/util"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	"github.com/jinzhu/gorm"
@@ -52,6 +50,9 @@ var ErrPasswordMismatch = errors.New("Passwords must match")
 // ErrUsernameTaken is thrown when a user attempts to register a username that is taken.
 var ErrUsernameTaken = errors.New("Username already taken")
 
+// ErrSyncUserData is thrown when something is wrong with synchronization of user data
+var ErrSyncUserData = errors.New("Could not sync user details with the main server")
+
 // Login attempts to login the user given a request.
 func Login(r *http.Request) (bool, models.User, error) {
 	username, password := r.FormValue("username"), r.FormValue("password")
@@ -77,6 +78,7 @@ func Login(r *http.Request) (bool, models.User, error) {
 func Register(r *http.Request) (bool, error) {
 	username := r.FormValue("username")
 	newEmail := r.FormValue("email")
+	fullName := r.FormValue("full_name")
 	newPassword := r.FormValue("password")
 	confirmPassword := r.FormValue("confirm_password")
 	role := r.FormValue("roles")
@@ -114,8 +116,9 @@ func Register(r *http.Request) (bool, error) {
 	}
 	u.Username = username
 	u.Email = newEmail
+	u.FullName = fullName
 	u.Hash = string(h)
-	u.ApiKey = GenerateSecureKey()
+	u.ApiKey = util.GenerateSecureKey()
 	u.CreatedAt = time.Now().UTC()
 	u.UpdatedAt = time.Now().UTC()
 
@@ -147,16 +150,19 @@ func Register(r *http.Request) (bool, error) {
 	ur.Rid = rid
 
 	err = models.PutUserRole(&ur)
-	return true, nil
-}
 
-// GenerateSecureKey creates a secure key to use
-// as an API key
-func GenerateSecureKey() string {
-	// Inspired from gorilla/securecookie
-	k := make([]byte, 32)
-	io.ReadFull(rand.Reader, k)
-	return fmt.Sprintf("%x", k)
+	if err != nil {
+		return false, err
+	}
+
+	err = usersync.PushUser(iu.Id, iu.Username, iu.Email, iu.FullName, newPassword, ur.Rid, iu.Partner)
+
+	if err != nil {
+		_ = models.DeleteUser(iu.Id)
+		return false, err
+	}
+
+	return true, nil
 }
 
 func ChangePassword(r *http.Request) error {
