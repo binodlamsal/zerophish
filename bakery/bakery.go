@@ -72,7 +72,7 @@ func ParseCookie(cookie string) (*Cookie, error) {
 	}
 
 	if c.IsChocolateChip {
-		um := regexp.MustCompile(`"name";s:\d+:"(\S+?)";`).FindStringSubmatch(serialized)
+		um := regexp.MustCompile(`"name";s:\d+:"([^"]+)";`).FindStringSubmatch(serialized)
 		mm := regexp.MustCompile(`"mail";s:\d+:"(\S+?)";`).FindStringSubmatch(serialized)
 
 		rm := regexp.
@@ -139,25 +139,23 @@ func CreateOatmealCookie(username, password, destination, slave string) (string,
 
 // CreateChocolatechipCookie generates an HMAC-signed cookie encrypted with AES-128 (ECB mode).
 // Such cookie is to be used with Drupal Bakery SSO module for transferring user credentials.
-func CreateChocolatechipCookie(username string, role string) (string, error) {
+// (in gophish app we do not issue CHOCOLATECHIPSSL cookies so this func is used for testing only)
+func CreateChocolatechipCookie(username, email string, role string) (string, error) {
 	props := map[interface{}]interface{}{
-		"data": map[string]interface{}{
-			"mail": username,
-		},
-
+		"name":      username,
+		"mail":      email,
+		"calories":  320,
+		"timestamp": time.Now().UTC().Unix(),
+		"master":    1,
 		"roles": map[int]string{
 			2: "authenticated user",
 			6: role,
 		},
-
-		"mail":      username,
-		"calories":  320,
-		"timestamp": time.Now().UTC().Unix(),
-		"master":    1,
-		"type":      "CHOCOLATECHIPSSL",
+		"type": "CHOCOLATECHIPSSL",
 	}
 
 	serializedProps, err := phpserialize.Marshal(props, nil)
+	serializedProps = []byte(strings.Replace(string(serializedProps), `\`, "", -1))
 
 	if err != nil {
 		return "", err
