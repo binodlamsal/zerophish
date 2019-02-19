@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"regexp"
 	"strconv"
 	"time"
 
@@ -46,6 +47,9 @@ var ErrEmptyPassword = errors.New("Password cannot be blank")
 
 // ErrPasswordMismatch is thrown when a user provides passwords that do not match
 var ErrPasswordMismatch = errors.New("Passwords must match")
+
+// ErrBadPassword is thrown when a user provides passwords that does not conform our password policy
+var ErrBadPassword = errors.New("Password must be at least 8 chars long with at least 1 letter, 1 number and 1 special character")
 
 // ErrUsernameTaken is thrown when a user attempts to register a username that is taken.
 var ErrUsernameTaken = errors.New("Username already taken")
@@ -109,6 +113,11 @@ func Register(r *http.Request) (bool, error) {
 	if newPassword != confirmPassword {
 		return false, ErrPasswordMismatch
 	}
+
+	if !IsValidPassword(newPassword) {
+		return false, ErrBadPassword
+	}
+
 	// Let's create the password hash
 	h, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 	if err != nil {
@@ -259,6 +268,10 @@ func ChangePasswordByadmin(r *http.Request) error {
 			return ErrPasswordMismatch
 		}
 
+		if !IsValidPassword(newPassword) {
+			return ErrBadPassword
+		}
+
 		// Generate the new hash
 		h, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 		if err != nil {
@@ -333,4 +346,25 @@ func ChangePasswordByadmin(r *http.Request) error {
 	}
 
 	return nil
+}
+
+// IsValidPassword tells is the given password conforms to our password policy
+func IsValidPassword(password string) bool {
+	if len(password) < 8 {
+		return false
+	}
+
+	if regexp.MustCompile(`\s`).MatchString(password) {
+		return false
+	}
+
+	alphaMatches := regexp.MustCompile(`([a-zA-Z])`).FindStringSubmatch(password)
+	numMatches := regexp.MustCompile(`([0-9])`).FindStringSubmatch(password)
+	specialMatches := regexp.MustCompile(`([^a-zA-Z0-9\s])`).FindStringSubmatch(password)
+
+	if len(alphaMatches) < 2 || len(numMatches) < 2 || len(specialMatches) < 2 {
+		return false
+	}
+
+	return true
 }
