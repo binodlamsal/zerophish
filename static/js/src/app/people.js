@@ -302,7 +302,7 @@ $(document).ready(function() {
                     targets: "no-sort"
                   }
                 ],
-                order: [[0, "asc"]]
+                order: [[4, "desc"]]
               })),
               $.each(people, function(i, a) {
                 // label = labels[a.status] || "label-default";
@@ -324,6 +324,7 @@ $(document).ready(function() {
                     a.full_name,
                     a.email,
                     a.role,
+                    moment(a.last_login_at).format("llll"),
                     a.subscription
                       ? a.subscription.plan +
                         (a.subscription.expired ? " (expired)" : " ✔")

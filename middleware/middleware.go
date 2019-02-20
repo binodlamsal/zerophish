@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/binodlamsal/gophish/auth"
 	"github.com/binodlamsal/gophish/bakery"
@@ -200,6 +201,9 @@ func SSO(handler http.Handler) http.HandlerFunc {
 				}
 
 				user = *newUser
+			} else {
+				user.LastLoginAt = time.Now().UTC()
+				models.PutUser(&user)
 			}
 
 			session := ctx.Get(r, "session").(*sessions.Session)
