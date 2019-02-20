@@ -164,11 +164,13 @@ func Register(r *http.Request) (bool, error) {
 		return false, err
 	}
 
-	err = usersync.PushUser(iu.Id, iu.Username, iu.Email, iu.FullName, newPassword, ur.Rid, iu.Partner)
+	if api != "1" {
+		err = usersync.PushUser(iu.Id, iu.Username, iu.Email, iu.FullName, newPassword, ur.Rid, iu.Partner)
 
-	if err != nil {
-		_ = models.DeleteUser(iu.Id)
-		return false, err
+		if err != nil {
+			_ = models.DeleteUser(iu.Id)
+			return false, err
+		}
 	}
 
 	return true, nil
