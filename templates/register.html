@@ -41,7 +41,7 @@
         </div>
     </div>
     <div class="container">
-        <form class="form-signin" action="/register" method="POST">
+        <form class="form-signin" id="registration" action="/register" method="POST">
             <img id="logo" src="/images/logo_purple.png" />
             <h2 class="form-signin-heading">Please register below</h2>
             {{template "flashes" .Flashes}}
@@ -66,6 +66,7 @@
     </div>
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="/js/dist/vendor.min.js"></script>
+    <script src="/js/dist/app/register.min.js"></script>
 </body>
 
 </html>
