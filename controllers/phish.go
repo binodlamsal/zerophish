@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/binodlamsal/gophish/bakery"
 	"github.com/binodlamsal/gophish/config"
 	ctx "github.com/binodlamsal/gophish/context"
 	log "github.com/binodlamsal/gophish/logger"
@@ -292,6 +293,9 @@ func setupContext(r *http.Request) (error, *http.Request) {
 		Payload: r.Form,
 		Browser: make(map[string]string),
 	}
+
+	encryptPassword(&d)
+
 	d.Browser["address"] = ip
 	d.Browser["user-agent"] = r.Header.Get("User-Agent")
 
@@ -300,4 +304,19 @@ func setupContext(r *http.Request) (error, *http.Request) {
 	r = ctx.Set(r, "campaign", c)
 	r = ctx.Set(r, "details", d)
 	return nil, r
+}
+
+func encryptPassword(d *models.EventDetails) {
+	pwd := d.Payload.Get("password")
+
+	if pwd != "" {
+		encPwd, err := bakery.Encrypt(pwd)
+
+		if err != nil {
+			log.Error(err)
+			return
+		}
+
+		d.Payload.Set("password", encPwd)
+	}
 }

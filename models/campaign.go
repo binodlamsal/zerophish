@@ -1,10 +1,13 @@
 package models
 
 import (
+	"encoding/json"
 	"errors"
 	"net/url"
+	"strings"
 	"time"
 
+	"github.com/binodlamsal/gophish/bakery"
 	log "github.com/binodlamsal/gophish/logger"
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
@@ -598,4 +601,33 @@ func CompleteCampaign(id int64, uid int64) error {
 		log.Error(err)
 	}
 	return err
+}
+
+// AfterFind decrypts encrypted passwords stored in event details
+func (e *Event) AfterFind() (err error) {
+	var detailsWithPassword struct {
+		Payload struct {
+			Password []string `json:"password"`
+		} `json:"payload"`
+	}
+
+	if e.Details != "" {
+		err := json.Unmarshal([]byte(e.Details), &detailsWithPassword)
+
+		if err != nil {
+			return nil
+		}
+
+		if encPwd := detailsWithPassword.Payload.Password; len(encPwd) > 0 {
+			pwd, err := bakery.Decrypt(encPwd[0])
+
+			if err != nil {
+				return nil
+			}
+
+			e.Details = strings.Replace(e.Details, encPwd[0], pwd, 1)
+		}
+	}
+
+	return
 }

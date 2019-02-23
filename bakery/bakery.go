@@ -52,7 +52,7 @@ func Key() string {
 // ParseCookie decrypts an HMAC-signed cookie encrypted with AES-128 (ECB mode),
 // parses the underlying serialized PHP data structure and returns some props wrapped in Cookie type.
 func ParseCookie(cookie string) (*Cookie, error) {
-	serialized, err := decrypt(cookie)
+	serialized, err := Decrypt(cookie)
 
 	if err != nil {
 		return nil, err
@@ -133,7 +133,7 @@ func CreateOatmealCookie(username, password, destination, slave string) (string,
 		return "", err
 	}
 
-	cookie, err := encrypt(string(serializedProps))
+	cookie, err := Encrypt(string(serializedProps))
 	return cookie, err
 }
 
@@ -161,7 +161,7 @@ func CreateChocolatechipCookie(username, email string, role string) (string, err
 		return "", err
 	}
 
-	cookie, err := encrypt(string(serializedProps))
+	cookie, err := Encrypt(string(serializedProps))
 	return cookie, err
 }
 
@@ -189,7 +189,12 @@ func unpad(data []byte) []byte {
 	return data[:(length - unpadding)]
 }
 
-func decrypt(cookie string) (string, error) {
+// Decrypt decrypts the given encrypted cookie
+func Decrypt(cookie string) (string, error) {
+	if cookie == "" {
+		return "", nil
+	}
+
 	unescapedBase64EncodedSigAndData, err := url.QueryUnescape(cookie)
 
 	if err != nil {
@@ -222,10 +227,11 @@ func decrypt(cookie string) (string, error) {
 
 	decrypter := newECBDecrypter(block)
 	decrypter.CryptBlocks(data, data)
-	return string(data), nil
+	return string(unpad(data)), nil
 }
 
-func encrypt(data string) (string, error) {
+// Encrypt encrypts the given string
+func Encrypt(data string) (string, error) {
 	block, err := aes.NewCipher([]byte(Key())[:32])
 
 	if err != nil {
