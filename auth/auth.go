@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"os"
 	"regexp"
 	"strconv"
 	"time"
@@ -164,7 +165,7 @@ func Register(r *http.Request) (bool, error) {
 		return false, err
 	}
 
-	if api != "1" {
+	if api != "1" && os.Getenv("USERSYNC_DISABLE") == "" {
 		err = usersync.PushUser(iu.Id, iu.Username, iu.Email, iu.FullName, newPassword, ur.Rid, iu.Partner)
 
 		if err != nil {

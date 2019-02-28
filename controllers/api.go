@@ -314,21 +314,32 @@ func API_Campaigns_Summary(w http.ResponseWriter, r *http.Request) {
 func API_Campaigns_Id(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 0, 64)
-	c, err := models.GetCampaign(id, ctx.Get(r, "user_id").(int64))
+	uid := ctx.Get(r, "user_id").(int64)
+
+	if !models.IsCampaignAccessibleByUser(id, uid) {
+		JSONResponse(w, models.Response{Success: false, Message: "Access denied"}, http.StatusForbidden)
+		return
+	}
+
+	c, err := models.GetCampaign(id)
+
 	if err != nil {
 		log.Error(err)
 		JSONResponse(w, models.Response{Success: false, Message: "Campaign not found"}, http.StatusNotFound)
 		return
 	}
+
 	switch {
 	case r.Method == "GET":
 		JSONResponse(w, c, http.StatusOK)
 	case r.Method == "DELETE":
 		err = models.DeleteCampaign(id)
+
 		if err != nil {
 			JSONResponse(w, models.Response{Success: false, Message: "Error deleting campaign"}, http.StatusInternalServerError)
 			return
 		}
+
 		JSONResponse(w, models.Response{Success: true, Message: "Campaign deleted successfully!"}, http.StatusOK)
 	}
 }
@@ -338,12 +349,21 @@ func API_Campaigns_Id(w http.ResponseWriter, r *http.Request) {
 func API_Campaigns_Id_Results(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 0, 64)
-	cr, err := models.GetCampaignResults(id, ctx.Get(r, "user_id").(int64))
+	uid := ctx.Get(r, "user_id").(int64)
+
+	if !models.IsCampaignAccessibleByUser(id, uid) {
+		JSONResponse(w, models.Response{Success: false, Message: "Access denied"}, http.StatusForbidden)
+		return
+	}
+
+	cr, err := models.GetCampaignResults(id)
+
 	if err != nil {
 		log.Error(err)
 		JSONResponse(w, models.Response{Success: false, Message: "Campaign not found"}, http.StatusNotFound)
 		return
 	}
+
 	if r.Method == "GET" {
 		JSONResponse(w, cr, http.StatusOK)
 		return
@@ -375,9 +395,17 @@ func API_Campaign_Id_Summary(w http.ResponseWriter, r *http.Request) {
 func API_Campaigns_Id_Complete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 0, 64)
+	uid := ctx.Get(r, "user_id").(int64)
+
 	switch {
 	case r.Method == "GET":
-		err := models.CompleteCampaign(id, ctx.Get(r, "user_id").(int64))
+		if !models.IsCampaignAccessibleByUser(id, uid) {
+			JSONResponse(w, models.Response{Success: false, Message: "Access denied"}, http.StatusForbidden)
+			return
+		}
+
+		err := models.CompleteCampaign(id)
+
 		if err != nil {
 			JSONResponse(w, models.Response{Success: false, Message: "Error completing campaign"}, http.StatusInternalServerError)
 			return
@@ -470,11 +498,19 @@ func API_Groups_Id(w http.ResponseWriter, r *http.Request) {
 	uid := ctx.Get(r, "user_id").(int64)
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 0, 64)
-	g, err := models.GetGroup(id, uid)
+
+	if !models.IsGroupAccessibleByUser(id, uid) {
+		JSONResponse(w, models.Response{Success: false, Message: "Access denied"}, http.StatusForbidden)
+		return
+	}
+
+	g, err := models.GetGroup(id)
+
 	if err != nil {
 		JSONResponse(w, models.Response{Success: false, Message: "Group not found"}, http.StatusNotFound)
 		return
 	}
+
 	switch {
 	case r.Method == "GET":
 		JSONResponse(w, g, http.StatusOK)
@@ -489,13 +525,13 @@ func API_Groups_Id(w http.ResponseWriter, r *http.Request) {
 		// Change this to get from URL and uid (don't bother with id in r.Body)
 		g = models.Group{}
 		err = json.NewDecoder(r.Body).Decode(&g)
+
 		if g.Id != id {
 			JSONResponse(w, models.Response{Success: false, Message: "Error: /:id and group_id mismatch"}, http.StatusInternalServerError)
 			return
 		}
-		g.ModifiedDate = time.Now().UTC()
-		g.UserId = uid
 
+		g.ModifiedDate = time.Now().UTC()
 		u, err := models.GetUser(uid)
 
 		if err != nil {
@@ -513,10 +549,12 @@ func API_Groups_Id(w http.ResponseWriter, r *http.Request) {
 		}
 
 		err = models.PutGroup(&g)
+
 		if err != nil {
 			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusBadRequest)
 			return
 		}
+
 		JSONResponse(w, g, http.StatusOK)
 	}
 }
@@ -583,38 +621,65 @@ func API_Templates(w http.ResponseWriter, r *http.Request) {
 func API_Templates_Id(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 0, 64)
-	t, err := models.GetTemplate(id, ctx.Get(r, "user_id").(int64))
+	uid := ctx.Get(r, "user_id").(int64)
+
+	if !models.IsTemplateAccessibleByUser(id, uid) {
+		JSONResponse(w, models.Response{Success: false, Message: "Access denied"}, http.StatusForbidden)
+		return
+	}
+
+	t, err := models.GetTemplate(id)
+
 	if err != nil {
 		JSONResponse(w, models.Response{Success: false, Message: "Template not found"}, http.StatusNotFound)
 		return
 	}
+
 	switch {
 	case r.Method == "GET":
 		JSONResponse(w, t, http.StatusOK)
+
 	case r.Method == "DELETE":
-		err = models.DeleteTemplate(id, ctx.Get(r, "user_id").(int64))
+		if !models.IsTemplateWritableByUser(id, uid) {
+			JSONResponse(w, models.Response{Success: false, Message: "Access denied"}, http.StatusForbidden)
+			return
+		}
+
+		err = models.DeleteTemplate(id)
+
 		if err != nil {
 			JSONResponse(w, models.Response{Success: false, Message: "Error deleting template"}, http.StatusInternalServerError)
 			return
 		}
+
 		JSONResponse(w, models.Response{Success: true, Message: "Template deleted successfully!"}, http.StatusOK)
+
 	case r.Method == "PUT":
 		t = models.Template{}
 		err = json.NewDecoder(r.Body).Decode(&t)
+
 		if err != nil {
 			log.Error(err)
 		}
+
 		if t.Id != id {
 			JSONResponse(w, models.Response{Success: false, Message: "Error: /:id and template_id mismatch"}, http.StatusBadRequest)
 			return
 		}
+
+		if !t.IsWritableByUser(uid) {
+			JSONResponse(w, models.Response{Success: false, Message: "Access denied"}, http.StatusForbidden)
+			return
+		}
+
 		t.ModifiedDate = time.Now().UTC()
-		t.UserId = ctx.Get(r, "user_id").(int64)
 		err = models.PutTemplate(&t)
+
 		if err != nil {
 			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusBadRequest)
 			return
 		}
+
 		JSONResponse(w, t, http.StatusOK)
 	}
 }
@@ -660,38 +725,63 @@ func API_Pages(w http.ResponseWriter, r *http.Request) {
 func API_Pages_Id(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 0, 64)
-	p, err := models.GetPage(id, ctx.Get(r, "user_id").(int64))
+	uid := ctx.Get(r, "user_id").(int64)
+
+	if !models.IsPageAccessibleByUser(id, uid) {
+		JSONResponse(w, models.Response{Success: false, Message: "Access denied"}, http.StatusForbidden)
+		return
+	}
+
+	p, err := models.GetPage(id)
+
 	if err != nil {
 		JSONResponse(w, models.Response{Success: false, Message: "Page not found"}, http.StatusNotFound)
 		return
 	}
+
 	switch {
 	case r.Method == "GET":
 		JSONResponse(w, p, http.StatusOK)
 	case r.Method == "DELETE":
-		err = models.DeletePage(id, ctx.Get(r, "user_id").(int64))
+		if !models.IsPageWritableByUser(id, uid) {
+			JSONResponse(w, models.Response{Success: false, Message: "Access denied"}, http.StatusForbidden)
+			return
+		}
+
+		err = models.DeletePage(id)
+
 		if err != nil {
 			JSONResponse(w, models.Response{Success: false, Message: "Error deleting page"}, http.StatusInternalServerError)
 			return
 		}
+
 		JSONResponse(w, models.Response{Success: true, Message: "Page Deleted Successfully"}, http.StatusOK)
 	case r.Method == "PUT":
 		p = models.Page{}
 		err = json.NewDecoder(r.Body).Decode(&p)
+
 		if err != nil {
 			log.Error(err)
 		}
+
 		if p.Id != id {
 			JSONResponse(w, models.Response{Success: false, Message: "/:id and /:page_id mismatch"}, http.StatusBadRequest)
 			return
 		}
+
+		if !p.IsWritableByUser(uid) {
+			JSONResponse(w, models.Response{Success: false, Message: "Access denied"}, http.StatusForbidden)
+			return
+		}
+
 		p.ModifiedDate = time.Now().UTC()
-		p.UserId = ctx.Get(r, "user_id").(int64)
 		err = models.PutPage(&p)
+
 		if err != nil {
 			JSONResponse(w, models.Response{Success: false, Message: "Error updating page: " + err.Error()}, http.StatusInternalServerError)
 			return
 		}
+
 		JSONResponse(w, p, http.StatusOK)
 	}
 }

@@ -130,7 +130,7 @@ func (m *MailLog) Success() error {
 
 // GetDialer returns a dialer based on the maillog campaign's SMTP configuration
 func (m *MailLog) GetDialer() (mailer.Dialer, error) {
-	c, err := GetCampaign(m.CampaignId, m.UserId)
+	c, err := GetCampaign(m.CampaignId)
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +146,7 @@ func (m *MailLog) Generate(msg *gomail.Message) error {
 	if err != nil {
 		return err
 	}
-	c, err := GetCampaign(m.CampaignId, m.UserId)
+	c, err := GetCampaign(m.CampaignId)
 	if err != nil {
 		return err
 	}

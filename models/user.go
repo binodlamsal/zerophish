@@ -196,6 +196,22 @@ func GetUsers(uid int64) ([]User, error) {
 	return users, err
 }
 
+// GetUserIds returns the user ids owned by the given user.
+func GetUserIds(uid int64) ([]int64, error) {
+	uids := []int64{}
+	users, err := GetUsers(uid)
+
+	if err != nil {
+		return uids, err
+	}
+
+	for _, u := range users {
+		uids = append(uids, u.Id)
+	}
+
+	return uids, err
+}
+
 // IsAdministrator tells if this user is administrator
 func (u User) IsAdministrator() bool {
 	role, err := GetUserRole(u.Id)

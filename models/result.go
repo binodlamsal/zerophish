@@ -39,7 +39,7 @@ type Result struct {
 }
 
 func (r *Result) createEvent(status string, details interface{}) (*Event, error) {
-	c, err := GetCampaign(r.CampaignId, r.UserId)
+	c, err := GetCampaign(r.CampaignId)
 	if err != nil {
 		return nil, err
 	}

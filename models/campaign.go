@@ -56,6 +56,8 @@ type CampaignSummaries struct {
 // CampaignSummary is a struct representing the overview of a single camaign
 type CampaignSummary struct {
 	Id            int64         `json:"id"`
+	UserId        int64         `json:"user_id"`
+	Username      string        `json:"username"`
 	CreatedDate   time.Time     `json:"created_date"`
 	LaunchDate    time.Time     `json:"launch_date"`
 	SendByDate    time.Time     `json:"send_by_date"`
@@ -307,27 +309,97 @@ func GetCampaigns(uid int64) ([]Campaign, error) {
 	return cs, err
 }
 
+// GetCampaignOwnerId returns user id of creator of the campaign identified by id
+func GetCampaignOwnerId(id int64) (int64, error) {
+	c := Campaign{}
+	err := db.Where("id = ?", id).Select("user_id").First(&c).Error
+
+	if err != nil {
+		return 0, errors.New("campaign not found: " + err.Error())
+	}
+
+	return c.UserId, nil
+}
+
+// IsCampaignAccessibleByUser tells if a campaign (identified by cid)
+// is accessible by a user (identified by uid)
+func IsCampaignAccessibleByUser(cid, uid int64) bool {
+	oid, err := GetCampaignOwnerId(cid)
+
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
+	if oid == uid {
+		return true
+	}
+
+	uids, err := GetUserIds(uid)
+
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
+	for _, id := range uids {
+		if oid == id {
+			return true
+		}
+	}
+
+	return false
+}
+
 // GetCampaignSummaries gets the summary objects for all the campaigns
-// owned by the current user
+// owned by the current user and optionally (depending on the user role)
+// campaigns of all other users (for admins) or the respective child users (for partners)
 func GetCampaignSummaries(uid int64) (CampaignSummaries, error) {
 	overview := CampaignSummaries{}
 	cs := []CampaignSummary{}
-	// Get the basic campaign information
-	query := db.Table("campaigns").Where("user_id = ?", uid)
-	query = query.Select("id, name, created_date, launch_date, completed_date, status")
-	err := query.Scan(&cs).Error
+	role, err := GetUserRole(uid)
+
 	if err != nil {
-		log.Error(err)
 		return overview, err
 	}
-	for i := range cs {
-		s, err := getCampaignStats(cs[i].Id)
+
+	// Get the basic campaign information
+	var query *gorm.DB
+
+	if role.Is(Administrator) {
+		query = db.Table("campaigns")
+	} else if role.IsOneOf([]int64{Partner, ChildUser}) {
+		uids, err := GetUserIds(uid)
+
 		if err != nil {
-			log.Error(err)
 			return overview, err
 		}
+
+		uids = append(uids, uid)
+		query = db.Table("campaigns").Where("user_id IN (?)", uids)
+	} else {
+		query = db.Table("campaigns").Where("user_id = ?", uid)
+	}
+
+	err = query.
+		Select("campaigns.id AS id, user_id, users.username AS username, name, created_date, launch_date, completed_date, status").
+		Joins("LEFT JOIN users ON users.id = campaigns.user_id").
+		Scan(&cs).Error
+
+	if err != nil {
+		return overview, err
+	}
+
+	for i := range cs {
+		s, err := getCampaignStats(cs[i].Id)
+
+		if err != nil {
+			return overview, err
+		}
+
 		cs[i].Stats = s
 	}
+
 	overview.Total = int64(len(cs))
 	overview.Campaigns = cs
 	return overview, nil
@@ -352,10 +424,10 @@ func GetCampaignSummary(id int64, uid int64) (CampaignSummary, error) {
 	return cs, nil
 }
 
-// GetCampaign returns the campaign, if it exists, specified by the given id and user_id.
-func GetCampaign(id int64, uid int64) (Campaign, error) {
+// GetCampaign returns the campaign, if it exists, specified by the given id
+func GetCampaign(id int64) (Campaign, error) {
 	c := Campaign{}
-	err := db.Where("id = ?", id).Where("user_id = ?", uid).Find(&c).Error
+	err := db.Where("id = ?", id).Find(&c).Error
 	if err != nil {
 		log.Errorf("%s: campaign not found", err)
 		return c, err
@@ -365,9 +437,10 @@ func GetCampaign(id int64, uid int64) (Campaign, error) {
 }
 
 // GetCampaignResults returns just the campaign results for the given campaign
-func GetCampaignResults(id int64, uid int64) (CampaignResults, error) {
+func GetCampaignResults(id int64) (CampaignResults, error) {
 	cr := CampaignResults{}
-	err := db.Table("campaigns").Where("id=? and user_id=?", id, uid).Find(&cr).Error
+	err := db.Table("campaigns").Where("id=?", id).Find(&cr).Error
+
 	if err != nil {
 		log.WithFields(logrus.Fields{
 			"campaign_id": id,
@@ -375,16 +448,21 @@ func GetCampaignResults(id int64, uid int64) (CampaignResults, error) {
 		}).Error(err)
 		return cr, err
 	}
-	err = db.Table("results").Where("campaign_id=? and user_id=?", cr.Id, uid).Find(&cr.Results).Error
+
+	err = db.Table("results").Where("campaign_id=?", cr.Id).Find(&cr.Results).Error
+
 	if err != nil {
 		log.Errorf("%s: results not found for campaign", err)
 		return cr, err
 	}
+
 	err = db.Table("events").Where("campaign_id=?", cr.Id).Find(&cr.Events).Error
+
 	if err != nil {
 		log.Errorf("%s: events not found for campaign", err)
 		return cr, err
 	}
+
 	return cr, err
 }
 
@@ -581,11 +659,11 @@ func DeleteCampaign(id int64) error {
 
 // CompleteCampaign effectively "ends" a campaign.
 // Any future emails clicked will return a simple "404" page.
-func CompleteCampaign(id int64, uid int64) error {
+func CompleteCampaign(id int64) error {
 	log.WithFields(logrus.Fields{
 		"campaign_id": id,
 	}).Info("Marking campaign as complete")
-	c, err := GetCampaign(id, uid)
+	c, err := GetCampaign(id)
 	if err != nil {
 		return err
 	}
@@ -596,7 +674,7 @@ func CompleteCampaign(id int64, uid int64) error {
 	// Mark the campaign as complete
 	c.CompletedDate = time.Now().UTC()
 	c.Status = CAMPAIGN_COMPLETE
-	err = db.Where("id=? and user_id=?", id, uid).Save(&c).Error
+	err = db.Where("id=?", id).Save(&c).Error
 	if err != nil {
 		log.Error(err)
 	}

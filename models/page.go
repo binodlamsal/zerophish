@@ -12,7 +12,8 @@ import (
 // Page contains the fields used for a Page model
 type Page struct {
 	Id                 int64     `json:"id" gorm:"column:id; primary_key:yes"`
-	UserId             int64     `json:"-" gorm:"column:user_id"`
+	UserId             int64     `json:"user_id" gorm:"column:user_id"`
+	Username           string    `json:"username" gorm:"-"`
 	Name               string    `json:"name"`
 	TagsId             int64     `json:"tag" gorm:"column:tag"`
 	Tags               Tags      `json:"tags"`
@@ -22,6 +23,7 @@ type Page struct {
 	Public             bool      `json:"public" gorm:"column:public"`
 	RedirectURL        string    `json:"redirect_url" gorm:"column:redirect_url"`
 	ModifiedDate       time.Time `json:"modified_date"`
+	Writable           bool      `json:"writable" gorm:"-"`
 }
 
 // ErrPageNameNotSpecified is thrown if the name of the landing page is blank.
@@ -82,24 +84,186 @@ func (p *Page) Validate() error {
 	return p.parseHTML()
 }
 
+// IsWritableByUser tells if this page can be modified by a user with the given uid
+func (p *Page) IsWritableByUser(uid int64) bool {
+	role, err := GetUserRole(uid)
+
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
+	if p.UserId == 0 {
+		oid, err := GetPageOwnerId(p.Id)
+
+		if err != nil {
+			log.Error(err)
+			return false
+		}
+
+		p.UserId = oid
+	}
+
+	if p.UserId == uid || role.Is(Administrator) {
+		return true
+	}
+
+	if p.Public {
+		return false
+	}
+
+	uids, err := GetUserIds(uid)
+
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
+	for _, u := range uids {
+		if u == p.UserId {
+			return true
+		}
+	}
+
+	return false
+}
+
+// IsPageWritableByUser tell if a page (identified by pid)
+// can be modified by a user (identified by uid)
+func IsPageWritableByUser(pid, uid int64) bool {
+	role, err := GetUserRole(uid)
+
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
+	if role.Is(Administrator) {
+		return true
+	}
+
+	oid, err := GetPageOwnerId(pid)
+
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
+	if oid == uid {
+		return true
+	}
+
+	uids, err := GetUserIds(uid)
+
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
+	for _, u := range uids {
+		if u == oid {
+			return true
+		}
+	}
+
+	return false
+}
+
+// IsPageAccessibleByUser tells if a page (identified by pid)
+// is accessible by a user (identified by uid)
+func IsPageAccessibleByUser(pid, uid int64) bool {
+	oid, err := GetPageOwnerId(pid)
+
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
+	if oid == uid {
+		return true
+	}
+
+	uids, err := GetUserIds(uid)
+
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
+	for _, id := range uids {
+		if oid == id {
+			return true
+		}
+	}
+
+	return false
+}
+
+// GetPageOwnerId returns user id of creator of the page identified by id
+func GetPageOwnerId(id int64) (int64, error) {
+	p := Page{}
+	err := db.Where("id = ?", id).Select("user_id").First(&p).Error
+
+	if err != nil {
+		return 0, errors.New("page not found: " + err.Error())
+	}
+
+	return p.UserId, nil
+}
+
 // GetPages returns the pages owned by the given user.
 func GetPages(uid int64) ([]Page, error) {
 	ps := []Page{}
-	err := db.Where("user_id=? OR public=?", uid, 1).Find(&ps).Error
+	role, err := GetUserRole(uid)
+
+	if err != nil {
+		return ps, err
+	}
+
+	query := db.Table("pages")
+
+	if role.Is(Administrator) {
+		// just grab all pages (see above)
+	} else if role.IsOneOf([]int64{Partner, ChildUser}) {
+		uids, err := GetUserIds(uid)
+
+		if err != nil {
+			return ps, err
+		}
+
+		uids = append(uids, uid)
+		query = db.Table("pages").Where("user_id IN (?) OR public=?", uids, 1)
+	} else {
+		query = db.Table("pages").Where("user_id=? OR public=?", uid, 1)
+	}
+
+	err = query.
+		Select("pages.*, pages.id AS id, users.username AS username").
+		Joins("LEFT JOIN users ON users.id = pages.user_id").
+		Scan(&ps).Error
+
 	if err != nil {
 		log.Error(err)
 		return ps, err
 	}
+
+	for i := range ps {
+		// Set Writable flag
+		ps[i].Writable = ps[i].IsWritableByUser(uid)
+	}
+
 	return ps, err
 }
 
-// GetPage returns the page, if it exists, specified by the given id and user_id.
-func GetPage(id int64, uid int64) (Page, error) {
+// GetPage returns the page, if it exists, specified by the given id
+func GetPage(id int64) (Page, error) {
 	p := Page{}
-	err := db.Where("user_id=? and id=?", uid, id).Find(&p).Error
+	err := db.Where("id=?", id).Find(&p).Error
+
 	if err != nil {
 		log.Error(err)
 	}
+
 	return p, err
 }
 
@@ -142,19 +306,29 @@ func PostPage(p *Page) error {
 // Per the PUT Method RFC, it presumes all data for a page is provided.
 func PutPage(p *Page) error {
 	err := p.Validate()
-	err = db.Where("id=?", p.Id).Save(p).Error
+
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	err = db.Model(&p).Updates(p).Error
+
 	if err != nil {
 		log.Error(err)
 	}
+
 	return err
 }
 
 // DeletePage deletes an existing page in the database.
-// An error is returned if a page with the given user id and page id is not found.
-func DeletePage(id int64, uid int64) error {
-	err = db.Where("user_id=?", uid).Delete(Page{Id: id}).Error
+// An error is returned if a page with the given page id is not found.
+func DeletePage(id int64) error {
+	err = db.Delete(Page{Id: id}).Error
+
 	if err != nil {
 		log.Error(err)
 	}
+
 	return err
 }

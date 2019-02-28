@@ -189,7 +189,7 @@ function deleteCampaign(e) {
 
 function setupOptions() {
   api.groups.get().success(function(e) {
-    if (0 == e.length) return modalError("No groups found!"), !1;
+    if (0 == e.length) return (document.location = "/users?ref=campaigns"), !1;
     var a = $.map(e, function(e) {
       return (e.text = e.name), e;
     });
@@ -388,6 +388,7 @@ $(document).ready(function() {
                 campaignTable.row
                   .add([
                     escapeHtml(a.name),
+                    a.username,
                     moment(a.created_date).format("MMMM Do YYYY, h:mm:ss a"),
                     '<span class="label ' +
                       label +

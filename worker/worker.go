@@ -45,8 +45,7 @@ func (w *Worker) Start() {
 		// Next, we process each group of maillogs in parallel
 		for cid, msc := range msg {
 			go func(cid int64, msc []mailer.Mail) {
-				uid := msc[0].(*models.MailLog).UserId
-				c, err := models.GetCampaign(cid, uid)
+				c, err := models.GetCampaign(cid)
 				if err != nil {
 					log.Error(err)
 					errorMail(err, msc)

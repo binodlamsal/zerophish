@@ -11,7 +11,8 @@ import (
 // Template models hold the attributes for an email template to be sent to targets
 type Template struct {
 	Id           int64        `json:"id" gorm:"column:id; primary_key:yes"`
-	UserId       int64        `json:"-" gorm:"column:user_id"`
+	UserId       int64        `json:"user_id" gorm:"column:user_id"`
+	Username     string       `json:"username" gorm:"-"`
 	Name         string       `json:"name"`
 	Subject      string       `json:"subject"`
 	Text         string       `json:"text"`
@@ -22,6 +23,7 @@ type Template struct {
 	Public       bool         `json:"public" gorm:"column:public"`
 	ModifiedDate time.Time    `json:"modified_date"`
 	Attachments  []Attachment `json:"attachments"`
+	Writable     bool         `json:"writable" gorm:"-"`
 }
 
 // Tags models hold the attributes for the categories of templates and landing pages
@@ -54,6 +56,50 @@ func (t *Template) Validate() error {
 	return nil
 }
 
+// IsWritableByUser tells if this template can be modified by a user with the given uid
+func (t *Template) IsWritableByUser(uid int64) bool {
+	role, err := GetUserRole(uid)
+
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
+	if t.UserId == 0 {
+		oid, err := GetTemplateOwnerId(t.Id)
+
+		if err != nil {
+			log.Error(err)
+			return false
+		}
+
+		t.UserId = oid
+	}
+
+	if t.UserId == uid || role.Is(Administrator) {
+		return true
+	}
+
+	if t.Public {
+		return false
+	}
+
+	uids, err := GetUserIds(uid)
+
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
+	for _, u := range uids {
+		if u == t.UserId {
+			return true
+		}
+	}
+
+	return false
+}
+
 //Get tags by tag name
 func GetTagById(id int64) (Tags, error) {
 	t := Tags{}
@@ -64,25 +110,142 @@ func GetTagById(id int64) (Tags, error) {
 	return t, err
 }
 
+// GetTemplateOwnerId returns user id of creator of the template identified by id
+func GetTemplateOwnerId(id int64) (int64, error) {
+	t := Template{}
+	err := db.Where("id = ?", id).Select("user_id").First(&t).Error
+
+	if err != nil {
+		return 0, errors.New("template not found: " + err.Error())
+	}
+
+	return t.UserId, nil
+}
+
+// IsTemplateAccessibleByUser tells if a template (identified by tid)
+// is accessible by a user (identified by uid)
+func IsTemplateAccessibleByUser(tid, uid int64) bool {
+	oid, err := GetTemplateOwnerId(tid)
+
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
+	if oid == uid {
+		return true
+	}
+
+	uids, err := GetUserIds(uid)
+
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
+	for _, id := range uids {
+		if oid == id {
+			return true
+		}
+	}
+
+	return false
+}
+
+// IsTemplateWritableByUser tell if a template (identified by tid)
+// can be modified by a user (identified by uid)
+func IsTemplateWritableByUser(tid, uid int64) bool {
+	role, err := GetUserRole(uid)
+
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
+	if role.Is(Administrator) {
+		return true
+	}
+
+	oid, err := GetTemplateOwnerId(tid)
+
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
+	if oid == uid {
+		return true
+	}
+
+	uids, err := GetUserIds(uid)
+
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
+	for _, u := range uids {
+		if u == oid {
+			return true
+		}
+	}
+
+	return false
+}
+
 // GetTemplates returns the templates owned by the given user.
 func GetTemplates(uid int64) ([]Template, error) {
 	ts := []Template{}
-	err := db.Where("user_id=? OR public=?", uid, 1).Find(&ts).Error
+	role, err := GetUserRole(uid)
+
+	if err != nil {
+		return ts, err
+	}
+
+	query := db.Table("templates")
+
+	if role.Is(Administrator) {
+		// just grab all templates (see above)
+	} else if role.IsOneOf([]int64{Partner, ChildUser}) {
+		uids, err := GetUserIds(uid)
+
+		if err != nil {
+			return ts, err
+		}
+
+		uids = append(uids, uid)
+		query = db.Table("templates").Where("user_id IN (?) OR public=?", uids, 1)
+	} else {
+		query = db.Table("templates").Where("user_id=? OR public=?", uid, 1)
+	}
+
+	err = query.
+		Select("templates.*, templates.id AS id, users.username AS username").
+		Joins("LEFT JOIN users ON users.id = templates.user_id").
+		Scan(&ts).Error
+
 	if err != nil {
 		log.Error(err)
 		return ts, err
 	}
-	for i, _ := range ts {
+
+	for i := range ts {
 		// Get Attachments
 		err = db.Where("template_id=?", ts[i].Id).Find(&ts[i].Attachments).Error
+
 		if err == nil && len(ts[i].Attachments) == 0 {
 			ts[i].Attachments = make([]Attachment, 0)
 		}
+
 		if err != nil && err != gorm.ErrRecordNotFound {
 			log.Error(err)
 			return ts, err
 		}
+
+		// Set Writable flag
+		ts[i].Writable = ts[i].IsWritableByUser(uid)
 	}
+
 	return ts, err
 }
 
@@ -112,10 +275,10 @@ func PostTags(t *Tags) error {
 	return nil
 }
 
-// GetTemplate returns the template, if it exists, specified by the given id and user_id.
-func GetTemplate(id int64, uid int64) (Template, error) {
+// GetTemplate returns the template, if it exists, specified by the given id
+func GetTemplate(id int64) (Template, error) {
 	t := Template{}
-	err := db.Where("user_id=? and id=?", uid, id).Find(&t).Error
+	err := db.Where("id=?", id).Find(&t).Error
 	if err != nil {
 		log.Error(err)
 		return t, err
@@ -203,7 +366,7 @@ func PutTemplate(t *Template) error {
 	if err == gorm.ErrRecordNotFound {
 		err = nil
 	}
-	for i, _ := range t.Attachments {
+	for i := range t.Attachments {
 		t.Attachments[i].TemplateId = t.Id
 		err := db.Save(&t.Attachments[i]).Error
 		if err != nil {
@@ -213,7 +376,8 @@ func PutTemplate(t *Template) error {
 	}
 
 	// Save final template
-	err = db.Where("id=?", t.Id).Save(t).Error
+	err = db.Model(&t).Updates(t).Error
+
 	if err != nil {
 		log.Error(err)
 		return err
@@ -234,21 +398,24 @@ func PutTags(t *Tags) error {
 }
 
 // DeleteTemplate deletes an existing template in the database.
-// An error is returned if a template with the given user id and template id is not found.
-func DeleteTemplate(id int64, uid int64) error {
+// An error is returned if a template with the given template id is not found.
+func DeleteTemplate(id int64) error {
 	// Delete attachments
 	err := db.Where("template_id=?", id).Delete(&Attachment{}).Error
+
 	if err != nil {
 		log.Error(err)
 		return err
 	}
 
 	// Finally, delete the template itself
-	err = db.Where("user_id=?", uid).Delete(Template{Id: id}).Error
+	err = db.Delete(Template{Id: id}).Error
+
 	if err != nil {
 		log.Error(err)
 		return err
 	}
+
 	return nil
 }
 

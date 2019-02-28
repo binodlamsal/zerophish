@@ -32,6 +32,8 @@ type GroupSummaries struct {
 // for large groups), it lists the target count.
 type GroupSummary struct {
 	Id           int64     `json:"id"`
+	UserId       int64     `json:"user_id"`
+	Username     string    `json:"username"`
 	Name         string    `json:"name"`
 	ModifiedDate time.Time `json:"modified_date"`
 	NumTargets   int64     `json:"num_targets"`
@@ -123,11 +125,37 @@ func GetGroups(uid int64) ([]Group, error) {
 }
 
 // GetGroupSummaries returns the summaries for the groups
-// created by the given uid.
+// created and/or accessible (in case of admin and partner) by the given uid.
 func GetGroupSummaries(uid int64) (GroupSummaries, error) {
 	gs := GroupSummaries{}
-	query := db.Table("groups").Where("user_id=?", uid)
-	err := query.Select("id, name, modified_date").Scan(&gs.Groups).Error
+	role, err := GetUserRole(uid)
+
+	if err != nil {
+		return gs, err
+	}
+
+	var query *gorm.DB
+
+	if role.Is(Administrator) {
+		query = db.Table("groups")
+	} else if role.IsOneOf([]int64{Partner, ChildUser}) {
+		uids, err := GetUserIds(uid)
+
+		if err != nil {
+			return gs, err
+		}
+
+		uids = append(uids, uid)
+		query = db.Table("groups").Where("user_id IN (?)", uids)
+	} else {
+		query = db.Table("groups").Where("user_id=?", uid)
+	}
+
+	err = query.
+		Select("groups.id AS id, user_id, users.username AS username, name, modified_date").
+		Joins("LEFT JOIN users ON users.id = groups.user_id").
+		Scan(&gs.Groups).Error
+
 	if err != nil {
 		log.Error(err)
 		return gs, err
@@ -143,18 +171,22 @@ func GetGroupSummaries(uid int64) (GroupSummaries, error) {
 	return gs, nil
 }
 
-// GetGroup returns the group, if it exists, specified by the given id and user_id.
-func GetGroup(id int64, uid int64) (Group, error) {
+// GetGroup returns the group, if it exists, specified by the given id
+func GetGroup(id int64) (Group, error) {
 	g := Group{}
-	err := db.Where("user_id=? and id=?", uid, id).Find(&g).Error
+	err := db.Where("id=?", id).Find(&g).Error
+
 	if err != nil {
 		log.Error(err)
 		return g, err
 	}
+
 	g.Targets, err = GetTargets(g.Id)
+
 	if err != nil {
 		log.Error(err)
 	}
+
 	return g, nil
 }
 
@@ -260,7 +292,7 @@ func PutGroup(g *Group) error {
 			UpdateTarget(nt)
 		}
 	}
-	err = db.Save(g).Error
+	err = db.Model(&g).Updates(g).Error
 	if err != nil {
 		log.Error(err)
 		return err
@@ -347,4 +379,46 @@ func GetTargets(gid int64) ([]Target, error) {
 	ts := []Target{}
 	err := db.Table("targets").Select("targets.id, targets.email, targets.first_name, targets.last_name, targets.position").Joins("left join group_targets gt ON targets.id = gt.target_id").Where("gt.group_id=?", gid).Scan(&ts).Error
 	return ts, err
+}
+
+// GetGroupOwnerId returns user id of creator of the group identified by id
+func GetGroupOwnerId(id int64) (int64, error) {
+	g := Group{}
+	err := db.Where("id = ?", id).Select("user_id").First(&g).Error
+
+	if err != nil {
+		return 0, errors.New("group not found: " + err.Error())
+	}
+
+	return g.UserId, nil
+}
+
+// IsGroupAccessibleByUser tells if a group (identified by gid)
+// is accessible by a user (identified by uid)
+func IsGroupAccessibleByUser(gid, uid int64) bool {
+	oid, err := GetGroupOwnerId(gid)
+
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
+	if oid == uid {
+		return true
+	}
+
+	uids, err := GetUserIds(uid)
+
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
+	for _, id := range uids {
+		if oid == id {
+			return true
+		}
+	}
+
+	return false
 }
