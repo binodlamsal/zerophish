@@ -353,8 +353,17 @@ func IsCampaignAccessibleByUser(cid, uid int64) bool {
 
 // GetCampaignSummaries gets the summary objects for all the campaigns
 // owned by the current user and optionally (depending on the user role)
-// campaigns of all other users (for admins) or the respective child users (for partners)
-func GetCampaignSummaries(uid int64) (CampaignSummaries, error) {
+// campaigns of all other users (for admins) or the respective child users (for partners).
+// Optionally "filter" can be one of: own, customers.
+// Where:
+// own - return items that belong to this user,
+// customers - customers' items
+// Note: empty "filter" will be treated as "own"
+func GetCampaignSummaries(uid int64, filter string) (CampaignSummaries, error) {
+	if filter != "own" && filter != "customers" {
+		filter = "own"
+	}
+
 	overview := CampaignSummaries{}
 	cs := []CampaignSummary{}
 	role, err := GetUserRole(uid)
@@ -366,19 +375,22 @@ func GetCampaignSummaries(uid int64) (CampaignSummaries, error) {
 	// Get the basic campaign information
 	var query *gorm.DB
 
-	if role.Is(Administrator) {
-		query = db.Table("campaigns")
-	} else if role.IsOneOf([]int64{Partner, ChildUser}) {
-		uids, err := GetUserIds(uid)
-
-		if err != nil {
-			return overview, err
-		}
-
-		uids = append(uids, uid)
-		query = db.Table("campaigns").Where("user_id IN (?)", uids)
-	} else {
+	if filter == "own" {
 		query = db.Table("campaigns").Where("user_id = ?", uid)
+	} else {
+		if role.Is(Administrator) {
+			query = db.Table("campaigns").Where("user_id <> ?", uid)
+		} else if role.IsOneOf([]int64{Partner, ChildUser}) {
+			uids, err := GetUserIds(uid)
+
+			if err != nil {
+				return overview, err
+			}
+
+			query = db.Table("campaigns").Where("user_id IN (?)", uids)
+		} else {
+			return overview, nil
+		}
 	}
 
 	err = query.

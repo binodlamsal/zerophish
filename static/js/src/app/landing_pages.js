@@ -1,3 +1,5 @@
+var pagesTable;
+
 function save(e) {
   var a = {};
   (a.name = $("#name").val()),
@@ -13,12 +15,16 @@ function save(e) {
     -1 != e
       ? ((a.id = pages[e].id),
         api.pageId.put(a).success(function(e) {
-          successFlash("Page edited successfully!"), load(), dismiss();
+          successFlash("Page edited successfully!"),
+            load($("input[type=radio][name=filter]:checked").val()),
+            dismiss();
         }))
       : api.pages
           .post(a)
           .success(function(e) {
-            successFlash("Page added successfully!"), load(), dismiss();
+            successFlash("Page added successfully!"),
+              load($("input[type=radio][name=filter]:checked").val()),
+              dismiss();
           })
           .error(function(e) {
             modalError(e.responseJSON.message);
@@ -107,27 +113,31 @@ function copy(e) {
   $("#name").val("Copy of " + a.name), $("#html_editor").val(a.html);
 }
 
-function load() {
-  $("#pagesTable").hide(),
-    $("#emptyMessage").hide(),
-    $("#loading").show(),
+function load(filter) {
+  if (pagesTable === undefined) {
+    pagesTable = $("#pagesTable").DataTable({
+      destroy: !0,
+      columnDefs: [
+        {
+          orderable: !1,
+          targets: "no-sort"
+        }
+      ]
+    });
+    $("#pagesTable").show();
+  } else {
+    pagesTable.clear();
+    pagesTable.draw();
+  }
+
+  $("#loading").show(),
     api.pages
-      .get()
+      .get(filter)
       .success(function(e) {
         (pages = e),
           $("#loading").hide(),
           pages.length > 0
             ? ($("#pagesTable").show(),
-              (pagesTable = $("#pagesTable").DataTable({
-                destroy: !0,
-                columnDefs: [
-                  {
-                    orderable: !1,
-                    targets: "no-sort"
-                  }
-                ]
-              })),
-              pagesTable.clear(),
               $.each(pages, function(e, a) {
                 pagesTable.row
                   .add([
@@ -153,7 +163,7 @@ function load() {
                   .draw();
               }),
               $('[data-toggle="tooltip"]').tooltip())
-            : $("#emptyMessage").show();
+            : $("#emptyMessage").hide();
       })
       .error(function() {
         $("#loading").hide(), errorFlash("Error fetching pages");
@@ -238,5 +248,9 @@ $(document).ready(function() {
     $("#capture_credentials_checkbox").change(function() {
       $("#capture_passwords").toggle(), $("#redirect_url").toggle();
     }),
-    load();
+    $("input[type=radio][name=filter]").change(function(event) {
+      load(event.target.value);
+    });
+
+  load("own");
 });

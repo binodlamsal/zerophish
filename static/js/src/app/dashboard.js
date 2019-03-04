@@ -1,4 +1,6 @@
 var campaigns = [];
+var campaignTable;
+
 // statuses is a helper map to point result statuses to ui classes
 var statuses = {
   "Email Sent": {
@@ -303,48 +305,64 @@ function generateTimelineChart(campaigns) {
 }
 
 $(document).ready(function() {
+  $("input[type=radio][name=filter]").change(function(event) {
+    load(event.target.value);
+  });
+
   Highcharts.setOptions({
     global: {
       useUTC: false
     }
   });
+
+  load("own");
+});
+
+function load(filter) {
+  if (campaignTable === undefined) {
+    // Create the overview chart data
+    campaignTable = $("#campaignTable").DataTable({
+      columnDefs: [
+        {
+          orderable: false,
+          targets: "no-sort"
+        },
+        {
+          className: "color-sent",
+          targets: [2]
+        },
+        {
+          className: "color-opened",
+          targets: [3]
+        },
+        {
+          className: "color-clicked",
+          targets: [4]
+        },
+        {
+          className: "color-success",
+          targets: [5]
+        },
+        {
+          className: "color-reported",
+          targets: [6]
+        }
+      ],
+      order: [[1, "desc"]]
+    });
+  } else {
+    campaignTable.clear();
+    campaignTable.draw();
+  }
+
   api.campaigns
-    .summary()
+    .summary(filter)
     .success(function(data) {
       $("#loading").hide();
       campaigns = data.campaigns;
       if (campaigns.length > 0) {
         $("#dashboard").show();
-        // Create the overview chart data
-        campaignTable = $("#campaignTable").DataTable({
-          columnDefs: [
-            {
-              orderable: false,
-              targets: "no-sort"
-            },
-            {
-              className: "color-sent",
-              targets: [2]
-            },
-            {
-              className: "color-opened",
-              targets: [3]
-            },
-            {
-              className: "color-clicked",
-              targets: [4]
-            },
-            {
-              className: "color-success",
-              targets: [5]
-            },
-            {
-              className: "color-reported",
-              targets: [6]
-            }
-          ],
-          order: [[1, "desc"]]
-        });
+
         $.each(campaigns, function(i, campaign) {
           var campaign_date = moment(campaign.created_date).format(
             "MMMM Do YYYY, h:mm:ss a"
@@ -422,10 +440,10 @@ $(document).ready(function() {
         generateStatsPieCharts(campaigns);
         generateTimelineChart(campaigns);
       } else {
-        $("#emptyMessage").show();
+        $("#emptyMessage").hide();
       }
     })
     .error(function() {
       errorFlash("Error fetching campaigns");
     });
-});
+}

@@ -27,8 +27,10 @@ function modalError(e) {
 }
 
 function query(e, t, n, r) {
+  const sep = e.includes("?") ? "&" : "?";
+
   return $.ajax({
-    url: "/api" + e + "?api_key=" + user.api_key,
+    url: "/api" + e + sep + "api_key=" + user.api_key,
     async: r,
     method: t,
     type: t,
@@ -60,8 +62,13 @@ var capitalize = function(e) {
       post: function(e) {
         return query("/campaigns/", "POST", e, !1);
       },
-      summary: function() {
-        return query("/campaigns/summary", "GET", {}, !1);
+      summary: function(filter) {
+        return query(
+          "/campaigns/summary" + (filter ? "?filter=" + filter : ""),
+          "GET",
+          {},
+          !1
+        );
       }
     },
     users: {
@@ -122,8 +129,13 @@ var capitalize = function(e) {
       post: function(e) {
         return query("/groups/", "POST", e, !1);
       },
-      summary: function() {
-        return query("/groups/summary", "GET", {}, !0);
+      summary: function(filter) {
+        return query(
+          "/groups/summary" + (filter ? "?filter=" + filter : ""),
+          "GET",
+          {},
+          !0
+        );
       }
     },
     groupId: {
@@ -138,8 +150,13 @@ var capitalize = function(e) {
       }
     },
     templates: {
-      get: function() {
-        return query("/templates/", "GET", {}, !1);
+      get: function(filter) {
+        return query(
+          "/templates/" + (filter ? "?filter=" + filter : ""),
+          "GET",
+          {},
+          !1
+        );
       },
       post: function(e) {
         return query("/templates/", "POST", e, !1);
@@ -174,8 +191,13 @@ var capitalize = function(e) {
       }
     },
     pages: {
-      get: function() {
-        return query("/pages/", "GET", {}, !1);
+      get: function(filter) {
+        return query(
+          "/pages/" + (filter ? "?filter=" + filter : ""),
+          "GET",
+          {},
+          !1
+        );
       },
       post: function(e) {
         return query("/pages/", "POST", e, !1);

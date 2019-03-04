@@ -212,7 +212,17 @@ func GetPageOwnerId(id int64) (int64, error) {
 }
 
 // GetPages returns the pages owned by the given user.
-func GetPages(uid int64) ([]Page, error) {
+// Optionally "filter" can be one of: own, public ,customers.
+// Where:
+// own - return items that belong to this user,
+// public - public items
+// customers - customers' items
+// Note: empty "filter" will be treated as "own"
+func GetPages(uid int64, filter string) ([]Page, error) {
+	if filter != "own" && filter != "customers" && filter != "public" {
+		filter = "own"
+	}
+
 	ps := []Page{}
 	role, err := GetUserRole(uid)
 
@@ -222,20 +232,40 @@ func GetPages(uid int64) ([]Page, error) {
 
 	query := db.Table("pages")
 
-	if role.Is(Administrator) {
-		// just grab all pages (see above)
-	} else if role.IsOneOf([]int64{Partner, ChildUser}) {
-		uids, err := GetUserIds(uid)
-
-		if err != nil {
-			return ps, err
-		}
-
-		uids = append(uids, uid)
-		query = db.Table("pages").Where("user_id IN (?) OR public=?", uids, 1)
+	if filter == "own" {
+		query = query.Where("user_id = ?", uid)
+	} else if filter == "public" {
+		query = query.Where("public = ?", 1)
 	} else {
-		query = db.Table("pages").Where("user_id=? OR public=?", uid, 1)
+		if role.Is(Administrator) {
+			query = query.Where("user_id <> ?", uid)
+		} else if role.IsOneOf([]int64{Partner, ChildUser}) {
+			uids, err := GetUserIds(uid)
+
+			if err != nil {
+				return ps, err
+			}
+
+			query = query.Where("user_id IN (?)", uids)
+		} else {
+			return ps, nil
+		}
 	}
+
+	// if role.Is(Administrator) {
+	// 	// just grab all pages (see above)
+	// } else if role.IsOneOf([]int64{Partner, ChildUser}) {
+	// 	uids, err := GetUserIds(uid)
+
+	// 	if err != nil {
+	// 		return ps, err
+	// 	}
+
+	// 	uids = append(uids, uid)
+	// 	query = db.Table("pages").Where("user_id IN (?) OR public=?", uids, 1)
+	// } else {
+	// 	query = db.Table("pages").Where("user_id=? OR public=?", uid, 1)
+	// }
 
 	err = query.
 		Select("pages.*, pages.id AS id, users.username AS username").

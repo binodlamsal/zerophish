@@ -11,6 +11,14 @@
         <button type="button" class="btn btn-primary" data-toggle="modal" data-backdrop="static" data-target="#modal"
             onclick="edit('new')">
             <i class="fa fa-plus"></i> New Campaign</button>
+
+        {{if or (eq role "admin") (eq role "partner") (eq role "child_user")}}
+        <div style="display: inline-block; position: absolute; right: 0%; transform: translate(-15%, 0%)">
+            <strong>Filter: &nbsp;</strong>
+            <input type="radio" name="filter" value="own" id="filter-own" checked> Own &nbsp;
+            <input type="radio" name="filter" value="customers" id="filter-customers"> Customers &nbsp;
+        </div>
+        {{end}}
     </div>
     &nbsp;
     <div id="loading">

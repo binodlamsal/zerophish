@@ -195,10 +195,24 @@ func Campaigns(w http.ResponseWriter, r *http.Request) {
 	// Example of using session - will be removed.
 	params := struct {
 		User    models.User
+		Role    string
 		Title   string
 		Flashes []interface{}
 		Token   string
-	}{Title: "Campaigns", User: ctx.Get(r, "user").(models.User), Token: csrf.Token(r)}
+	}{
+		Title: "Campaigns",
+		User:  ctx.Get(r, "user").(models.User),
+		Role:  "",
+		Token: csrf.Token(r),
+	}
+
+	role, err := models.GetUserRole(params.User.Id)
+
+	if err != nil {
+		log.Error(err)
+	}
+
+	params.Role = role.Name()
 	getTemplate(r, w, "campaigns").ExecuteTemplate(w, "base", params)
 }
 
@@ -259,10 +273,24 @@ func Templates(w http.ResponseWriter, r *http.Request) {
 	// Example of using session - will be removed.
 	params := struct {
 		User    models.User
+		Role    string
 		Title   string
 		Flashes []interface{}
 		Token   string
-	}{Title: "Email Templates", User: ctx.Get(r, "user").(models.User), Token: csrf.Token(r)}
+	}{
+		Title: "Email Templates",
+		User:  ctx.Get(r, "user").(models.User),
+		Role:  "",
+		Token: csrf.Token(r),
+	}
+
+	role, err := models.GetUserRole(params.User.Id)
+
+	if err != nil {
+		log.Error(err)
+	}
+
+	params.Role = role.Name()
 	getTemplate(r, w, "templates").ExecuteTemplate(w, "base", params)
 }
 
@@ -271,10 +299,24 @@ func Users(w http.ResponseWriter, r *http.Request) {
 	// Example of using session - will be removed.
 	params := struct {
 		User    models.User
+		Role    string
 		Title   string
 		Flashes []interface{}
 		Token   string
-	}{Title: "Users & Groups", User: ctx.Get(r, "user").(models.User), Token: csrf.Token(r)}
+	}{
+		Title: "Users & Groups",
+		User:  ctx.Get(r, "user").(models.User),
+		Role:  "",
+		Token: csrf.Token(r),
+	}
+
+	role, err := models.GetUserRole(params.User.Id)
+
+	if err != nil {
+		log.Error(err)
+	}
+
+	params.Role = role.Name()
 	getTemplate(r, w, "users").ExecuteTemplate(w, "base", params)
 }
 
@@ -283,10 +325,24 @@ func LandingPages(w http.ResponseWriter, r *http.Request) {
 	// Example of using session - will be removed.
 	params := struct {
 		User    models.User
+		Role    string
 		Title   string
 		Flashes []interface{}
 		Token   string
-	}{Title: "Landing Pages", User: ctx.Get(r, "user").(models.User), Token: csrf.Token(r)}
+	}{
+		Title: "Landing Pages",
+		User:  ctx.Get(r, "user").(models.User),
+		Role:  "",
+		Token: csrf.Token(r),
+	}
+
+	role, err := models.GetUserRole(params.User.Id)
+
+	if err != nil {
+		log.Error(err)
+	}
+
+	params.Role = role.Name()
 	getTemplate(r, w, "landing_pages").ExecuteTemplate(w, "base", params)
 }
 

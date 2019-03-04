@@ -1,3 +1,5 @@
+var templateTable;
+
 function save(e) {
   var t = {
     attachments: []
@@ -34,7 +36,9 @@ function save(e) {
         api.templateId
           .put(t)
           .success(function(e) {
-            successFlash("Template edited successfully!"), load(), dismiss();
+            successFlash("Template edited successfully!"),
+              load($("input[type=radio][name=filter]:checked").val()),
+              dismiss();
           })
           .error(function(e) {
             modalError(e.responseJSON.message);
@@ -42,7 +46,9 @@ function save(e) {
       : api.templates
           .post(t)
           .success(function(e) {
-            successFlash("Template added successfully!"), load(), dismiss();
+            successFlash("Template added successfully!"),
+              load($("input[type=radio][name=filter]:checked").val()),
+              dismiss();
           })
           .error(function(e) {
             modalError(e.responseJSON.message);
@@ -67,7 +73,8 @@ function dismiss() {
 function deleteTemplate(e) {
   confirm("Delete " + templates[e].name + "?") &&
     api.templateId.delete(templates[e].id).success(function(e) {
-      successFlash(e.message), load();
+      successFlash(e.message),
+        load($("input[type=radio][name=filter]:checked").val());
     });
 }
 
@@ -289,27 +296,31 @@ function importEmail() {
       : modalError("No Content Specified!");
 }
 
-function load() {
-  $("#templateTable").hide(),
-    $("#emptyMessage").hide(),
-    $("#loading").show(),
+function load(filter) {
+  if (templateTable === undefined) {
+    templateTable = $("#templateTable").DataTable({
+      destroy: !0,
+      columnDefs: [
+        {
+          orderable: !1,
+          targets: "no-sort"
+        }
+      ]
+    });
+    $("#templateTable").show();
+  } else {
+    templateTable.clear();
+    templateTable.draw();
+  }
+
+  $("#loading").show(),
     api.templates
-      .get()
+      .get(filter)
       .success(function(e) {
         (templates = e),
           $("#loading").hide(),
           templates.length > 0
             ? ($("#templateTable").show(),
-              (templateTable = $("#templateTable").DataTable({
-                destroy: !0,
-                columnDefs: [
-                  {
-                    orderable: !1,
-                    targets: "no-sort"
-                  }
-                ]
-              })),
-              templateTable.clear(),
               $.each(templates, function(e, t) {
                 var rating = "";
                 if (t.rating == 5) {
@@ -361,7 +372,7 @@ function load() {
                   .draw();
               }),
               $('[data-toggle="tooltip"]').tooltip())
-            : $("#emptyMessage").show();
+            : $("#emptyMessage").hide();
       })
       .error(function() {
         $("#loading").hide(), errorFlash("Error fetching templates");
@@ -457,5 +468,9 @@ $(document).ready(function() {
     $("#importEmailModal").on("hidden.bs.modal", function(e) {
       $("#email_content").val("");
     }),
-    load();
+    $("input[type=radio][name=filter]").change(function(event) {
+      load(event.target.value);
+    });
+
+  load("own");
 });

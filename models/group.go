@@ -126,7 +126,16 @@ func GetGroups(uid int64) ([]Group, error) {
 
 // GetGroupSummaries returns the summaries for the groups
 // created and/or accessible (in case of admin and partner) by the given uid.
-func GetGroupSummaries(uid int64) (GroupSummaries, error) {
+// Optionally "filter" can be one of: own, customers.
+// Where:
+// own - return items that belong to this user,
+// customers - customers' items
+// Note: empty "filter" will be treated as "own"
+func GetGroupSummaries(uid int64, filter string) (GroupSummaries, error) {
+	if filter != "own" && filter != "customers" {
+		filter = "own"
+	}
+
 	gs := GroupSummaries{}
 	role, err := GetUserRole(uid)
 
@@ -136,19 +145,22 @@ func GetGroupSummaries(uid int64) (GroupSummaries, error) {
 
 	var query *gorm.DB
 
-	if role.Is(Administrator) {
-		query = db.Table("groups")
-	} else if role.IsOneOf([]int64{Partner, ChildUser}) {
-		uids, err := GetUserIds(uid)
-
-		if err != nil {
-			return gs, err
-		}
-
-		uids = append(uids, uid)
-		query = db.Table("groups").Where("user_id IN (?)", uids)
+	if filter == "own" {
+		query = db.Table("groups").Where("user_id = ?", uid)
 	} else {
-		query = db.Table("groups").Where("user_id=?", uid)
+		if role.Is(Administrator) {
+			query = db.Table("groups").Where("user_id <> ?", uid)
+		} else if role.IsOneOf([]int64{Partner, ChildUser}) {
+			uids, err := GetUserIds(uid)
+
+			if err != nil {
+				return gs, err
+			}
+
+			query = db.Table("groups").Where("user_id IN (?)", uids)
+		} else {
+			return gs, nil
+		}
 	}
 
 	err = query.

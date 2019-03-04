@@ -194,7 +194,17 @@ func IsTemplateWritableByUser(tid, uid int64) bool {
 }
 
 // GetTemplates returns the templates owned by the given user.
-func GetTemplates(uid int64) ([]Template, error) {
+// Optionally "filter" can be one of: own, public ,customers.
+// Where:
+// own - return items that belong to this user,
+// public - public items
+// customers - customers' items
+// Note: empty "filter" will be treated as "own"
+func GetTemplates(uid int64, filter string) ([]Template, error) {
+	if filter != "own" && filter != "customers" && filter != "public" {
+		filter = "own"
+	}
+
 	ts := []Template{}
 	role, err := GetUserRole(uid)
 
@@ -204,19 +214,24 @@ func GetTemplates(uid int64) ([]Template, error) {
 
 	query := db.Table("templates")
 
-	if role.Is(Administrator) {
-		// just grab all templates (see above)
-	} else if role.IsOneOf([]int64{Partner, ChildUser}) {
-		uids, err := GetUserIds(uid)
-
-		if err != nil {
-			return ts, err
-		}
-
-		uids = append(uids, uid)
-		query = db.Table("templates").Where("user_id IN (?) OR public=?", uids, 1)
+	if filter == "own" {
+		query = query.Where("user_id = ?", uid)
+	} else if filter == "public" {
+		query = query.Where("public = ?", 1)
 	} else {
-		query = db.Table("templates").Where("user_id=? OR public=?", uid, 1)
+		if role.Is(Administrator) {
+			query = query.Where("user_id <> ?", uid)
+		} else if role.IsOneOf([]int64{Partner, ChildUser}) {
+			uids, err := GetUserIds(uid)
+
+			if err != nil {
+				return ts, err
+			}
+
+			query = query.Where("user_id IN (?)", uids)
+		} else {
+			return ts, nil
+		}
 	}
 
 	err = query.

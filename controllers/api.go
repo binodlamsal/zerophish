@@ -299,12 +299,14 @@ func API_Tags_Single(w http.ResponseWriter, r *http.Request) {
 func API_Campaigns_Summary(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case r.Method == "GET":
-		cs, err := models.GetCampaignSummaries(ctx.Get(r, "user_id").(int64))
+		cs, err := models.GetCampaignSummaries(ctx.Get(r, "user_id").(int64), r.URL.Query().Get("filter"))
+
 		if err != nil {
 			log.Error(err)
 			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
 			return
 		}
+
 		JSONResponse(w, cs, http.StatusOK)
 	}
 }
@@ -482,7 +484,7 @@ func API_Groups(w http.ResponseWriter, r *http.Request) {
 func API_Groups_Summary(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case r.Method == "GET":
-		gs, err := models.GetGroupSummaries(ctx.Get(r, "user_id").(int64))
+		gs, err := models.GetGroupSummaries(ctx.Get(r, "user_id").(int64), r.URL.Query().Get("filter"))
 		if err != nil {
 			log.Error(err)
 			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
@@ -578,7 +580,7 @@ func API_Groups_Id_Summary(w http.ResponseWriter, r *http.Request) {
 func API_Templates(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case r.Method == "GET":
-		ts, err := models.GetTemplates(ctx.Get(r, "user_id").(int64))
+		ts, err := models.GetTemplates(ctx.Get(r, "user_id").(int64), r.URL.Query().Get("filter"))
 		if err != nil {
 			log.Error(err)
 		}
@@ -688,7 +690,7 @@ func API_Templates_Id(w http.ResponseWriter, r *http.Request) {
 func API_Pages(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case r.Method == "GET":
-		ps, err := models.GetPages(ctx.Get(r, "user_id").(int64))
+		ps, err := models.GetPages(ctx.Get(r, "user_id").(int64), r.URL.Query().Get("filter"))
 		if err != nil {
 			log.Error(err)
 		}

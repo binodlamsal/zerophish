@@ -1,3 +1,5 @@
+var campaignTable;
+
 function launch() {
   console.log($("#start_time").val());
   swal({
@@ -288,6 +290,10 @@ var labels = {
   campaigns = [],
   campaign = {};
 $(document).ready(function() {
+  $("input[type=radio][name=filter]").change(function(event) {
+    load(event.target.value);
+  });
+
   var timeZones = moment.tz.names();
   $.each(timeZones, function(e, time) {
     $("#time_zone").append(
@@ -341,79 +347,11 @@ $(document).ready(function() {
     }),
     $("#modal").on("hidden.bs.modal", function(e) {
       dismiss();
-    }),
-    api.campaigns
-      .summary()
-      .success(function(e) {
-        (campaigns = e.campaigns),
-          $("#loading").hide(),
-          campaigns.length > 0
-            ? ($("#campaignTable").show(),
-              (campaignTable = $("#campaignTable").DataTable({
-                columnDefs: [
-                  {
-                    orderable: !1,
-                    targets: "no-sort"
-                  }
-                ],
-                order: [[1, "desc"]]
-              })),
-              $.each(campaigns, function(e, a) {
-                label = labels[a.status] || "label-default";
-                var t;
-                if (moment(a.launch_date).isAfter(moment())) {
-                  t =
-                    "Scheduled to start: " +
-                    moment(a.launch_date).format("MMMM Do YYYY, h:mm:ss a");
-                  var n = t + "<br><br>Number of recipients: " + a.stats.total;
-                } else {
-                  t =
-                    "Launch Date: " +
-                    moment(a.launch_date).format("MMMM Do YYYY, h:mm:ss a");
-                  var n =
-                    t +
-                    "<br><br>Number of recipients: " +
-                    a.stats.total +
-                    "<br><br>Emails opened: " +
-                    a.stats.opened +
-                    "<br><br>Emails clicked: " +
-                    a.stats.clicked +
-                    "<br><br>Submitted Credentials: " +
-                    a.stats.submitted_data +
-                    "<br><br>Errors : " +
-                    a.stats.error +
-                    "Reported : " +
-                    a.stats.reported;
-                }
-                campaignTable.row
-                  .add([
-                    escapeHtml(a.name),
-                    a.username,
-                    moment(a.created_date).format("MMMM Do YYYY, h:mm:ss a"),
-                    '<span class="label ' +
-                      label +
-                      '" data-toggle="tooltip" data-placement="right" data-html="true" title="' +
-                      n +
-                      '">' +
-                      a.status +
-                      "</span>",
-                    "<div class='pull-right'><a class='btn btn-primary' href='/campaigns/" +
-                      a.id +
-                      "' data-toggle='tooltip' data-placement='left' title='View Results'>                    <i class='fa fa-bar-chart'></i>                    </a>            <span data-toggle='modal' data-backdrop='static' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Copy Campaign' onclick='copy(" +
-                      e +
-                      ")'>                    <i class='fa fa-copy'></i>                    </button></span>                    <button class='btn btn-danger' onclick='deleteCampaign(" +
-                      e +
-                      ")' data-toggle='tooltip' data-placement='left' title='Delete Campaign'>                    <i class='fa fa-trash-o'></i>                    </button></div>"
-                  ])
-                  .draw(),
-                  $('[data-toggle="tooltip"]').tooltip();
-              }))
-            : $("#emptyMessage").show();
-      })
-      .error(function() {
-        $("#loading").hide(), errorFlash("Error fetching campaigns");
-      }),
-    $.fn.select2.defaults.set("width", "100%"),
+    });
+
+  load("own");
+
+  $.fn.select2.defaults.set("width", "100%"),
     $.fn.select2.defaults.set("dropdownParent", $("#modal_body")),
     $.fn.select2.defaults.set("theme", "bootstrap"),
     $.fn.select2.defaults.set("sorter", function(e) {
@@ -426,3 +364,83 @@ $(document).ready(function() {
       });
     });
 });
+
+function load(filter) {
+  if (campaignTable === undefined) {
+    campaignTable = $("#campaignTable").DataTable({
+      columnDefs: [
+        {
+          orderable: !1,
+          targets: "no-sort"
+        }
+      ],
+      order: [[1, "desc"]]
+    });
+  } else {
+    campaignTable.clear();
+    campaignTable.draw();
+  }
+
+  api.campaigns
+    .summary(filter)
+    .success(function(e) {
+      (campaigns = e.campaigns),
+        $("#loading").hide(),
+        campaigns.length > 0
+          ? ($("#campaignTable").show(),
+            $.each(campaigns, function(e, a) {
+              label = labels[a.status] || "label-default";
+              var t;
+              if (moment(a.launch_date).isAfter(moment())) {
+                t =
+                  "Scheduled to start: " +
+                  moment(a.launch_date).format("MMMM Do YYYY, h:mm:ss a");
+                var n = t + "<br><br>Number of recipients: " + a.stats.total;
+              } else {
+                t =
+                  "Launch Date: " +
+                  moment(a.launch_date).format("MMMM Do YYYY, h:mm:ss a");
+                var n =
+                  t +
+                  "<br><br>Number of recipients: " +
+                  a.stats.total +
+                  "<br><br>Emails opened: " +
+                  a.stats.opened +
+                  "<br><br>Emails clicked: " +
+                  a.stats.clicked +
+                  "<br><br>Submitted Credentials: " +
+                  a.stats.submitted_data +
+                  "<br><br>Errors : " +
+                  a.stats.error +
+                  "Reported : " +
+                  a.stats.reported;
+              }
+              campaignTable.row
+                .add([
+                  escapeHtml(a.name),
+                  a.username,
+                  moment(a.created_date).format("MMMM Do YYYY, h:mm:ss a"),
+                  '<span class="label ' +
+                    label +
+                    '" data-toggle="tooltip" data-placement="right" data-html="true" title="' +
+                    n +
+                    '">' +
+                    a.status +
+                    "</span>",
+                  "<div class='pull-right'><a class='btn btn-primary' href='/campaigns/" +
+                    a.id +
+                    "' data-toggle='tooltip' data-placement='left' title='View Results'>                    <i class='fa fa-bar-chart'></i>                    </a>            <span data-toggle='modal' data-backdrop='static' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Copy Campaign' onclick='copy(" +
+                    e +
+                    ")'>                    <i class='fa fa-copy'></i>                    </button></span>                    <button class='btn btn-danger' onclick='deleteCampaign(" +
+                    e +
+                    ")' data-toggle='tooltip' data-placement='left' title='Delete Campaign'>                    <i class='fa fa-trash-o'></i>                    </button></div>"
+                ])
+                .draw(),
+                $('[data-toggle="tooltip"]').tooltip();
+            }))
+          : $("#emptyMessage").hide();
+    })
+    .error(function() {
+      $("#loading").hide(), errorFlash("Error fetching campaigns");
+    });
+}

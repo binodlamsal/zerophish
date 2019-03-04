@@ -1,3 +1,5 @@
+var groupTable;
+
 function save(e) {
   var a = [];
   $.each(
@@ -24,7 +26,7 @@ function save(e) {
         .put(t)
         .success(function(e) {
           successFlash("Group updated successfully!"),
-            load(),
+            load($("input[type=radio][name=filter]:checked").val()),
             dismiss(),
             $("#modal").modal("hide");
         })
@@ -35,7 +37,7 @@ function save(e) {
         .post(t)
         .success(function(e) {
           successFlash("Group added successfully!"),
-            load(),
+            load($("input[type=radio][name=filter]:checked").val()),
             dismiss(),
             $("#modal").modal("hide");
         })
@@ -138,29 +140,34 @@ function addTarget(e, a, t, s) {
     : n.row.add(r);
 }
 
-function load() {
-  $("#groupTable").hide(),
-    $("#emptyMessage").hide(),
+function load(filter) {
+  if (groupTable === undefined) {
+    groupTable = $("#groupTable").DataTable({
+      destroy: !0,
+      columnDefs: [
+        {
+          orderable: !1,
+          targets: "no-sort"
+        }
+      ]
+    });
+
+    $("#groupTable").show();
+  } else {
+    groupTable.clear();
+    groupTable.draw();
+  }
+
+  $("#emptyMessage").hide(),
     $("#loading").show(),
     api.groups
-      .summary()
+      .summary(filter)
       .success(function(e) {
         if (($("#loading").hide(), e.total > 0)) {
           (groups = e.groups),
             $("#emptyMessage").hide(),
-            $("#groupTable").show();
-          var a = $("#groupTable").DataTable({
-            destroy: !0,
-            columnDefs: [
-              {
-                orderable: !1,
-                targets: "no-sort"
-              }
-            ]
-          });
-          a.clear(),
             $.each(groups, function(e, t) {
-              a.row
+              groupTable.row
                 .add([
                   escapeHtml(t.name),
                   t.username,
@@ -174,7 +181,7 @@ function load() {
                 ])
                 .draw();
             });
-        } else $("#emptyMessage").show();
+        } else $("#emptyMessage").hide();
       })
       .error(function() {
         errorFlash("Error fetching groups");
@@ -246,21 +253,26 @@ $(document).ready(function() {
     errorFlash("Please create a user group first");
   }
 
-  load(),
-    $("#targetForm").submit(function() {
-      return (
-        addTarget(
-          $("#firstName").val(),
-          $("#lastName").val(),
-          $("#email").val(),
-          $("#position").val()
-        ),
-        targets.DataTable().draw(),
-        $("#targetForm>div>input").val(""),
-        $("#firstName").focus(),
-        !1
-      );
-    }),
+  $("input[type=radio][name=filter]").change(function(event) {
+    load(event.target.value);
+  });
+
+  load("own");
+
+  $("#targetForm").submit(function() {
+    return (
+      addTarget(
+        $("#firstName").val(),
+        $("#lastName").val(),
+        $("#email").val(),
+        $("#position").val()
+      ),
+      targets.DataTable().draw(),
+      $("#targetForm>div>input").val(""),
+      $("#firstName").focus(),
+      !1
+    );
+  }),
     $("#targetsTable").on("click", "span>i.fa-trash-o", function() {
       targets
         .DataTable()
