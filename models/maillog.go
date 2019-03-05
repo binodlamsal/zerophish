@@ -151,11 +151,17 @@ func (m *MailLog) Generate(msg *gomail.Message) error {
 		return err
 	}
 
-	f, err := mail.ParseAddress(c.SMTP.FromAddress)
-	if err != nil {
-		return err
+	var from *mail.Address
+
+	if from, err = mail.ParseAddress(c.FromAddress); err != nil {
+		if from, err = mail.ParseAddress(c.Template.FromAddress); err != nil {
+			if from, err = mail.ParseAddress(c.SMTP.FromAddress); err != nil {
+				return err
+			}
+		}
 	}
-	msg.SetAddressHeader("From", f.Address, f.Name)
+
+	msg.SetAddressHeader("From", from.Address, from.Name)
 
 	ptx, err := NewPhishingTemplateContext(&c, r.BaseRecipient, r.RId)
 	if err != nil {

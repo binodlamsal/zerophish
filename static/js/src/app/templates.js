@@ -12,6 +12,7 @@ function save(e) {
     (t.rating = parseInt($("input[name=stars]:checked").val())),
     (t.html = CKEDITOR.instances.html_editor.getData()),
     (t.html = t.html.replace(/https?:\/\/{{\.URL}}/gi, "{{.URL}}")),
+    (t.from_address = $("#from_address").val()),
     $("#use_tracker_checkbox").prop("checked")
       ? -1 == t.html.indexOf("{{.Tracker}}") &&
         -1 == t.html.indexOf("{{.TrackingUrl}}") &&
@@ -63,6 +64,7 @@ function dismiss() {
       .clear()
       .draw(),
     $("#name").val(""),
+    $("#from_address").val(""),
     $("#subject").val(""),
     $("#text_editor").val(""),
     $("#html_editor").val(""),
@@ -149,6 +151,7 @@ function edit(e) {
     console.log(t),
     $("#publicly_available").prop("checked", t.public),
     $("#name").val(t.name),
+    $("#from_address").val(t.from_address),
     $("#subject").val(t.subject),
     $("#html_editor").val(t.html),
     $("#text_editor").val(t.text),
@@ -265,6 +268,8 @@ function preview(e) {
   t = templates[e];
   console.log(t);
   $("#modalforpreview .tempname").html(t.name);
+  $("#modalforpreview .from_address").text(t.from_address);
+  $("#modalforpreview .subject").html(t.subject);
   if (t.html != "") {
     $("#modalforpreview .modal-body").html(t.html);
   } else {

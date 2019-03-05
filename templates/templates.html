@@ -73,6 +73,10 @@
                                 <option val = "">Select Category</option>
                             </select>
                 </div>
+                <label class="control-label" for="subject">From:</label>
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="First Last <test@example.com>" id="from_address" />
+                </div>
                 <label class="control-label" for="subject">Subject:</label>
                 <div class="form-group">
                     <input type="text" class="form-control" placeholder="Email Subject" id="subject" />
@@ -175,6 +179,10 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="dismiss()"><span
                 aria-hidden="true">&times;</span></button>
         <h4 class="modal-title" id="templateModalLabel">Preview Template - <span class="tempname"> </span></h4>
+        </div>
+        <div class="modal-header">
+            <strong>From:</strong>&nbsp;<span class="from_address"></span><br>
+            <strong>Subject:</strong>&nbsp;<span class="subject"></span>
         </div>
         <div class="modal-body">
         </div>

@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"errors"
+	"net/mail"
 	"net/url"
 	"strings"
 	"time"
@@ -27,6 +28,7 @@ type Campaign struct {
 	CompletedDate time.Time `json:"completed_date"`
 	TemplateId    int64     `json:"-"`
 	Template      Template  `json:"template"`
+	FromAddress   string    `json:"from_address"`
 	PageId        int64     `json:"-"`
 	Page          Page      `json:"page"`
 	Status        string    `json:"status"`
@@ -133,6 +135,9 @@ var ErrSMTPNotFound = errors.New("Sending profile not found")
 // launch date
 var ErrInvalidSendByDate = errors.New("The launch date must be before the \"send emails by\" date")
 
+// ErrCampaignFromAddressNotValid is thrown when the "from" address is not valid
+var ErrCampaignFromAddressNotValid = errors.New("The sender's address is not valid")
+
 // RecipientParameter is the URL parameter that points to the result ID for a recipient.
 const RecipientParameter = "rid"
 
@@ -152,6 +157,13 @@ func (c *Campaign) Validate() error {
 	case !c.SendByDate.IsZero() && !c.LaunchDate.IsZero() && c.SendByDate.Before(c.LaunchDate):
 		return ErrInvalidSendByDate
 	}
+
+	if c.FromAddress != "" {
+		if _, err = mail.ParseAddress(c.FromAddress); err != nil {
+			return ErrCampaignFromAddressNotValid
+		}
+	}
+
 	return nil
 }
 

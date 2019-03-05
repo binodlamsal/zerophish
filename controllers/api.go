@@ -602,14 +602,14 @@ func API_Templates(w http.ResponseWriter, r *http.Request) {
 		t.ModifiedDate = time.Now().UTC()
 		t.UserId = ctx.Get(r, "user_id").(int64)
 		err = models.PostTemplate(&t)
-		if err == models.ErrTemplateNameNotSpecified {
+
+		if err == models.ErrTemplateNameNotSpecified ||
+			err == models.ErrTemplateMissingParameter ||
+			err == models.ErrTemplateFromAddressNotSpecified {
 			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusBadRequest)
 			return
 		}
-		if err == models.ErrTemplateMissingParameter {
-			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusBadRequest)
-			return
-		}
+
 		if err != nil {
 			JSONResponse(w, models.Response{Success: false, Message: "Error inserting template into database"}, http.StatusInternalServerError)
 			log.Error(err)

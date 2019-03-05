@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"net/mail"
 	"time"
 
 	log "github.com/binodlamsal/gophish/logger"
@@ -17,6 +18,7 @@ type Template struct {
 	Subject      string       `json:"subject"`
 	Text         string       `json:"text"`
 	HTML         string       `json:"html" gorm:"column:html"`
+	FromAddress  string       `json:"from_address"`
 	RATING       int64        `json:"rating" gorm:"column:rating"`
 	TagsId       int64        `json:"tag" gorm:"column:tag"`
 	Tags         Tags         `json:"tags"`
@@ -36,6 +38,12 @@ type Tags struct {
 // ErrTemplateNameNotSpecified is thrown when a template name is not specified
 var ErrTemplateNameNotSpecified = errors.New("Template name not specified")
 
+// ErrTemplateFromAddressNotSpecified is thrown when the "from" address is not specified
+var ErrTemplateFromAddressNotSpecified = errors.New("The sender's address is not specified")
+
+// ErrTemplateFromAddressNotValid is thrown when the "from" address is not valid
+var ErrTemplateFromAddressNotValid = errors.New("The sender's address is not valid")
+
 // ErrTemplateMissingParameter is thrown when a needed parameter is not provided
 var ErrTemplateMissingParameter = errors.New("Need to specify at least plaintext or HTML content")
 
@@ -46,14 +54,19 @@ func (t *Template) Validate() error {
 		return ErrTemplateNameNotSpecified
 	case t.Text == "" && t.HTML == "":
 		return ErrTemplateMissingParameter
+	case t.FromAddress == "":
+		return ErrTemplateFromAddressNotSpecified
 	}
+
+	if _, err = mail.ParseAddress(t.FromAddress); err != nil {
+		return ErrTemplateFromAddressNotValid
+	}
+
 	if err = ValidateTemplate(t.HTML); err != nil {
 		return err
 	}
-	if err = ValidateTemplate(t.Text); err != nil {
-		return err
-	}
-	return nil
+
+	return ValidateTemplate(t.Text)
 }
 
 // IsWritableByUser tells if this template can be modified by a user with the given uid
@@ -201,7 +214,8 @@ func IsTemplateWritableByUser(tid, uid int64) bool {
 // customers - customers' items
 // Note: empty "filter" will be treated as "own"
 func GetTemplates(uid int64, filter string) ([]Template, error) {
-	if filter != "own" && filter != "customers" && filter != "public" {
+	if filter != "own" && filter != "customers" &&
+		filter != "public" && filter != "own-and-public" {
 		filter = "own"
 	}
 
@@ -216,6 +230,8 @@ func GetTemplates(uid int64, filter string) ([]Template, error) {
 
 	if filter == "own" {
 		query = query.Where("user_id = ?", uid)
+	} else if filter == "own-and-public" {
+		query = query.Where("user_id = ? OR public = ?", uid, 1)
 	} else if filter == "public" {
 		query = query.Where("public = ?", 1)
 	} else {

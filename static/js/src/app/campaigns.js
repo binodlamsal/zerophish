@@ -30,6 +30,7 @@ function launch() {
             .format()),
           (campaign = {
             name: $("#name").val(),
+            from_address: $("#from_address").val(),
             template: {
               name: $("#template").select2("data")[0].text
             },
@@ -190,6 +191,8 @@ function deleteCampaign(e) {
 }
 
 function setupOptions() {
+  var addresses = {};
+
   api.groups.get().success(function(e) {
     if (0 == e.length) return (document.location = "/users?ref=campaigns"), !1;
     var a = $.map(e, function(e) {
@@ -200,12 +203,19 @@ function setupOptions() {
       data: a
     });
   }),
-    api.templates.get().success(function(e) {
+    api.templates.get("own-and-public").success(function(e) {
       if (0 == e.length) return modalError("No templates found!"), !1;
       var a = $.map(e, function(e) {
-          return (e.text = e.name), e;
-        }),
-        t = $("#template.form-control");
+        addresses[e.id] = e.from_address;
+        return (e.text = e.name), e;
+      });
+
+      t = $("#template.form-control");
+
+      t.change(function(event) {
+        $("#from_address").val(addresses[event.target.value]);
+      });
+
       t.select2({
         placeholder: "Select a Template",
         data: a
