@@ -104,6 +104,7 @@ function sendTestEmail() {
     },
     first_name: $("input[name=to_first_name]").val(),
     last_name: $("input[name=to_last_name]").val(),
+    from_address: $("#from_address").val(),
     email: $("input[name=to_email]").val(),
     position: $("input[name=to_position]").val(),
     url: $("#url").val(),
@@ -114,6 +115,7 @@ function sendTestEmail() {
       name: $("#profile").select2("data")[0].text
     }
   };
+
   (btnHtml = $("#sendTestModalSubmit").html()),
     $("#sendTestModalSubmit").html(
       '<i class="fa fa-spinner fa-spin"></i> Sending'

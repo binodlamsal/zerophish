@@ -7,10 +7,10 @@ import (
 	"net/mail"
 	"strings"
 
-	"github.com/gophish/gomail"
 	"github.com/binodlamsal/gophish/config"
 	log "github.com/binodlamsal/gophish/logger"
 	"github.com/binodlamsal/gophish/mailer"
+	"github.com/gophish/gomail"
 )
 
 // PreviewPrefix is the standard prefix added to the rid parameter when sending
@@ -33,7 +33,7 @@ type EmailRequest struct {
 	UserId      int64        `json:"-"`
 	ErrorChan   chan (error) `json:"-" gorm:"-"`
 	RId         string       `json:"id"`
-	FromAddress string       `json:"-"`
+	FromAddress string       `json:"from_address"`
 	BaseRecipient
 }
 

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/mail"
 	"strconv"
 	"strings"
 	"time"
@@ -1082,7 +1083,21 @@ func API_Send_Test_Email(w http.ResponseWriter, r *http.Request) {
 		}
 		s.SMTP = smtp
 	}
-	s.FromAddress = s.SMTP.FromAddress
+
+	if s.FromAddress != "" {
+		if _, err = mail.ParseAddress(s.FromAddress); err != nil {
+			JSONResponse(w, models.Response{Success: false, Message: "Bad From: address"}, http.StatusBadRequest)
+			return
+		}
+	} else if s.Template.FromAddress != "" {
+		if _, err = mail.ParseAddress(s.Template.FromAddress); err != nil {
+			s.FromAddress = s.SMTP.FromAddress
+		} else {
+			s.FromAddress = s.Template.FromAddress
+		}
+	} else {
+		s.FromAddress = s.SMTP.FromAddress
+	}
 
 	// Validate the given request
 	if err = s.Validate(); err != nil {
