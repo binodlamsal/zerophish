@@ -1,4 +1,5 @@
 var templateTable;
+var filter = "own";
 
 function save(e) {
   var t = {
@@ -435,6 +436,8 @@ $(document).ready(function() {
       $("body").data("fv_open_modals", $("body").data("fv_open_modals") - 1);
   }),
     $(".modal").on("shown.bs.modal", function(e) {
+      $("#filter-" + filter).prop("checked", true);
+
       void 0 === $("body").data("fv_open_modals") &&
         $("body").data("fv_open_modals", 0),
         $(this).hasClass("fv-modal-stack") ||
@@ -474,7 +477,8 @@ $(document).ready(function() {
       $("#email_content").val("");
     }),
     $("input[type=radio][name=filter]").change(function(event) {
-      load(event.target.value);
+      filter = event.target.value;
+      load(filter);
     });
 
   load("own");
