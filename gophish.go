@@ -47,8 +47,9 @@ import (
 )
 
 var (
-	configPath    = kingpin.Flag("config", "Location of config.json.").Default("./config.json").String()
-	disableMailer = kingpin.Flag("disable-mailer", "Disable the mailer (for use with multi-system deployments)").Bool()
+	configPath     = kingpin.Flag("config", "Location of config.json.").Default("./config.json").String()
+	disableMailer  = kingpin.Flag("disable-mailer", "Disable the mailer (for use with multi-system deployments)").Bool()
+	encryptApiKeys = kingpin.Flag("encrypt-api-keys", "Encrypt all unencrypted API keys and exit").Bool()
 )
 
 func main() {
@@ -93,6 +94,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	if *encryptApiKeys {
+		models.EncryptApiKeys()
+		return
+	}
+
 	// Unlock any maillogs that may have been locked for processing
 	// when Gophish was last shutdown.
 	err = models.UnlockAllMailLogs()

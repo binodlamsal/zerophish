@@ -1,9 +1,13 @@
 package models
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/binodlamsal/gophish/bakery"
+	"github.com/jinzhu/gorm"
 
 	log "github.com/binodlamsal/gophish/logger"
 	"github.com/vincent-petithory/dataurl"
@@ -26,6 +30,7 @@ type User struct {
 	Partner         int64     `json:"partner" sql:"not null"`
 	Hash            string    `json:"-"`
 	ApiKey          string    `json:"api_key" sql:"not null;unique"`
+	PlainApiKey     string    `json:"plain_api_key" gorm:"-"`
 	FullName        string    `json:"full_name" sql:"not null"`
 	Avatar          string    `json:"avatar"`
 	EmailVerifiedAt time.Time `json:"email_verified_at"`
@@ -140,6 +145,11 @@ func GetUser(id int64) (User, error) {
 // error is thrown.
 func GetUserByAPIKey(key string) (User, error) {
 	u := User{}
+
+	if key, err = bakery.Encrypt(key); err != nil {
+		return u, err
+	}
+
 	err := db.Where("api_key = ?", key).First(&u).Error
 	return u, err
 }
@@ -341,6 +351,26 @@ func (u User) CanManageSubscriptions() bool {
 	return false
 }
 
+// DecryptApiKey decrypts encrypted ApiKey field and puts the result into PlainApiKey
+func (u *User) DecryptApiKey() {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Error("Recovered from panic in DecryptApiKey()")
+			u.PlainApiKey = u.ApiKey
+		}
+	}()
+
+	apiKey, err := bakery.Decrypt(u.ApiKey)
+
+	if err != nil {
+		log.Error(err)
+		u.PlainApiKey = u.ApiKey
+		return
+	}
+
+	u.PlainApiKey = apiKey
+}
+
 // GetRoles returns all available roles
 func GetRoles() (Roles, error) {
 	r := Roles{}
@@ -417,4 +447,51 @@ func (u *User) BeforeSave() (err error) {
 	}
 
 	return
+}
+
+func (u *User) BeforeCreate(scope *gorm.Scope) error {
+	encKey, err := bakery.Encrypt(u.ApiKey)
+
+	if err != nil {
+		return err
+	}
+
+	return scope.SetColumn("ApiKey", encKey)
+}
+
+func (u *User) BeforeUpdate(scope *gorm.Scope) error {
+	if len(u.ApiKey) > 64 {
+		return nil
+	}
+
+	encKey, err := bakery.Encrypt(u.ApiKey)
+
+	if err != nil {
+		return err
+	}
+
+	return scope.SetColumn("ApiKey", encKey)
+}
+
+func EncryptApiKeys() {
+	log.Info("Encrypting API keys...")
+	users := []User{}
+	err := db.Where("LENGTH(api_key) <= 64").Find(&users).Error
+
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+	for _, u := range users {
+		if encKey, err := bakery.Encrypt(u.ApiKey); err == nil {
+			if db.Model(u).UpdateColumn("api_key", encKey).Error == nil {
+				log.Infof("Encrypted API Key (%s) of user %d (%s)", u.ApiKey, u.Id, u.Username)
+			}
+		} else {
+			log.Error(err)
+		}
+	}
+
+	log.Info("Done.")
 }

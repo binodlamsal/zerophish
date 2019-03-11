@@ -55,6 +55,7 @@ func GetContext(handler http.Handler) http.HandlerFunc {
 			if err != nil {
 				r = ctx.Set(r, "user", nil)
 			} else {
+				(&u).DecryptApiKey()
 				r = ctx.Set(r, "user", u)
 			}
 		} else {

@@ -19,7 +19,7 @@
     <script>
     {{if .User}}
     var user = {
-        api_key : {{ .User.ApiKey }},
+        api_key : {{ .User.PlainApiKey }},
         username : {{ .User.Username }}
     }
     {{end}}
