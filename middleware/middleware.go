@@ -13,7 +13,6 @@ import (
 	ctx "github.com/binodlamsal/gophish/context"
 	log "github.com/binodlamsal/gophish/logger"
 	"github.com/binodlamsal/gophish/models"
-	"github.com/binodlamsal/gophish/usersync"
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/sessions"
 )
@@ -132,6 +131,12 @@ func RequireRoles(rids []int64) func(http.Handler) http.HandlerFunc {
 func RequireLogin(handler http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if u := ctx.Get(r, "user"); u != nil {
+			if u.(models.User).IsLMSUser() {
+				flash(w, r, "info", "LMS users are not allowed to access the awareness platform.")
+				http.Redirect(w, r, "logout", 302)
+				return
+			}
+
 			handler.ServeHTTP(w, r)
 		} else {
 			q := r.URL.Query()
@@ -194,7 +199,7 @@ func SSO(handler http.Handler) http.HandlerFunc {
 					return
 				}
 
-				newUser, err := usersync.CreateUser(c.User, c.Email, "qwerty", int64(rid))
+				newUser, err := models.CreateUser(c.User, c.Email, "qwerty", int64(rid), 0)
 
 				if err != nil {
 					logoutWithError(err)

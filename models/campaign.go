@@ -5,11 +5,13 @@ import (
 	"errors"
 	"net/mail"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/binodlamsal/gophish/bakery"
 	log "github.com/binodlamsal/gophish/logger"
+	"github.com/binodlamsal/gophish/usersync"
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 )
@@ -732,4 +734,51 @@ func (e *Event) AfterFind() (err error) {
 	}
 
 	return
+}
+
+// AfterCreate creates a new user with "lms_user" role whenever EVENT_CLICKED event occurs,
+// additionally links newly created LMS users to relevant LMS campaigns.
+func (e *Event) AfterCreate(tx *gorm.DB) error {
+	if e.Message != EVENT_CLICKED {
+		return nil
+	}
+
+	tx.Commit()
+	coid, err := GetCampaignOwnerId(e.CampaignId)
+
+	if err != nil {
+		log.Errorf("Could not determine owner id of campaign %d - %s", e.CampaignId, err.Error())
+		return nil
+	}
+
+	u, err := CreateUser(e.Email, e.Email, "qwerty", LMSUser, coid)
+
+	if err != nil {
+		log.Errorf("Could not create LMS user - %s", err.Error())
+		return nil
+	}
+
+	if os.Getenv("USERSYNC_DISABLE") == "" {
+		err = usersync.PushUser(u.Id, u.Username, u.Email, u.FullName, "qwerty", LMSUser, coid)
+
+		if err != nil {
+			_ = DeleteUser(u.Id)
+			log.Errorf("Could not push user to the main server - %s", err.Error())
+			return nil
+		}
+	}
+
+	lmsCampaigns, err := GetLinkedLMSCampaigns(e.CampaignId)
+
+	if len(lmsCampaigns) == 0 {
+		return nil
+	}
+
+	for _, c := range lmsCampaigns {
+		if err := c.AddUser(u.Id); err != nil {
+			log.Error(err)
+		}
+	}
+
+	return nil
 }

@@ -1,13 +1,16 @@
 package models
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/binodlamsal/gophish/bakery"
+	"github.com/binodlamsal/gophish/util"
 	"github.com/jinzhu/gorm"
+	"golang.org/x/crypto/bcrypt"
 
 	log "github.com/binodlamsal/gophish/logger"
 	"github.com/vincent-petithory/dataurl"
@@ -180,6 +183,71 @@ func PutUserRole(ur *UserRole) error {
 	return err
 }
 
+// CreateUser creates a new user with the given props and returns it
+func CreateUser(username, email, password string, rid int64, partner int64) (*User, error) {
+	if username == "" {
+		return nil, errors.New("Username must not be empty")
+	}
+
+	if email == "" {
+		return nil, errors.New("E-mail must not be empty")
+	}
+
+	if password == "" {
+		return nil, errors.New("Password must not be empty")
+	}
+
+	if rid < 1 || rid > 5 {
+		return nil, errors.New("Role ID (rid) must be in range: 1-5")
+	}
+
+	_, err1 := GetUserByUsername(username)
+	_, err2 := GetUserByUsername(email)
+
+	if err1 == nil || err2 == nil {
+		return nil, fmt.Errorf("Username (%s) or e-mail (%s) is already taken", username, email)
+	}
+
+	if err1 != nil && err1 != gorm.ErrRecordNotFound {
+		return nil, err1
+	}
+
+	if err2 != nil && err2 != gorm.ErrRecordNotFound {
+		return nil, err2
+	}
+
+	h, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+
+	if err != nil {
+		return nil, err
+	}
+
+	u := User{
+		Username:  username,
+		Email:     email,
+		Hash:      string(h),
+		ApiKey:    util.GenerateSecureKey(),
+		Partner:   partner,
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
+	}
+
+	if err = PutUser(&u); err != nil {
+		return nil, err
+	}
+
+	err = PutUserRole(&UserRole{
+		Uid: u.Id,
+		Rid: rid,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &u, nil
+}
+
 // GetUsers returns the users owned by the given user.
 func GetUsers(uid int64) ([]User, error) {
 	users := []User{}
@@ -264,6 +332,17 @@ func (u User) IsChildUser() bool {
 	}
 
 	return role.Is(ChildUser)
+}
+
+// IsLMSUser tells if this user is LMS user
+func (u User) IsLMSUser() bool {
+	role, err := GetUserRole(u.Id)
+
+	if err != nil {
+		return false
+	}
+
+	return role.Is(LMSUser)
 }
 
 // GetLogo returns logo which was assigned to this partner/customer account or nil
