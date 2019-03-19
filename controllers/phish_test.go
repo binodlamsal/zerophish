@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/binodlamsal/gophish/config"
-	"github.com/binodlamsal/gophish/models"
+	"github.com/everycloud-technologies/phishing-simulation/config"
+	"github.com/everycloud-technologies/phishing-simulation/models"
 )
 
 func (s *ControllersSuite) getFirstCampaign() models.Campaign {

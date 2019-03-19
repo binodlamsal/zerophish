@@ -147,6 +147,24 @@ var capitalize = function(e) {
       },
       delete: function(e) {
         return query("/groups/" + e, "DELETE", {}, !1);
+      },
+      lms: {
+        post: function(gid, ids) {
+          return query("/groups/" + gid + "/lms_users", "POST", ids, true);
+        },
+        delete: function(gid, ids) {
+          return query("/groups/" + gid + "/lms_users", "DELETE", ids, true);
+        },
+        jobs: {
+          get: function(gid, jid) {
+            return query(
+              "/groups/" + gid + "/lms_users/jobs/" + jid,
+              "GET",
+              {},
+              true
+            );
+          }
+        }
       }
     },
     templates: {

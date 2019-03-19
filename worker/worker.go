@@ -3,9 +3,9 @@ package worker
 import (
 	"time"
 
-	log "github.com/binodlamsal/gophish/logger"
-	"github.com/binodlamsal/gophish/mailer"
-	"github.com/binodlamsal/gophish/models"
+	log "github.com/everycloud-technologies/phishing-simulation/logger"
+	"github.com/everycloud-technologies/phishing-simulation/mailer"
+	"github.com/everycloud-technologies/phishing-simulation/models"
 	"github.com/sirupsen/logrus"
 )
 

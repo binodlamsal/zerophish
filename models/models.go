@@ -7,8 +7,8 @@ import (
 
 	"bitbucket.org/liamstask/goose/lib/goose"
 
-	"github.com/binodlamsal/gophish/config"
-	log "github.com/binodlamsal/gophish/logger"
+	"github.com/everycloud-technologies/phishing-simulation/config"
+	log "github.com/everycloud-technologies/phishing-simulation/logger"
 	_ "github.com/go-sql-driver/mysql" // Blank import needed to import mysql
 	"github.com/jinzhu/gorm"
 	_ "github.com/mattn/go-sqlite3" // Blank import needed to import sqlite3

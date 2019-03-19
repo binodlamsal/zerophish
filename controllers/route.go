@@ -10,14 +10,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/binodlamsal/gophish/auth"
-	"github.com/binodlamsal/gophish/bakery"
-	"github.com/binodlamsal/gophish/config"
-	ctx "github.com/binodlamsal/gophish/context"
-	log "github.com/binodlamsal/gophish/logger"
-	mid "github.com/binodlamsal/gophish/middleware"
-	"github.com/binodlamsal/gophish/models"
-	"github.com/binodlamsal/gophish/util"
+	"github.com/everycloud-technologies/phishing-simulation/auth"
+	"github.com/everycloud-technologies/phishing-simulation/bakery"
+	"github.com/everycloud-technologies/phishing-simulation/config"
+	ctx "github.com/everycloud-technologies/phishing-simulation/context"
+	log "github.com/everycloud-technologies/phishing-simulation/logger"
+	mid "github.com/everycloud-technologies/phishing-simulation/middleware"
+	"github.com/everycloud-technologies/phishing-simulation/models"
+	"github.com/everycloud-technologies/phishing-simulation/util"
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
@@ -73,6 +73,8 @@ func CreateAdminRouter() http.Handler {
 	api.HandleFunc("/groups/summary", Use(API_Groups_Summary, mid.RequireAPIKey))
 	api.HandleFunc("/groups/{id:[0-9]+}", Use(API_Groups_Id, mid.RequireAPIKey))
 	api.HandleFunc("/groups/{id:[0-9]+}/summary", Use(API_Groups_Id_Summary, mid.RequireAPIKey))
+	api.HandleFunc("/groups/{id:[0-9]+}/lms_users", Use(API_Groups_Id_LMS, mid.RequireAPIKey))
+	api.HandleFunc(`/groups/{id:[0-9]+}/lms_users/jobs/{jid:[a-f0-9\-]{36}}`, Use(API_Groups_Id_LMS_Jobs_Id, mid.RequireAPIKey))
 	api.HandleFunc("/templates/", Use(API_Templates, mid.RequireAPIKey))
 	api.HandleFunc("/templates/{id:[0-9]+}", Use(API_Templates_Id, mid.RequireAPIKey))
 	api.HandleFunc("/pages/", Use(API_Pages, mid.RequireAPIKey))

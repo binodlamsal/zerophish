@@ -7,12 +7,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/binodlamsal/gophish/bakery"
-	"github.com/binodlamsal/gophish/util"
+	"github.com/everycloud-technologies/phishing-simulation/bakery"
+	"github.com/everycloud-technologies/phishing-simulation/util"
 	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
 
-	log "github.com/binodlamsal/gophish/logger"
+	log "github.com/everycloud-technologies/phishing-simulation/logger"
 	"github.com/vincent-petithory/dataurl"
 )
 

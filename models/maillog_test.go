@@ -8,7 +8,7 @@ import (
 	"net/textproto"
 	"time"
 
-	"github.com/binodlamsal/gophish/config"
+	"github.com/everycloud-technologies/phishing-simulation/config"
 
 	"github.com/gophish/gomail"
 	"github.com/jordan-wright/email"

@@ -8,17 +8,21 @@ import (
 	"fmt"
 	"net/http"
 	"net/mail"
+	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/everycloud-technologies/phishing-simulation/job"
+
 	"github.com/PuerkitoBio/goquery"
-	"github.com/binodlamsal/gophish/auth"
-	ctx "github.com/binodlamsal/gophish/context"
-	log "github.com/binodlamsal/gophish/logger"
-	"github.com/binodlamsal/gophish/models"
-	"github.com/binodlamsal/gophish/util"
-	"github.com/binodlamsal/gophish/worker"
+	"github.com/everycloud-technologies/phishing-simulation/auth"
+	ctx "github.com/everycloud-technologies/phishing-simulation/context"
+	log "github.com/everycloud-technologies/phishing-simulation/logger"
+	"github.com/everycloud-technologies/phishing-simulation/models"
+	"github.com/everycloud-technologies/phishing-simulation/usersync"
+	"github.com/everycloud-technologies/phishing-simulation/util"
+	"github.com/everycloud-technologies/phishing-simulation/worker"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	"github.com/jordan-wright/email"
@@ -575,6 +579,195 @@ func API_Groups_Id_Summary(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		JSONResponse(w, g, http.StatusOK)
+	}
+}
+
+// API_Groups_Id_LMS handles creation and removal of LMS users
+func API_Groups_Id_LMS(w http.ResponseWriter, r *http.Request) {
+	uid := ctx.Get(r, "user_id").(int64)
+	vars := mux.Vars(r)
+	id, _ := strconv.ParseInt(vars["id"], 0, 64)
+	g, err := models.GetGroup(id)
+
+	if err != nil {
+		JSONResponse(w, models.Response{Success: false, Message: "Group not found"}, http.StatusNotFound)
+		return
+	}
+
+	if !models.IsGroupAccessibleByUser(id, uid) {
+		JSONResponse(w, models.Response{Success: false, Message: "Access denied"}, http.StatusForbidden)
+		return
+	}
+
+	var tids []int64
+
+	if err := json.NewDecoder(r.Body).Decode(&tids); err != nil {
+		log.Error(err)
+		JSONResponse(w, models.Response{Success: false, Message: "Malformed request body"}, http.StatusBadRequest)
+		return
+	}
+
+	if !g.HasTargets(tids) {
+		JSONResponse(
+			w, models.Response{
+				Success: false,
+				Message: "One or more target ids belong to a different user group",
+			},
+
+			http.StatusBadRequest,
+		)
+
+		return
+	}
+
+	log.Info(tids)
+
+	switch {
+	case r.Method == "POST":
+		ts, err := models.GetTargetsByIds(tids)
+
+		if err != nil {
+			err = fmt.Errorf("Could not retrieve group targets - %s", err.Error())
+			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
+			return
+		}
+
+		if len(ts) == 0 {
+			JSONResponse(w, models.Response{Success: false, Message: "No users selected"}, http.StatusBadRequest)
+			return
+		}
+
+		j := job.New(ts)
+
+		j.Start(func(j *job.Job) {
+			targets := j.Params().([]models.Target)
+
+			calcProgress := func(current, total int) int {
+				return int(current * 100 / total)
+			}
+
+			for i, t := range targets {
+				u, err := models.CreateUser(t.Email, t.Email, "qwerty", models.LMSUser, 0)
+
+				if err != nil {
+					j.Progress <- calcProgress(i, len(targets))
+					j.Errors <- fmt.Errorf("Could not create LMS user - %s", err.Error())
+					continue
+				}
+
+				if os.Getenv("USERSYNC_DISABLE") == "" {
+					err = usersync.PushUser(u.Id, u.Username, u.Email, u.FullName, "qwerty", models.LMSUser, 0)
+
+					if err != nil {
+						email := u.Email
+						_ = models.DeleteUser(u.Id)
+						j.Progress <- calcProgress(i, len(targets))
+						j.Errors <- fmt.Errorf("Could not push user (%s) to the main server - %s", email, err.Error())
+						continue
+					}
+				}
+
+				j.Progress <- calcProgress(i, len(targets))
+			}
+
+			j.Progress <- 100
+			j.Done <- true
+		})
+
+		JSONResponse(w, models.Response{Success: true, Message: "Accepted", Data: j.ID()}, http.StatusOK)
+
+	case r.Method == "DELETE":
+		ts, err := models.GetTargetsByIds(tids)
+
+		if err != nil {
+			err = fmt.Errorf("Could not retrieve group targets - %s", err.Error())
+			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
+			return
+		}
+
+		if len(ts) == 0 {
+			JSONResponse(w, models.Response{Success: false, Message: "No users selected"}, http.StatusBadRequest)
+			return
+		}
+
+		j := job.New(ts)
+
+		j.Start(func(j *job.Job) {
+			targets := j.Params().([]models.Target)
+
+			calcProgress := func(current, total int) int {
+				return int(current * 100 / total)
+			}
+
+			for i, t := range targets {
+				u, err := models.GetUserByUsername(t.Email)
+
+				if err != nil {
+					j.Progress <- calcProgress(i, len(targets))
+					j.Errors <- fmt.Errorf("Could not find user with email %s - %s", t.Email, err.Error())
+					continue
+				}
+
+				err = models.DeleteUser(u.Id)
+
+				if err != nil {
+					j.Progress <- calcProgress(i, len(targets))
+					j.Errors <- fmt.Errorf("Could not delete user with id %d - %s", u.Id, err.Error())
+					continue
+				}
+
+				if os.Getenv("USERSYNC_DISABLE") == "" {
+					// Delete user on the main server?
+				}
+
+				j.Progress <- calcProgress(i, len(targets))
+			}
+
+			j.Progress <- 100
+			j.Done <- true
+		})
+
+		JSONResponse(w, models.Response{Success: true, Message: "Accepted", Data: j.ID()}, http.StatusOK)
+
+	default:
+		JSONResponse(w, models.Response{Success: false, Message: "Method not allowed"}, http.StatusBadRequest)
+	}
+}
+
+// API_Groups_Id_LMS_Jobs_Id provides info on LMS user creation job status
+func API_Groups_Id_LMS_Jobs_Id(w http.ResponseWriter, r *http.Request) {
+	uid := ctx.Get(r, "user_id").(int64)
+	vars := mux.Vars(r)
+	id, _ := strconv.ParseInt(vars["id"], 0, 64)
+	jid := vars["jid"]
+	_, err := models.GetGroup(id)
+
+	if err != nil {
+		JSONResponse(w, models.Response{Success: false, Message: "Group not found"}, http.StatusNotFound)
+		return
+	}
+
+	if !models.IsGroupAccessibleByUser(id, uid) {
+		JSONResponse(w, models.Response{Success: false, Message: "Access denied"}, http.StatusForbidden)
+		return
+	}
+
+	switch {
+	case r.Method == "GET":
+		result := &lmsUserCreationResult{}
+		j := job.Get(jid)
+
+		if j == nil {
+			JSONResponse(w, models.Response{Success: false, Message: "Wrong job id"}, http.StatusBadRequest)
+			return
+		}
+
+		result.Progress = j.GetProgress()
+		result.Errors = j.GetErrors()
+		JSONResponse(w, models.Response{Success: true, Message: "Status", Data: result}, http.StatusOK)
+
+	default:
+		JSONResponse(w, models.Response{Success: false, Message: "Method not allowed"}, http.StatusBadRequest)
 	}
 }
 
@@ -1255,4 +1448,9 @@ type emailResponse struct {
 	Text    string `json:"text"`
 	HTML    string `json:"html"`
 	Subject string `json:"subject"`
+}
+
+type lmsUserCreationResult struct {
+	Progress int      `json:"progress"`
+	Errors   []string `json:"errors"`
 }

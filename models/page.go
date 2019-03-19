@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	log "github.com/binodlamsal/gophish/logger"
+	log "github.com/everycloud-technologies/phishing-simulation/logger"
 )
 
 // Page contains the fields used for a Page model

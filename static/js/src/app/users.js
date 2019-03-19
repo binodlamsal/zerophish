@@ -1,4 +1,5 @@
 var groupTable;
+var groupId;
 
 function save(e) {
   var a = [];
@@ -48,12 +49,13 @@ function save(e) {
 
 function dismiss() {
   $("#targetsTable")
-    .dataTable()
     .DataTable()
     .clear()
-    .draw(),
-    $("#name").val(""),
-    $("#modal\\.flashes").empty();
+    .draw();
+
+  $("#name").val("");
+  $("#modal\\.flashes").empty();
+  $("#lms-modal\\.flashes").empty();
 }
 
 function edit(e) {
@@ -115,6 +117,74 @@ function edit(e) {
   });
 }
 
+function lms(e) {
+  groupId = e;
+
+  if (
+    ((lmsTargets = $("#lmsTargetsTable").dataTable({
+      select: {
+        style: "multi",
+        selector: "td:first-child"
+      },
+      destroy: !0,
+      columnDefs: [
+        {
+          orderable: false,
+          className: "select-checkbox",
+          width: "20px",
+          targets: 0
+        },
+        {
+          width: "30px",
+          targets: -1
+        }
+      ],
+      order: [[1, "asc"]],
+      autoWidth: false
+    })),
+    -1 == e)
+  );
+  else {
+    lmsTargets
+      .DataTable()
+      .rows()
+      .deselect();
+
+    lmsTargets.DataTable().clear();
+
+    api.groupId
+      .get(e)
+      .success(function(e) {
+        $.each(e.targets, function(e, a) {
+          lmsTargets
+            .DataTable()
+            .row.add([
+              "",
+              escapeHtml(a.first_name),
+              escapeHtml(a.last_name),
+              escapeHtml(a.email),
+              escapeHtml(a.position),
+              a.is_lms_user ? "&nbsp;&nbsp;✔" : ""
+            ])
+            .node().id = a.id;
+        });
+
+        lmsTargets.DataTable().draw();
+
+        $(".dataTables_empty").attr(
+          "colspan",
+          lmsTargets
+            .DataTable()
+            .columns()
+            .count()
+        );
+      })
+      .error(function() {
+        errorFlash("Error fetching group");
+      });
+  }
+}
+
 function addTarget(e, a, t, s) {
   var o = escapeHtml(t).toLowerCase(),
     r = [
@@ -173,7 +243,11 @@ function load(filter) {
                   t.username,
                   escapeHtml(t.num_targets),
                   moment(t.modified_date).format("MMMM Do YYYY, h:mm:ss a"),
-                  "<div class='pull-right'><button class='btn btn-primary' data-toggle='modal' data-backdrop='static' data-target='#modal' onclick='edit(" +
+                  "<div class='pull-right'>" +
+                    "<button class='btn btn-primary' data-toggle='modal' data-backdrop='static' data-target='#lms-modal' onclick='lms(" +
+                    t.id +
+                    ")'>LMS</button> " +
+                    "<button class='btn btn-primary' data-toggle='modal' data-backdrop='static' data-target='#modal' onclick='edit(" +
                     t.id +
                     ")'>                    <i class='fa fa-pencil'></i>                    </button>                    <button class='btn btn-danger' onclick='deleteGroup(" +
                     t.id +
@@ -272,16 +346,207 @@ $(document).ready(function() {
       $("#firstName").focus(),
       !1
     );
-  }),
-    $("#targetsTable").on("click", "span>i.fa-trash-o", function() {
-      targets
+  });
+
+  $("#modal").on("hide.bs.modal", function() {
+    dismiss();
+  });
+
+  $("#lms-modal").on("hide.bs.modal", function() {
+    dismiss();
+  });
+
+  $("#csv-template").click(downloadCSVTemplate);
+
+  $("#toggle-all").change(function() {
+    if ($("#toggle-all").prop("checked")) {
+      lmsTargets
         .DataTable()
-        .row($(this).parents("tr"))
-        .remove()
-        .draw();
-    }),
-    $("#modal").on("hide.bs.modal", function() {
-      dismiss();
-    }),
-    $("#csv-template").click(downloadCSVTemplate);
+        .rows()
+        .select();
+    } else {
+      lmsTargets
+        .DataTable()
+        .rows()
+        .deselect();
+    }
+  });
+
+  $("#create-users").click(function() {
+    $(".lms-buttons > button").prop("disabled", "disabled");
+
+    var ids = lmsTargets
+      .DataTable()
+      .rows({ selected: true })
+      .nodes()
+      .map(function(n) {
+        return parseInt(n.id);
+      })
+      .toArray();
+
+    api.groupId.lms
+      .post(groupId, ids)
+      .success(function(resp) {
+        if (resp.success) {
+          var jobId = resp.data;
+
+          var setProgress = function(progress) {
+            if ($("#lms-progress-container").is(":hidden")) {
+              $("#lms-spinner").toggle();
+              $("#lms-progress-container").toggle();
+            }
+
+            $("#lms-progress-bar").width(progress + "%");
+
+            if (progress == 100) {
+              $("#lms-spinner").toggle();
+
+              setTimeout(function() {
+                $("#lms-progress-container").toggle();
+              }, 500);
+            }
+          };
+
+          var pollJob = function() {
+            api.groupId.lms.jobs
+              .get(groupId, jobId)
+              .success(function(resp) {
+                if (resp.success && resp.data.progress < 100) {
+                  setProgress(resp.data.progress);
+                  setTimeout(pollJob, 2000);
+                } else if (resp.data.progress == 100) {
+                  setProgress(resp.data.progress);
+                  $(".lms-buttons > button").removeProp("disabled");
+                  lms(groupId);
+
+                  if (resp.data.errors.length == 0) {
+                    delayedAlert("LMS user(s) created successfully");
+                  } else {
+                    delayedAlert(
+                      "There was/were " +
+                        resp.data.errors.length +
+                        " erros(s)\n\n" +
+                        resp.data.errors.join("\n")
+                    );
+                  }
+                } else {
+                  console.log("Job not found");
+                }
+              })
+              .error(function(resp) {
+                $(".lms-buttons > button").removeProp("disabled");
+
+                if (
+                  resp.responseJSON !== undefined &&
+                  resp.responseJSON.message !== undefined
+                ) {
+                  delayedAlert(resp.responseJSON.message);
+                } else {
+                  delayedAlert("Something went wrong!");
+                }
+
+                lms(groupId);
+              });
+          };
+
+          pollJob();
+        }
+      })
+      .error(function(e) {
+        $(".lms-buttons > button").removeProp("disabled");
+        modalError(e.responseJSON.message);
+      });
+  });
+
+  $("#delete-users").click(function() {
+    $(".lms-buttons > button").prop("disabled", "disabled");
+
+    var ids = lmsTargets
+      .DataTable()
+      .rows({ selected: true })
+      .nodes()
+      .map(function(n) {
+        return parseInt(n.id);
+      })
+      .toArray();
+
+    api.groupId.lms
+      .delete(groupId, ids)
+      .success(function(resp) {
+        if (resp.success) {
+          var jobId = resp.data;
+
+          var setProgress = function(progress) {
+            if ($("#lms-progress-container").is(":hidden")) {
+              $("#lms-spinner").toggle();
+              $("#lms-progress-container").toggle();
+            }
+
+            $("#lms-progress-bar").width(progress + "%");
+
+            if (progress == 100) {
+              $("#lms-spinner").toggle();
+
+              setTimeout(function() {
+                $("#lms-progress-container").toggle();
+              }, 500);
+            }
+          };
+
+          var pollJob = function() {
+            api.groupId.lms.jobs
+              .get(groupId, jobId)
+              .success(function(resp) {
+                if (resp.success && resp.data.progress < 100) {
+                  setProgress(resp.data.progress);
+                  setTimeout(pollJob, 2000);
+                } else if (resp.data.progress == 100) {
+                  setProgress(resp.data.progress);
+                  $(".lms-buttons > button").removeProp("disabled");
+                  lms(groupId);
+
+                  if (resp.data.errors.length == 0) {
+                    delayedAlert("LMS user(s) deleted successfully");
+                  } else {
+                    delayedAlert(
+                      "There was/were " +
+                        resp.data.errors.length +
+                        " erros(s)\n\n" +
+                        resp.data.errors.join("\n")
+                    );
+                  }
+                } else {
+                  console.log("Job not found");
+                }
+              })
+              .error(function(resp) {
+                $(".lms-buttons > button").removeProp("disabled");
+
+                if (
+                  resp.responseJSON !== undefined &&
+                  resp.responseJSON.message !== undefined
+                ) {
+                  delayedAlert(resp.responseJSON.message);
+                } else {
+                  delayedAlert("Something went wrong!");
+                }
+
+                lms(groupId);
+              });
+          };
+
+          pollJob();
+        }
+      })
+      .error(function(e) {
+        $(".lms-buttons > button").removeProp("disabled");
+        modalError(e.responseJSON.message);
+      });
+  });
 });
+
+function delayedAlert(message) {
+  setTimeout(function() {
+    alert(message);
+  }, 500);
+}

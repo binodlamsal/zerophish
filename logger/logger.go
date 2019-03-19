@@ -4,7 +4,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/binodlamsal/gophish/config"
+	"github.com/everycloud-technologies/phishing-simulation/config"
 	"github.com/sirupsen/logrus"
 )
 

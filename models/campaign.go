@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/binodlamsal/gophish/bakery"
-	log "github.com/binodlamsal/gophish/logger"
-	"github.com/binodlamsal/gophish/usersync"
+	"github.com/everycloud-technologies/phishing-simulation/bakery"
+	log "github.com/everycloud-technologies/phishing-simulation/logger"
+	"github.com/everycloud-technologies/phishing-simulation/usersync"
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 )

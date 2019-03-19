@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/binodlamsal/gophish/bakery"
-	"github.com/binodlamsal/gophish/config"
-	ctx "github.com/binodlamsal/gophish/context"
-	log "github.com/binodlamsal/gophish/logger"
-	"github.com/binodlamsal/gophish/models"
+	"github.com/everycloud-technologies/phishing-simulation/bakery"
+	"github.com/everycloud-technologies/phishing-simulation/config"
+	ctx "github.com/everycloud-technologies/phishing-simulation/context"
+	log "github.com/everycloud-technologies/phishing-simulation/logger"
+	"github.com/everycloud-technologies/phishing-simulation/models"
 	"github.com/gorilla/mux"
 )
 

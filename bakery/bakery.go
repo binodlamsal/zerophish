@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/binodlamsal/gophish/phpserialize"
+	"github.com/everycloud-technologies/phishing-simulation/phpserialize"
 )
 
 var ErrUnknownCookieType = errors.New("bakery: unknown cookie type")

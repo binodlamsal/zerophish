@@ -111,6 +111,56 @@
         </div>
     </div>
 </div>
+
+
+<!-- LMS Modal -->
+<div class="modal fade" id="lms-modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="groupModalLabel">LMS User Management</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="modal.flashes"></div>
+                <div class="form-group">
+                    <div class="col lms-buttons">
+                        <button type="button" class="btn btn-primary btn-lg" id="create-users">
+                            <i class="fa fa-plus"></i> Create User(s)
+                        </button>
+                        <button type="button" class="btn btn-danger btn-lg" id="delete-users">
+                            <i class="fa fa-minus"></i> Delete User(s)
+                        </button>
+                    </div>
+                </div>
+                <br />
+                <table id="lmsTargetsTable" class="table table-hover table-striped table-condensed">
+                    <thead>
+                        <tr>
+                            <th><input style="margin-left: 12px" type="checkbox" id="toggle-all"></th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Email</th>
+                            <th>Position</th>
+                            <th>LMS</th>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <i id="lms-spinner" class="fa fa-spinner fa-spin" style="position: absolute; margin-top: 12px; left: 20px; display: none"></i>
+                <div id="lms-progress-container" class="progress" style="width: 77%; position: absolute; margin-top: 10px; margin-left: 40px; margin-top: 17px; height: 5px; display: none">
+                    <div id="lms-progress-bar" class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
+                </div>
+
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{end}} {{define "scripts"}}
 <script src="/js/dist/app/users.min.js"></script>
 {{end}}

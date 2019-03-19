@@ -6,7 +6,7 @@ import (
 	"net/mail"
 	"time"
 
-	log "github.com/binodlamsal/gophish/logger"
+	log "github.com/everycloud-technologies/phishing-simulation/logger"
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 )
@@ -48,7 +48,7 @@ type GroupTarget struct {
 // Target contains the fields needed for individual targets specified by the user
 // Groups contain 1..* Targets, but 1 Target may belong to 1..* Groups
 type Target struct {
-	Id int64 `json:"-"`
+	Id int64 `json:"id"`
 	BaseRecipient
 }
 
@@ -59,6 +59,7 @@ type BaseRecipient struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Position  string `json:"position"`
+	IsLMSUser bool   `json:"is_lms_user" gorm:"-"`
 }
 
 // FormatAddress returns the email address to use in the "To" header of the email
@@ -105,6 +106,24 @@ func (g *Group) Validate() error {
 		return ErrNoTargetsSpecified
 	}
 	return nil
+}
+
+// HasTargets tells if this group contains all given target ids.
+// If at least one target id doesn't belong to this group then false will be returned.
+func (g *Group) HasTargets(tids []int64) bool {
+	var count int64
+
+	err := db.
+		Table("group_targets").Select("target_id").
+		Where("target_id IN (?) AND group_id = ?", tids, g.Id).
+		Count(&count).Error
+
+	if err != nil {
+		log.Errorf("Could not get targets of group %d - ", g.Id, err.Error())
+		return false
+	}
+
+	return len(tids) == int(count)
 }
 
 // GetGroups returns the groups owned by the given user.
@@ -389,8 +408,26 @@ func UpdateTarget(target Target) error {
 // GetTargets performs a many-to-many select to get all the Targets for a Group
 func GetTargets(gid int64) ([]Target, error) {
 	ts := []Target{}
-	err := db.Table("targets").Select("targets.id, targets.email, targets.first_name, targets.last_name, targets.position").Joins("left join group_targets gt ON targets.id = gt.target_id").Where("gt.group_id=?", gid).Scan(&ts).Error
+
+	err := db.
+		Table("targets").
+		Select("targets.id, targets.email, targets.first_name, targets.last_name, targets.position, (SELECT COUNT(*) FROM users WHERE users.email = targets.email LIMIT 1) AS is_lms_user").
+		Joins("left join group_targets gt ON targets.id = gt.target_id").
+		Where("gt.group_id=?", gid).
+		Scan(&ts).Error
+
 	return ts, err
+}
+
+// GetTargetsByIds returns group targets identified by the given ids
+func GetTargetsByIds(tids []int64) ([]Target, error) {
+	ts := []Target{}
+
+	if err := db.Table("targets").Where("id IN (?)", tids).Scan(&ts).Error; err != nil {
+		return ts, err
+	}
+
+	return ts, nil
 }
 
 // GetGroupOwnerId returns user id of creator of the group identified by id

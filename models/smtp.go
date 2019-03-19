@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/binodlamsal/gophish/logger"
-	"github.com/binodlamsal/gophish/mailer"
+	log "github.com/everycloud-technologies/phishing-simulation/logger"
+	"github.com/everycloud-technologies/phishing-simulation/mailer"
 	"github.com/gophish/gomail"
 	"github.com/jinzhu/gorm"
 )

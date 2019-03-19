@@ -3,7 +3,7 @@ package models
 import (
 	"testing"
 
-	"github.com/binodlamsal/gophish/config"
+	"github.com/everycloud-technologies/phishing-simulation/config"
 	"gopkg.in/check.v1"
 )
 

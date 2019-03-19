@@ -36,13 +36,13 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 
 	"github.com/NYTimes/gziphandler"
-	"github.com/binodlamsal/gophish/auth"
-	"github.com/binodlamsal/gophish/config"
-	"github.com/binodlamsal/gophish/controllers"
-	log "github.com/binodlamsal/gophish/logger"
-	"github.com/binodlamsal/gophish/mailer"
-	"github.com/binodlamsal/gophish/models"
-	"github.com/binodlamsal/gophish/util"
+	"github.com/everycloud-technologies/phishing-simulation/auth"
+	"github.com/everycloud-technologies/phishing-simulation/config"
+	"github.com/everycloud-technologies/phishing-simulation/controllers"
+	log "github.com/everycloud-technologies/phishing-simulation/logger"
+	"github.com/everycloud-technologies/phishing-simulation/mailer"
+	"github.com/everycloud-technologies/phishing-simulation/models"
+	"github.com/everycloud-technologies/phishing-simulation/util"
 	"github.com/gorilla/handlers"
 )
 

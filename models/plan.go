@@ -1,6 +1,6 @@
 package models
 
-import log "github.com/binodlamsal/gophish/logger"
+import log "github.com/everycloud-technologies/phishing-simulation/logger"
 
 // Plan is a subscription plan
 type Plan struct {
