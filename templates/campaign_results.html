@@ -1,6 +1,14 @@
 {{define "body"}}
+<section class="dashboard-wrapper">
+        <div class="overlap-full"></div>
+        <div class="container-fluid">
+          <div class="mobile-hamburger">
+            <a href="javascript:void(0)"> <i class="fa fa-bars" aria-hidden="true"></i> </a>
+          </div><!-- .mobile-hamburger -->
+          <div class="row">
+
 {{template "sidebar" .}}
-<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+<div class="col-lg-10 main">
     <div id="loading">
         <i class="fa fa-spinner fa-spin fa-4x"></i>
     </div>
@@ -87,6 +95,10 @@
     </div>
     <div id="flashes" class="row"></div>
 </div>
+</div> <!-- col-xs-9 -->
+</div>
+</div> <!-- container-fluid -->
+</section>
 {{end}} {{define "scripts"}}
 <script src="/js/dist/app/campaign_results.min.js"></script>
 {{end}}

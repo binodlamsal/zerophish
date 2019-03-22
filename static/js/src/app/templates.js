@@ -83,6 +83,7 @@ function deleteTemplate(e) {
 
 function attach(e) {
   (attachmentsTable = $("#attachmentsTable").DataTable({
+    autoWidth: false,
     destroy: !0,
     order: [[1, "asc"]],
     columnDefs: [
@@ -131,6 +132,7 @@ function edit(e) {
     $("#html_editor").ckeditor(),
     $("#attachmentsTable").show(),
     (attachmentsTable = $("#attachmentsTable").DataTable({
+      autoWidth: false,
       destroy: !0,
       order: [[1, "asc"]],
       columnDefs: [
@@ -216,6 +218,7 @@ function copy(e) {
     $("#html_editor").ckeditor(),
     $("#attachmentsTable").show(),
     (attachmentsTable = $("#attachmentsTable").DataTable({
+      autoWidth: false,
       destroy: !0,
       order: [[1, "asc"]],
       columnDefs: [
@@ -305,6 +308,7 @@ function importEmail() {
 function load(filter) {
   if (templateTable === undefined) {
     templateTable = $("#templateTable").DataTable({
+      autoWidth: false,
       destroy: !0,
       columnDefs: [
         {

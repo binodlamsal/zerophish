@@ -57,7 +57,6 @@ func CreateAdminRouter() http.Handler {
 	api.HandleFunc("/reset", Use(API_Reset, mid.RequireAPIKey))
 	api.HandleFunc("/campaigns/", Use(API_Campaigns, mid.RequireAPIKey))
 	api.HandleFunc("/people", Use(API_Users, mid.RequireAPIKey))
-	api.HandleFunc("/signupapi", Use(API_Users, mid.RequireAPIKey))
 	api.HandleFunc("/people/partner", Use(API_User_Partners, mid.RequireAPIKey))
 	api.HandleFunc("/roles", Use(API_Roles, mid.RequireRoles([]int64{models.Administrator, models.Partner}), mid.RequireAPIKey))
 	api.HandleFunc("/roles/{id:[0-9]+}", Use(API_Roles_Id, mid.RequireAPIKey))
@@ -442,7 +441,7 @@ func Logo(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	http.Redirect(w, r, "/images/logo_inv_small.png", 302)
+	http.Redirect(w, r, "/images/logo1.png", 302)
 }
 
 // Avatars_Id serves avatar image by the given user id or the default avatar

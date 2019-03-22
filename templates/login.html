@@ -1,59 +1,177 @@
 {{ define "base" }}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Gophish - Open-Source Phishing Toolkit">
-    <meta name="author" content="Jordan Wright (http://github.com/jordan-wright)">
-    <link rel="shortcut icon" href="../../docs-assets/ico/favicon.png">
-
-    <title>Gophish - {{ .Title }}</title>
-
-    <link href="/css/dist/gophish.css" rel="stylesheet">
-    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300,600,700' rel='stylesheet' type='text/css'>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="images/fav.png" type="image/png" >
+  <title>Security Awareness Training - {{ .Title }}</title>
+  <!-- css -->
+  <link href="/css/dist/style.css" rel="stylesheet">
 </head>
-
 <body>
-    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-        <div class="container-fluid">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <img class="navbar-logo" src="/images/logo_inv_small.png" />
-                <a class="navbar-brand" href="/">&nbsp;gophish</a>
-            </div>
-            <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav navbar-right">
-                    <li>
-                        <a id="login-button" href="/login">
-                            <button type="button" class="btn btn-primary">Login</button>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
+  <div class="main-wrap">
+    <header id="header" class="border-btm-none">
+      <div class="container-fluid">
+        <div class="header-inner">
+          <div class="logo">
+            <a href="#" title="Home">
+              <img src="images/logo1.png" alt="Home">
+            </a>
+          </div> <!--  .col -->
+          <div class="menu-section">
+          <div class="hamburger-menu">
+              <img src="images/bar-1.png" alt="">
+          </div> <!-- hamburger-menu -->
+        </div><!-- .row -->
+      </div>
     </div>
-    <div class="container">
-        <form class="form-signin" action="" method="POST">
-            <img id="logo" src="/images/logo_purple.png" />
-            <h2 class="form-signin-heading">Please sign in</h2>
-            {{template "flashes" .Flashes}}
-            <input type="text" name="username" class="form-control top-input" placeholder="Username" required autofocus>
-            <input type="password" name="password" class="form-control bottom-input" placeholder="Password" autocomplete="off" required>
-            <input type="hidden" name="csrf_token" value="{{.Token}}" />
-            <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
-        </form>
-    </div>
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="/js/dist/vendor.min.js"></script>
-</body>
+    </header>
 
-</html>
-{{ end }}
+
+    <div class="login-form-section">
+      <div class="container">
+        <div class="login-form-inner">
+          <header class="form-title">
+            <div class="row align-items-center">
+              <div class="col-6">
+                <h2>login</h2>
+              </div> <!-- -->
+              <div class="col-6">
+                <div class="account">
+                  <a href="https://www.everycloudtech.com/phishing-security-test" target="_blank">Create an account</a></div>
+                </div> <!-- -->
+              </div>
+            </header>
+            <div class="form-body">
+              <form action="" method="POST">
+                <div class="login-form">
+                        {{template "flashes" .Flashes}}
+                  <div class="form-item user-group ">
+                    <label class="control-label"><b>Email/Username</b> <span class="form-required">*</span>
+                    </label>
+                    <input type="text" placeholder="Enter your email or username" name="username" class="form-control top-input" placeholder="Username" required autofocus >
+                  </div>
+                  <div class="form-item password-item">
+                    <label class="control-label"><b>Password</b> <span class="form-required">*</span></label>
+                    <input type="password" placeholder="*******************" name="password" class="form-control bottom-input" placeholder="Password" autocomplete="off" required>
+                  </div>
+                  <input type="hidden" name="csrf_token" value="{{.Token}}" />
+
+                  <div class="password_forget">
+                    <a href="https://www.everycloudtech.com/user/password" target="_blank">Forget Your Password?</a>         
+                  </div> <!-- .password_forget -->
+                  <div class="form-actions">
+                    <button class="btn btn-lg btn-primary btn-block" type="submit">
+                     Log in
+                    </button>
+                  </div>  <!-- .form-actions -->
+                  <div class="alternet-login">
+                      <a href="">or log with<br>
+                        <img src="images/google-icon.png"></a>
+                    </div> <!-- alternet-login -->
+                  </div><!-- login-form -->
+                </form>
+                <div class="msg-bg-image">
+                  <img src="images/login-img.png" alt="">
+                </div><!-- msg-bg-image -->
+              </div><!-- form-body -->
+            </div><!-- login-form-inner -->
+          </div><!-- .container -->
+        </div>
+      </div>
+<footer class="footer">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-5 logo-wrap">
+        <div class="logo-bg"><img src="images/footer-image.png" alt=""></div>
+        <div class="foot-inner">
+          <div class="footer-logo"><img src="images/logo1.png"></div>
+          <div class="social-link">
+            <ul>
+              <li> <a href=""> <img src="" alt=""> </a> </li>
+              <li>  <a href=""> <img src="images/linkedin.png" alt=""> </a>  </li>
+              <li>  <a href=""> <img src="images/twitter.png" alt=""> </a>  </li>
+              <li> <a href=""> <img src="images/facebook.png" alt=""> </a>  </li>
+              <li> <a href=""> <img src="images/google.png" alt=""> </a>  </li>
+            </ul>
+          </div> <!-- social-link -->
+        </div> <!--foot-inner -->
+      </div> <!-- col -->
+      <div class="col-md-7 footer-menu-wrap">
+        <div class="row">
+          <div class="col footer-list">
+            <h2>Partners</h2>
+            <ul class="menu nav">
+              <li><a href="#">Lorem</a></li>
+              <li><a href="#">Ipsum</a></li>
+              <li><a href="#">Dolor</a></li>
+              <li><a href="#">Consectur</a></li>
+              <li><a href="#">Adipiscing</a></li>
+            </ul>
+          </div><!-- col -->
+          <div class="col footer-list">
+            <h2 class="block-title">Contact us</h2>
+            <ul class="menu nav">
+              <li><a href="#">Lorem</a></li>
+              <li><a href="#">Ipsum</a></li>
+              <li><a href="#">Dolor</a></li>
+            </ul>
+          </div><!-- col -->
+          <div class="col footer-list">
+            <h2 class="block-title">Terms and Conditions</h2>
+            <ul class="menu nav">
+              <li><a href="#">Lorem</a></li>
+              <li><a href="#">Ipsum</a></li>
+              <li><a href="#">Dolor</a></li>
+              <li><a href="#">Consectur</a></li>
+            </ul>
+          </div><!-- col -->
+          <div class="col footer-list">
+            <h2 class="block-title">Privacy Policy</h2>
+            <ul class="menu nav">
+              <li><a href="#">Lorem</a></li>
+              <li><a href="#">Ipsum</a></li>
+              <li><a href="#">Dolor</a></li>
+              <li><a href="#">Consectur</a></li>
+            </ul>
+          </div><!-- col -->
+          <div class="col footer-list">
+            <h2 class="block-title">Cookies Policy</h2>
+            <ul class="menu nav">
+              <li><a href="#">Lorem</a></li>
+              <li><a href="#">Ipsum</a></li>
+              <li><a href="#">Dolor</a></li>
+            </ul>
+          </div> <!-- col -->
+        </div><!-- row -->
+      </div> <!-- col -->
+    </div> <!-- row -->
+  </div> <!-- row -->
+</footer>
+<footer class="after-footer">
+  <div class="container-fluid">
+    <div class="row btm-foot">
+      <div class="col-md-5 col-lg-2 col-lg-offset-1 btm-foot-logo">
+        <img alt="" src="images/every-cloud.png">
+      </div>
+      <div class="col-md-7 col-lg-9 footer-text">
+       <p>
+        © 2017 EveryCloud Technologies. EveryCloud Antispam Ltd (Registered Company Number 07071875) 119 Richmond Road, Kingston Upon Thames, Surrey, KT2 5BX, United Kingdom and EveryCloud Technologies LLC. 111 North Market Street, Suite 300, San Jose, CA 95113, United States.
+      </p>
+    </div> <!-- col-md-7 -->
+  </div><!-- row -->
+</div><!-- .container -->
+</footer>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <!--<script src="js/jquery.min.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/main.js"></script> -->
+
+    <script src="/js/dist/vendor.min.js"></script>
+
+  </body>
+  </html>
+  {{ end }}

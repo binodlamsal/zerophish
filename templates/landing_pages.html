@@ -1,15 +1,26 @@
 {{define "body"}}
+<section class="dashboard-wrapper">
+        <div class="overlap-full"></div>
+        <div class="container-fluid">
+          <div class="mobile-hamburger">
+            <a href="javascript:void(0)"> <i class="fa fa-bars" aria-hidden="true"></i> </a>
+          </div><!-- .mobile-hamburger -->
+          <div class="row">
 {{template "sidebar" .}}
-<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-    <h1 class="page-header">
-        Landing Pages
-    </h1>
-    <div id="flashes" class="row"></div>
-    <div class="row">
-        <button type="button" class="btn btn-primary" onclick="edit(-1)" data-toggle="modal" data-backdrop="static"
-            data-target="#modal"><i class="fa fa-plus"></i> New Page</button>
-
-        <div style="display: inline-block; position: absolute; right: 0%; transform: translate(-15%, 0%)">
+<div class="col-lg-10 main">
+    <div id="flashes" class=""></div>
+    <div class="top-page-header d-flex justify-content-between">
+        <div class="tp-page-title">
+            <h1 class="page-header">
+                 Landing Pages
+            </h1>
+        </div> <!-- .tp-page-title -->
+        <div class="tp-page-btn">
+            <button type="button" class="btn btn-primary flate-button" data-toggle="modal" data-backdrop="static" data-target="#modal"
+            onclick="edit(-1)">
+            New Page <i class="fa fa-plus"></i> </button>
+        </div> <!-- .tp-page-btn -->
+        <div style="display: inline-block; position: absolute; right: 0%; transform: translate(-15px, 100px)">
             <strong>Filter: &nbsp;</strong>
             <input type="radio" name="filter" value="own" id="filter-own" checked> Own &nbsp;
             <input type="radio" name="filter" value="public" id="filter-public"> Public &nbsp;
@@ -17,12 +28,12 @@
             <input type="radio" name="filter" value="customers" id="filter-customers"> Customers &nbsp;
             {{end}}
         </div>
-    </div>
+    </div> <!-- .top-page-header -->
     &nbsp;
     <div id="loading">
         <i class="fa fa-spinner fa-spin fa-4x"></i>
     </div>
-    <div id="emptyMessage" class="row" style="display:none;">
+    <div id="emptyMessage" style="display:none;">
         <div class="alert alert-info">
             No pages created yet. Let's create one!
         </div>
@@ -31,10 +42,10 @@
         <table id="pagesTable" class="table" style="display:none;">
             <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Creator</th>
-                    <th>Last Modified Date</th>
-                    <th class="col-md-2 no-sort"></th>
+                    <th> <span class="for-des"> <i class="fa fa-file-text-o"></i> </span>  Name</th>
+                    <th> <span class="for-des"> <i class="fa fa-file-text-o"></i> </span>  Creator</th>
+                    <th> <span class="for-des"> <i class="fa fa-calendar-o"></i> </span>  Last Modified Date</th>
+                    <th class="no-sort"></th>
                 </tr>
             </thead>
             <tbody>
@@ -47,13 +58,14 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <!-- New Template Modal -->
-            <div class="modal-header">
+             <div class="modal-header">
+                 <h4 class="modal-title" id="templateModalLabel">New Landing Page</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="dismiss()"><span
-                        aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="modalLabel">New Landing Page</h4>
+                        aria-hidden="true"><img src="images/close.png" alt=""></span></button>
+
             </div>
             <div class="modal-body">
-                <div class="row" id="modal.flashes"></div>
+                <div class="" id="modal.flashes"></div>
                 <label class="control-label" for="name">Name:</label>
                 <div class="form-group">
                     <input type="text" class="form-control" placeholder="Page name" id="name" autofocus />
@@ -79,11 +91,13 @@
                         <textarea id="html_editor"></textarea>
                     </div>
                 </div>
+                {{if (eq .Role "admin") }}
                 <div class="checkbox checkbox-primary">
                     <input id="publicly_available" type="checkbox">
                     <label for="publicly_available">Publicly available <i class="fa fa-question-circle"
                             data-toggle="tooltip" data-placement="right" title="Check this box if you want to make this landing page publicly available."></i></label>
                 </div>
+                {{end}}
                 <div class="checkbox checkbox-primary">
                     <input id="capture_credentials_checkbox" type="checkbox">
                     <label for="capture_credentials_checkbox">Capture Submitted Data <i class="fa fa-question-circle"
@@ -92,11 +106,6 @@
                 <div class="checkbox checkbox-primary" id="capture_passwords">
                     <input id="capture_passwords_checkbox" type="checkbox">
                     <label for="capture_passwords_checkbox">Capture Passwords</label>
-                    <div class="alert alert-warning">
-                        <i class="fa fa-exclamation-circle"></i> <b>Warning:</b> Credentials are currently <b>not
-                            encrypted</b>. This means that captured passwords are stored in the database as cleartext.
-                        Be careful with this!
-                    </div>
                 </div>
                 <div id="redirect_url">
                     <label class="control-label" for="redirect_url_input">Redirect to: <i class="fa fa-question-circle"
@@ -113,6 +122,26 @@
         </div>
     </div>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="modalforpreview" tabindex="-1" role="dialog" aria-labelledby="modalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+        <!-- Preview Template Modal -->
+        <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="dismiss()"><span
+                aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="templateModalLabel">Preview Template - <span class="tempname"> </span></h4>
+        </div>
+        <div class="modal-body">
+        </div>
+        <div class="modal-footer">
+        <button type="button" data-dismiss="modal" class="btn btn-default" onclick="dismiss()">Cancel</button>
+        </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal -->
 <div class="modal fade" id="importSiteModal" tabindex="-1" role="dialog" aria-labelledby="importSiteModalLabel">
     <div class="modal-dialog" role="document">
@@ -123,7 +152,7 @@
                 <h4 class="modal-title" id="importSiteModalLabel">Import Site</h4>
             </div>
             <div class="modal-body">
-                <div class="row" id="modal.flashes"></div>
+                <div class="" id="modal.flashes"></div>
                 <label class="control-label" for="url">URL:</label>
                 <div class="form-group">
                     <input type="text" class="form-control" placeholder="http://google.com" id="url" autofocus />
@@ -136,6 +165,10 @@
         </div>
     </div>
 </div>
+</div> <!-- col-xs-9 -->
+</div>
+</div> <!-- container-fluid -->
+</section>
 {{end}}
 {{define "scripts"}}
 <script src="/js/src/vendor/ckeditor/ckeditor.js"></script>

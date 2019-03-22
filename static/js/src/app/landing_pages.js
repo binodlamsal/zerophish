@@ -116,6 +116,7 @@ function copy(e) {
 function load(filter) {
   if (pagesTable === undefined) {
     pagesTable = $("#pagesTable").DataTable({
+      autoWidth: false,
       destroy: !0,
       columnDefs: [
         {

@@ -1,25 +1,35 @@
 {{define "body"}}
-{{template "sidebar" .}}
-<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-    <div class="row">
-        <h1 class="page-header">
-            Users &amp; Groups
-        </h1>
-    </div>
-    <div id="flashes" class="row"></div>
-    <div class="row">
-        <button type="button" class="btn btn-primary" onclick="edit(-1)" data-toggle="modal" data-backdrop="static"
-            data-target="#modal">
-            <i class="fa fa-plus"></i> New Group</button>
+<section class="dashboard-wrapper">
+        <div class="overlap-full"></div>
+        <div class="container-fluid">
+          <div class="mobile-hamburger">
+            <a href="javascript:void(0)"> <i class="fa fa-bars" aria-hidden="true"></i> </a>
+          </div><!-- .mobile-hamburger -->
+          <div class="row">
 
+{{template "sidebar" .}}
+<div class="col-lg-10 main">
+        <div id="flashes" class=""></div>
+        <div class="top-page-header d-flex justify-content-between">
+
+        <div class="tp-page-title">
+            <h1 class="page-header">
+                Users &amp; Groups
+            </h1>
+        </div> <!-- .tp-page-title -->
+        <div class="tp-page-btn">
+            <button type="button" class="btn btn-primary flate-button" data-toggle="modal" data-backdrop="static" data-target="#modal"
+            onclick="edit(-1)">
+             New Group <i class="fa fa-plus"></i> </button>
+        </div> <!-- .tp-page-btn -->
         {{if or (eq role "admin") (eq role "partner") (eq role "child_user")}}
-        <div style="display: inline-block; position: absolute; right: 0%; transform: translate(-15%, 0%)">
+        <div style="display: inline-block; position: absolute; right: 0%; transform: translate(-15px, 100px)">
             <strong>Filter: &nbsp;</strong>
             <input type="radio" name="filter" value="own" id="filter-own" checked> Own &nbsp;
             <input type="radio" name="filter" value="customers" id="filter-customers"> Customers &nbsp;
         </div>
         {{end}}
-    </div>
+    </div> <!-- .top-page-header -->
     &nbsp;
     <div id="loading">
         <i class="fa fa-spinner fa-spin fa-4x"></i>
@@ -33,11 +43,11 @@
         <table id="groupTable" class="table" style="display:none;">
             <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Creator</th>
-                    <th># of Members</th>
-                    <th>Modified Date</th>
-                    <th class="col-md-2 no-sort"></th>
+                    <th> <span class="for-des"><i class="fa fa-file-text-o"></i> </span>  Name</th>
+                    <th> <span class="for-des"><i class="fa fa-file-text-o"></i> </span>  Creator</th>
+                    <th><span class="for-des"><i class="fa fa-user-o" aria-hidden="true"></i>  </span> of Members</th>
+                    <th> <span class="for-des"><i class="fa fa-calendar-o"></i> </span> Modified Date</th>
+                    <th class="no-sort"></th>
                 </tr>
             </thead>
             <tbody>
@@ -49,14 +59,14 @@
 <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                <h4 class="modal-title" id="groupModalLabel">New Group</h4>
+             <div class="modal-header">
+                 <h4 class="modal-title" id="templateModalLabel">New Group</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="dismiss()"><span
+                        aria-hidden="true"><img src="images/close.png" alt=""></span></button>
+
             </div>
             <div class="modal-body">
-                <div class="row" id="modal.flashes"></div>
+                <div class="" id="modal.flashes"></div>
                 <label class="control-label" for="name">Name:</label>
                 <div class="form-group">
                     <input type="text" class="form-control" ng-model="group.name" placeholder="Group name" id="name"
@@ -71,26 +81,26 @@
                     <span id="csv-template" class="text-muted small">
                         <i class="fa fa-file-excel-o"></i> Download CSV Template</span>
                 </div>
-                <div class="row">
-                    <form id="targetForm">
-                        <div class="col-sm-2">
-                            <input type="text" class="form-control" placeholder="First Name" id="firstName">
-                        </div>
-                        <div class="col-sm-2">
-                            <input type="text" class="form-control" placeholder="Last Name" id="lastName">
-                        </div>
-                        <div class="col-sm-3">
-                            <input type="email" class="form-control" placeholder="Email" id="email" required>
-                        </div>
-                        <div class="col-sm-3">
-                            <input type="text" class="form-control" placeholder="Position" id="position">
-                        </div>
-                        <div class="col-sm-1">
-                            <button type="submit" class="btn btn-danger btn-lg">
-                                <i class="fa fa-plus"></i> Add</button>
-                        </div>
+                    <form id="targetForm" class="user-form-section">
+                     <div class="row">
+                                <div class="col-sm-2">
+                                    <input type="text" class="form-control" placeholder="First Name" id="firstName">
+                                </div>
+                                <div class="col-sm-2">
+                                    <input type="text" class="form-control" placeholder="Last Name" id="lastName">
+                                </div>
+                                <div class="col-sm-3">
+                                    <input type="email" class="form-control" placeholder="Email" id="email" required>
+                                </div>
+                                <div class="col-sm-3">
+                                    <input type="text" class="form-control" placeholder="Position" id="position">
+                                </div>
+                                <div class="col-sm-1">
+                                    <button type="submit" class="btn btn-danger btn-lg add_btn">
+                                        <i class="fa fa-plus"></i> Add</button>
+                                </div>
+                          </div>
                     </form>
-                </div>
                 <br />
                 <table id="targetsTable" class="table table-hover table-striped table-condensed">
                     <thead>
@@ -99,7 +109,7 @@
                             <th>Last Name</th>
                             <th>Email</th>
                             <th>Position</th>
-                            <th class="no-sort"></th>
+                            <th></th>
                     <tbody>
                     </tbody>
                 </table>
@@ -112,28 +122,23 @@
     </div>
 </div>
 
-
 <!-- LMS Modal -->
 <div class="modal fade" id="lms-modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                <h4 class="modal-title" id="groupModalLabel">LMS User Management</h4>
+             <div class="modal-header">
+                 <h4 class="modal-title" id="templateModalLabel">LMS User Management</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="dismiss()"><span
+                        aria-hidden="true"><img src="images/close.png" alt=""></span></button>
+
             </div>
             <div class="modal-body">
-                <div class="row" id="modal.flashes"></div>
+                <div class="" id="modal.flashes"></div>
                 <div class="form-group">
-                    <div class="col lms-buttons">
-                        <button type="button" class="btn btn-primary btn-lg" id="create-users">
-                            <i class="fa fa-plus"></i> Create User(s)
-                        </button>
-                        <button type="button" class="btn btn-danger btn-lg" id="delete-users">
-                            <i class="fa fa-minus"></i> Delete User(s)
-                        </button>
-                    </div>
+                    <button type="button" class="btn btn-danger btn-lg add_btn" id="create-users">
+                        <i class="fa fa-plus"></i> Create User(s)</button>
+                    <button type="button" class="btn btn-danger btn-lg add_btn" id="delete-users">
+                        <i class="fa fa-minus"></i> Delete User(s)</button>
                 </div>
                 <br />
                 <table id="lmsTargetsTable" class="table table-hover table-striped table-condensed">
@@ -150,8 +155,8 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <i id="lms-spinner" class="fa fa-spinner fa-spin" style="position: absolute; margin-top: 12px; left: 20px; display: none"></i>
-                <div id="lms-progress-container" class="progress" style="width: 77%; position: absolute; margin-top: 10px; margin-left: 40px; margin-top: 17px; height: 5px; display: none">
+                <i id="lms-spinner" class="fa fa-spinner fa-spin" style="position: absolute; left: 20px; display: none"></i>
+                <div id="lms-progress-container" class="progress" style="width: 60%; position: absolute; left: 60px; margin-top: 0px; height: 5px; display: none">
                     <div id="lms-progress-bar" class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
                 </div>
 
@@ -161,6 +166,10 @@
     </div>
 </div>
 
+</div> <!-- col-xs-9 -->
+</div>
+</div> <!-- container-fluid -->
+</section>
 {{end}} {{define "scripts"}}
 <script src="/js/dist/app/users.min.js"></script>
 {{end}}

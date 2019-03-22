@@ -324,7 +324,7 @@ func ChangePasswordByadmin(r *http.Request) error {
 				}
 			}
 
-			if ud.ExpirationDate != s.ExpirationDate {
+			if ud.ExpirationDate != s.ExpirationDate && ud.PlanId != 0 {
 				err = s.ChangeExpirationDate(ud.ExpirationDate)
 
 				if err != nil {

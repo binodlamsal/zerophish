@@ -17,10 +17,7 @@ function save(e) {
 
   if ($("#expiration_date").length) {
     if ($("#expiration_date").val() != "") {
-      t.expiration_date = $("#expiration_date")
-        .data("DateTimePicker")
-        .date()
-        .utc();
+      t.expiration_date = $("#expiration_date").val() + "T23:59:59.000Z";
     }
   }
 
@@ -35,51 +32,200 @@ function save(e) {
     });
 }
 
+function create() {
+  var t = {};
+  t.username = $("#username").val();
+  t.email = $("#email").val();
+  t.password = $("#password").val();
+  t.role = parseInt($("#roles").val()) || null;
+  t.partner = parseInt($("#partner").val()) || null;
+
+  if (!isValidPassword(t.password)) {
+    modalError(
+      "Password must be at least 8 chars long with at least 1 letter, 1 number and 1 special character"
+    );
+
+    return;
+  }
+
+  api.users
+    .post(t)
+    .success(function(e) {
+      successFlash("User created successfully!"), dismiss();
+      location.reload();
+    })
+    .error(function(e) {
+      modalError(e.responseJSON.message);
+    });
+}
+
 function edit(index) {
-  var user = people[index];
-  var exp_date =
-    user.subscription != undefined
-      ? moment(user.subscription.expiration_date)
-      : null;
+  if (index != -1) {
+    var user = people[index];
+    var exp_date =
+      user.subscription != undefined
+        ? moment(user.subscription.expiration_date)
+            .utc()
+            .format("YYYY-MM-DD")
+        : null;
 
-  if (exp_date == null || user.role == "Administrator") {
-    $("#expiration_date").attr("disabled", "disabled");
+    if (exp_date == null || user.role == "Administrator") {
+      $("#expiration_date").attr("disabled", "disabled");
 
-    if (user.role == "Administrator") {
-      $("#plan_id").attr("disabled", "disabled");
+      if (user.role == "Administrator") {
+        $("#plan_id").attr("disabled", "disabled");
+      } else {
+        $("#plan_id").removeAttr("disabled");
+      }
     } else {
       $("#plan_id").removeAttr("disabled");
+      $("#expiration_date").removeAttr("disabled");
     }
-  } else {
-    $("#plan_id").removeAttr("disabled");
-    $("#expiration_date").removeAttr("disabled");
-  }
 
-  if ($("#expiration_date").length) {
-    setTimeout(function() {
-      $("#expiration_date")
-        .data("DateTimePicker")
-        .date(exp_date);
-    }, 500);
-  }
+    if ($("#expiration_date").length) {
+      setTimeout(function() {
+        $("#expiration_date").val(exp_date);
+      }, 500);
+    }
 
-  $("#modalSubmit")
-    .unbind("click")
-    .click(function() {
-      save(user.id);
+    $("#modalSubmit")
+      .unbind("click")
+      .click(function() {
+        save(user.id);
+      });
+
+    api.userId.get(user.id).success(function(e) {
+      $("input[type=text], textarea").val("");
+
+      $("#username").val(e.username);
+      $("#full_name").val(e.full_name);
+      $("#email").val(e.email);
+      $("#hidden_hash").val(e.hash);
+      $("#hidden_uid").val(e.id);
+      $("#hidden_api_key").val(e.api_key);
+
+      var partner = e.partner;
+
+      api.roles.get().success(function(r) {
+        $("#roles")
+          .find("option")
+          .each(function(i) {
+            if ($(this).val() !== "") {
+              $(this).remove();
+            }
+          });
+
+        $.each(r, function(e, rr) {
+          $("#roles").append(
+            '<option value="' + rr.rid + '" >' + rr.name + "</option>"
+          );
+        });
+      });
+
+      //populate the roles
+      api.rolesByUserId.get(user.id).success(function(r) {
+        $("#roles option").prop("selected", false);
+        $("#roles option[value=" + r.rid + "]").prop("selected", true);
+
+        // hide partner field for non-customers and non-child-users
+        if (r.rid !== 3 && r.rid !== 4) {
+          $("#partner-container").css("display", "none");
+        } else {
+          $("#partner-container").css("display", "");
+        }
+      });
+
+      //populate the partners
+      api.users.partners().success(function(p) {
+        $("#partner")
+          .find("option")
+          .each(function(i) {
+            if ($(this).val() !== "") {
+              $(this).remove();
+            }
+          });
+
+        $.each(p, function(e, pp) {
+          var selected = "";
+          if (partner == pp.id) {
+            selected = 'selected = "selected"';
+          } else {
+            selected = "";
+          }
+
+          $("#partner").append(
+            '<option value="' +
+              pp.id +
+              '"  ' +
+              selected +
+              ">" +
+              pp.username +
+              "</option>"
+          );
+        });
+      });
+
+      //populate the plans
+      api.plans.get().success(function(plans) {
+        $("#plan_id")
+          .find("option")
+          .each(function(i) {
+            if ($(this).val() !== "") {
+              $(this).remove();
+            }
+          });
+
+        $.each(plans, function(e, plan) {
+          var selected = "";
+          if (
+            user.subscription != undefined &&
+            user.subscription.plan_id == plan.id
+          ) {
+            selected = 'selected = "selected"';
+          } else {
+            selected = "";
+          }
+
+          $("#plan_id").append(
+            '<option value="' +
+              plan.id +
+              '"  ' +
+              selected +
+              ">" +
+              plan.name +
+              "</option>"
+          );
+        });
+      });
+
+      // conditionally show and hide partner field depending on the selected role
+      $("#roles").change(function() {
+        if ($(this).val() == 3 || $(this).val() == 4) {
+          $("#partner-container").css("display", "");
+        } else {
+          $("#partner-container").css("display", "none");
+          $("#partner").val("");
+        }
+      });
+
+      // conditionally enable/disable expiration date field depending on the selected plan
+      $("#plan_id").change(function() {
+        if ($(this).val() !== "") {
+          $("#expiration_date").removeAttr("disabled");
+
+          if ($("#expiration_date").val() == "") {
+            $("#expiration_date").val(moment().format("YYYY-MM-DD"));
+          }
+        } else {
+          $("#expiration_date").attr("disabled", "disabled");
+        }
+      });
     });
-
-  api.userId.get(user.id).success(function(e) {
-    $("input[type=text], textarea").val("");
-
-    $("#username").val(e.username);
-    $("#full_name").val(e.full_name);
-    $("#email").val(e.email);
-    $("#hidden_hash").val(e.hash);
-    $("#hidden_uid").val(e.id);
-    $("#hidden_api_key").val(e.api_key);
-
-    var partner = e.partner;
+  } else {
+    // create new user
+    $(
+      ".row.subscription, label[for=full_name], #full_name, label[for=current_password], #curpassword, label[for=confirm_password], #confirm_password"
+    ).hide();
 
     api.roles.get().success(function(r) {
       $("#roles")
@@ -95,19 +241,6 @@ function edit(index) {
           '<option value="' + rr.rid + '" >' + rr.name + "</option>"
         );
       });
-    });
-
-    //populate the roles
-    api.rolesByUserId.get(user.id).success(function(r) {
-      $("#roles option").prop("selected", false);
-      $("#roles option[value=" + r.rid + "]").prop("selected", true);
-
-      // hide partner field for non-customers and non-child-users
-      if (r.rid !== 3 && r.rid !== 4) {
-        $("#partner-container").css("display", "none");
-      } else {
-        $("#partner-container").css("display", "");
-      }
     });
 
     //populate the partners
@@ -140,63 +273,22 @@ function edit(index) {
       });
     });
 
-    //populate the plans
-    api.plans.get().success(function(plans) {
-      $("#plan_id")
-        .find("option")
-        .each(function(i) {
-          if ($(this).val() !== "") {
-            $(this).remove();
-          }
-        });
-
-      $.each(plans, function(e, plan) {
-        var selected = "";
-        if (
-          user.subscription != undefined &&
-          user.subscription.plan_id == plan.id
-        ) {
-          selected = 'selected = "selected"';
-        } else {
-          selected = "";
-        }
-
-        $("#plan_id").append(
-          '<option value="' +
-            plan.id +
-            '"  ' +
-            selected +
-            ">" +
-            plan.name +
-            "</option>"
-        );
-      });
-    });
-
     // conditionally show and hide partner field depending on the selected role
     $("#roles").change(function() {
       if ($(this).val() == 3 || $(this).val() == 4) {
         $("#partner-container").css("display", "");
       } else {
         $("#partner-container").css("display", "none");
+        $("#partner").val("");
       }
     });
 
-    // conditionally enable/disable expiration date field depending on the selected plan
-    $("#plan_id").change(function() {
-      if ($(this).val() !== "") {
-        $("#expiration_date").removeAttr("disabled");
-
-        if ($("#expiration_date").val() == "") {
-          $("#expiration_date")
-            .data("DateTimePicker")
-            .date(moment());
-        }
-      } else {
-        $("#expiration_date").attr("disabled", "disabled");
-      }
-    });
-  });
+    $("#modalSubmit")
+      .unbind("click")
+      .click(function() {
+        create();
+      });
+  }
 }
 
 function deleteUser(e) {
@@ -231,15 +323,19 @@ function deleteUser(e) {
 }
 
 function dismiss() {
-  $("#modal\\.flashes").empty(),
-    $("#username").val(""),
-    $("#email").val(""),
-    $("#curpassword").val(""),
-    $("#password").val(""),
-    $("#confirm_password").val(""),
-    $("#partner").val(""),
-    $("#roles").val(""),
-    $("#modal").modal("hide");
+  $("#modal\\.flashes").empty();
+  $("#username").val("");
+  $("#email").val("");
+  $("#curpassword").val("");
+  $("#password").val("");
+  $("#confirm_password").val("");
+  $("#partner").val("");
+  $("#roles").val("");
+  $("#modal").modal("hide");
+
+  $(
+    ".row.subscription, label[for=full_name], #full_name, label[for=current_password], #curpassword, label[for=confirm_password], #confirm_password"
+  ).show();
 }
 
 var labels = {
@@ -253,14 +349,6 @@ var labels = {
   campaign = {};
 
 $(document).ready(function() {
-  $("#expiration_date").datetimepicker({
-    widgetPositioning: {
-      vertical: "bottom"
-    },
-    showTodayButton: !0
-    // defaultDate: moment()
-  });
-
   $(".modal").on("hidden.bs.modal", function(e) {
     $(this).removeClass("fv-modal-stack"),
       $("body").data("fv_open_modals", $("body").data("fv_open_modals") - 1);
@@ -354,4 +442,34 @@ $(document).ready(function() {
           : 0;
       });
     });
+
+  $("#expiration_date").change(function() {
+    if ($(this).val() == "") {
+      $("#plan_id").val("");
+    }
+  });
 });
+
+function isValidPassword(password) {
+  if (password.length < 8) {
+    return false;
+  }
+
+  if (password.match(/\s/) !== null) {
+    return false;
+  }
+
+  var alphaMatches = password.match(/([a-zA-Z])/);
+  var numMatches = password.match(/([0-9])/);
+  var specialMatches = password.match(/([^a-zA-Z0-9\s])/);
+
+  if (
+    alphaMatches.length < 2 ||
+    numMatches.length < 2 ||
+    specialMatches.length < 2
+  ) {
+    return false;
+  }
+
+  return true;
+}

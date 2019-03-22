@@ -1,67 +1,61 @@
 {{ define "sidebar" }}
-<div class="container-fluid">
-  <div class="row">
-      <div class="col-sm-3 col-md-2 sidebar">
-          <ul class="nav nav-sidebar">
-              <li {{if eq page "dashboard"}}class="active"{{end}}>
-                  <a href="/">Dashboard</a>
-              </li>
-              <li {{if eq page "campaigns"}}class="active"{{end}}>
-                  <a href="/campaigns">Campaigns</a>
-              </li>
-              <li {{if eq page "users"}}class="active"{{end}}>
-                  <a href="/users">Users &amp; Groups</a>
-              </li>
-              <li {{if eq page "templates"}}class="active"{{end}}>
-                  <a href="/templates">Email Templates</a>
-              </li>
-              <li {{if eq page "landing_pages"}}class="active"{{end}}>
-                  <a href="/landing_pages">Landing Pages</a>
-              </li>
-      <!--        <li>
-                  <a href="/sending_profiles">Sending Profiles</a>
-              </li> -->
+<div class="col-lg-2 no-padding">
+        <div class="dashboard-box">
 
-              {{if eq role "admin"}}
-              <li {{if eq page "sending_domains"}}class="active"{{end}}>
-                  <a href="/our_domains">Our Domains</a>
-              </li>
-              {{end}}
+          {{if .User}}
+          <div class="users-wrap">
+            <div class="user-name">
+              <p>Hello<br><span>{{.User.Username}}</span></p>
+            </div>
+            <div class="user-img">
+             
+              <img src="/avatars/{{.User.Id}} " alt="user" width="35" height="35">
+            </div> <!-- user-img -->
+            <div class="dropdown linkdown">
+              <button class="dropdown-btn" type="button" data-toggle="dropdown">
+                <img src="/images/arrow-down.svg">
+              </button>
+              <ul class="dropdown-menu">
+                <li><a href="/settings"><i class="fa fa-user" aria-hidden="true"></i>  Update Profile </a></li>
+                <li><a href="#"><i class="fa fa-info-circle" aria-hidden="true"></i> Help</a></li>
+                <li><a href="/logout"><i class="fa fa-sign-out" aria-hidden="true"></i> Logout</a></li>
+              </ul>
+            </div> 
+          </div><!-- .users-wrap  -->
 
+          {{else}}
+          <div class="users-wrap">
 
-              <li {{if eq page "settings"}}class="active"{{end}}>
-                  <a href="/settings">Settings</a>
-              </li>
+          </div>
+          {{end}}
 
-              {{if or (eq role "admin") (eq role "partner") (eq role "child_user")}}
-              <li {{if eq page "people"}}class="active"{{end}}>
-                  <a href="/people">People</a>
-              </li>
-              {{end}}
+          <ul>
+            <li {{if eq page "dashboard"}}class="active"{{end}}><a href="/"><span class="icon-left"><img src="/images/dashboard.svg" alt="" width="12" height="16"></span> Dahboard</a></li>
+            <li {{if eq page "campaigns"}}class="active"{{end}}><a class="dash-cam" href="/campaigns" ><span class="icon-left"><img src="/images/campaigns.svg" class="svg" alt="" ></span> Campaigns</a></li>
+            <li {{if eq page "users"}}class="active"{{end}}><a class="dash-users" href="/users" ><span class="icon-left"><img src="/images/userandgroup.svg" class="svg" alt="" ></span> Users & Groups</a></li>
+            <li {{if eq page "templates"}}class="active"{{end}}><a class="dash-email" href="/templates" ><span class="icon-left"><img src="/images/email-template.svg" class="svg" alt="" ></span>Email Templates</a></li>
+            <li {{if eq page "landing_pages"}}class="active"{{end}}><a class="dash-landing" href="/landing_pages" ><span class="icon-left"><img src="/images/landingpages.svg" class="svg" alt="" ></span>Landing Pages</a></li>
+            
+            {{if eq role "admin"}}
+            <li {{if eq page "sending_domains"}}class="active"{{end}}><a class="dash-domains" href="/our_domains" ><span class="icon-left"><img src="/images/our-domain.svg" class="svg" alt="" ></span>Our Domains</a></li>
+            {{end}}
+             
+            <li {{if eq page "settings"}}class="active"{{end}}><a class="dash-settings" href="/settings" ><span class="icon-left"><img src="/images/setting.svg" class="svg" alt="" ></span>Settings</a></li>
+           
+            {{if or (eq role "admin") (eq role "partner") (eq role "child_user")}}
+            <li {{if eq page "people"}}class="active"{{end}}><a class="dash-people" href="/people" ><span class="icon-left"><img src="/images/people.svg" class="svg" alt="" ></span>People</a></li>
+            {{end}}
+            
+            {{if eq role "admin"}}
+            <li {{if eq page "roles"}}class="active"{{end}}><a class="dash-roles" href="/roles" ><span class="icon-left"><img src="/images/rules.svg" class="svg" alt="" ></span>Roles</a></li>
+            {{end}}
 
-              {{if eq role "admin"}}
-              <li {{if eq page "roles"}}class="active"{{end}}>
-                  <a href="/roles">Roles</a>
-              </li>
-              {{end}}
-
-              {{if eq role "admin"}}
-              <li {{if eq page "categories"}}class="active"{{end}}>
-                  <a href="/categories">Categories</a>
-              </li>
-              {{end}}
-
-              <li>
-                  <hr>
-              </li>
-      <!--       <li>
-                  <a href="https://docs.getgophish.com/user-guide/">User Guide</a>
-              </li>
-              <li>
-                  <a href="https://docs.getgophish.com/api-documentation/">API Documentation</a>
-              </li> -->
+            {{if eq role "admin"}}
+            <li {{if eq page "phishing_categories"}}class="active"{{end}}><a class="dash-cat" href="/categories" ><span class="icon-left"><img src="/images/categoies.svg" class="svg" alt="" ></span>Categories</a></li>
+            {{end}}
           </ul>
-      </div>
-  </div>
-</div>
+
+        </div> <!-- dashboard-box -->
+      </div> <!-- col-sm-3 -->
+
 {{end}}
