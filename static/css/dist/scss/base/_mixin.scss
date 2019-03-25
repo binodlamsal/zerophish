@@ -1,0 +1,135 @@
+// Rem output with px fallback
+@mixin font-size($sizeValue: 1) {
+	font-size: ($sizeValue * 16) * 1px;
+	font-size: $sizeValue * 1rem;
+}
+
+// Center block
+@mixin center-block {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+// Clearfix
+@mixin clearfix() {
+	content: "";
+	display: table;
+	table-layout: fixed;
+	clear:both;
+}
+
+// Clear after (not all clearfix need this also)
+@mixin clearfix-after() {
+	clear: both;
+}
+
+// prefix 
+@mixin vendor-prefix($name, $value) {
+  @each $vendor in ('-webkit-', '-moz-', '-ms-', '-o-', '') {
+	#{$vendor}#{$name}: #{$value};
+  }
+}
+//Center
+
+@mixin center($horizontal: true, $vertical: true) {
+  position: absolute;
+  @if ($horizontal and $vertical) {
+	top: 50%;
+	left: 50%;
+	@include vendor-prefix('transform','translate(-50%, -50%)');
+  } @else if ($horizontal) {
+	left: 50%;
+	@include vendor-prefix('transform','translate(-50%, 0)');
+  } @else if ($vertical) {
+	top: 50%;
+	@include vendor-prefix('transform','translate(0, -50%)');
+  }
+}
+//placeholder 
+@mixin optional-at-root($sel) {
+	@at-root #{if(not &, $sel, selector-append(&, $sel))} {
+		@content;
+	}
+}
+@mixin placeholder {
+  @include optional-at-root('::-webkit-input-placeholder') {
+	@content;
+  }
+
+  @include optional-at-root(':-moz-placeholder') {
+	@content;
+  }
+
+  @include optional-at-root('::-moz-placeholder') {
+	@content;
+  }
+
+  @include optional-at-root(':-ms-input-placeholder') {
+	@content;
+  }
+}
+
+
+@mixin breakpoint($point) {
+  /* Large Devices, Wide Screens */
+  @if $point == wide {
+	@media (max-width : 1199px) { @content ; }
+  }
+	/* Medium Devices, Desktops */
+  @else if $point == medium {
+	@media (max-width : 991px) { @content ; }
+  }
+	/* Small Devices, Tablets */
+  @else if $point == small {
+	//@media (max-width : 768px) { @content ; }
+	@media (max-width : 767px) { @content ; }
+  }
+  /* Extra Small Devices, Phones */
+  @else if $point == smaller {
+	@media (max-width : 567px)  { @content ; }
+  }
+	/* Extra Small Devices, Phones */
+  @else if $point == extrasmall {
+	@media (max-width : 479px)  { @content ; }
+  }
+	/* Custom, iPhone Retina */
+  @else if $point == iPhone5 {
+	@media (max-width : 320px)  { @content ; }
+  }
+}
+	
+@mixin flex{
+	display: -webkit-box; 
+	display: -ms-flexbox;  
+	display: -webkit-flex;  
+	display: flex; 
+	flex-wrap: wrap;
+	justify-content: center;  
+}
+
+@mixin flex-center{
+	@include flex();
+	align-items: center;  
+}
+// border
+// @mixin border($size, $color, $position){
+// 	@if $position == 'all'{
+// 		border:$size solid $color;
+// 	} @else if $position == 'top'{
+// 		border-top:$size solid $color;
+// 	} @else if $position == 'bottom'{
+// 		border-bottom:$size solid $color;
+// 	} @else if $position == 'right'{
+// 		border-right:$size solid $color;
+// 	} @else if $position == 'left'{
+// 		border-left:$size solid $color;
+// 	} @else if $position == 'top-bottom'{
+// 		border-top:$size solid $color;
+// 		border-bottom:$size solid $color;
+// 	} @else if $position == 'right-left'{
+// 		border-left:$size solid $color;
+// 		border-right:$size solid $color;
+// 	}
+	
+// }

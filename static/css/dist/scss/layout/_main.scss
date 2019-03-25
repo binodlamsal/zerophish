@@ -1,0 +1,269 @@
+input[type="text"],
+input[type="email"],
+input[type="url"],
+input[type="password"],
+input[type="search"],
+input[type="number"],
+input[type="tel"],
+input[type="range"],
+input[type="date"],
+input[type="month"],
+input[type="week"],
+input[type="time"],
+input[type="datetime"],
+input[type="datetime-local"],
+input[type="color"],
+.form-control {
+	border:1px solid #e6e7e8;
+	padding:16px 20px;
+	box-shadow: none;
+	min-height: 51px;
+	color: rgba(127, 127, 127, 0.6);
+	@include placeholder {
+		color: rgba(127, 127, 127, 0.6);
+	}
+	@include breakpoint(small){
+		padding-left: 15px;
+		padding-right: 15px;
+	}
+}
+select.form-control,
+.group-wrap select.form-control  {
+	    height: 45px;
+}
+select.form-control{
+	   -webkit-appearance: none;
+   -moz-appearance:    none;
+   appearance:         none;
+      background: url(../../images/arrow-right.png) no-repeat right center;
+      padding-right: 25px;
+
+}
+.login-form-section{
+	.form-title{
+		padding: 30px 50px ;
+		border-bottom: 1px solid $light-color;
+		@include breakpoint(extrasmall){
+			padding-left: 15px;
+			padding-right: 15px;
+		}
+		h2{
+			font-weight: 500;
+			text-transform: capitalize;
+			background: url(../images/login-icon.png) no-repeat center left ;
+			padding-left: 40px;
+		}
+		@include breakpoint(extrasmall){
+			div[class^='col']{
+				width: 100%;
+				max-width: 100%;
+				text-align: left;
+			}
+			.row{
+				display: block;
+			}
+		}
+	}
+	.account{
+		text-align: right;
+		@include breakpoint(extrasmall){
+			text-align: left;
+			margin-top: 15px;
+		}
+		a{
+			color: $secondary-color;
+			font-weight: 500;
+			&:hover{
+				color: $primary-color;
+				text-decoration: none;
+			}
+		}
+	}
+	.form-body{
+		position: relative;
+		min-height: 400px;
+		.msg-bg-image{
+			position: absolute;
+			right: -686px;
+    		bottom: -159px;
+			pointer-events: none;
+			@include breakpoint(small){
+				right: -400px;
+				bottom: -120px;
+				pointer-events: none;
+				width: 700px;
+				left: auto;
+			}
+			img {
+				width: 70%;
+			}
+		}
+	}
+	.login-form-inner{
+		background: #fff;
+		border: 1px solid #ccc;
+		width: 760px;
+		max-width: 100%;
+		margin: 0 auto;
+		-webkit-box-shadow: 0px 0px 10px 0px #dedede;
+		box-shadow: 0px 0px 10px 0px #dedede;
+		border: none;
+		.login-form{
+			input[type='text'],
+			input[type='email'],
+			input[type='password']{
+				border: none;
+				box-shadow: none;
+				-webkit-box-shadow: none;
+				font-size: 22px;
+				@include breakpoint(medium){
+					font-size: 18px;
+				}
+				@include placeholder{
+					color: rgba(58,58,58, 0.4);
+					font-size: 22px;
+					@include breakpoint(medium){
+						font-size: 18px;
+					}
+				}
+			}
+			input[type='text'],
+			input[type='email']{
+				width: 60%;
+				padding-left: 0;
+				padding-left: 0;
+				@include breakpoint(small){
+					width: 100%;
+				}
+			}
+			input[type='password']{
+				width: 40%;
+				padding-left: 0;
+				padding-right: 0;
+				@include breakpoint(small){
+					width: 100%;
+				}
+				@include placeholder{
+					color: rgba(58,58,58, 0.4);
+					font-size: 18px;
+				}
+			}
+			input[type='submit'],
+			button{
+				background: $secondary-color;
+				border-radius: 20px;
+				-webkit-border-radius: 20px;
+				width: 141px;
+				padding: 0 20px;
+				display: block;
+				text-align: center;
+				height: 35px;
+				line-height: 35px;
+				position: relative;
+				color: $white-color;
+				border: none;
+				font-size: 14px;
+				cursor: pointer;
+				span{
+					display: none;
+				}
+				@include vendor-prefix('transition', 'all 0.5s ease');
+				&:after{
+					display: block;
+					content: '';
+					width: 0;
+					height: 0;
+					border-top: 5px solid transparent;
+					border-left: 5px solid $white-color;
+					border-bottom: 5px solid transparent;
+					position: absolute;
+					right: 26px;
+					top: 13.5px;
+					z-index: 1;
+					@include vendor-prefix('transition', 'all 0.5s ease');
+				}
+				&:hover{
+					background: $primary-color;
+					&:after{
+						right: 15px;
+					}
+				}
+			}
+			.password_forget{
+				margin-bottom: 30px;
+				a{
+					font-size: 11px;
+					font-weight:500;
+					color: $secondary-color;
+					&:hover{
+						color: $primary-color;
+						text-decoration: none;
+					}
+				}
+			}
+		}
+	}
+	.login-form{
+		padding: 0 50px;
+		padding-top: 10px;
+		padding-bottom: 30px;
+		@include breakpoint(extrasmall){
+			padding-left: 15px;
+			padding-right: 15px;
+			padding-top: 30px;
+		}
+		label.control-label{
+			text-transform: uppercase;
+			color: $dark-color;
+			font-size: 13px;
+			@include breakpoint(extrasmall){
+				font-size: 11px;
+			}
+		}
+		.user-group {
+			margin-bottom: 1.5rem;
+			label {
+				margin-bottom: 0;
+			}
+			input {
+				font-size: 30px;
+				line-height: 20px;
+			}
+		}
+		.form-type-password {
+			margin-bottom: 0;
+		}
+	}
+}
+.password-item{
+	label{
+		margin-bottom: -10px;
+	}
+}
+/*=============login*/
+.login-form-section {
+	.login-form{
+		font-size: 12px;
+		padding-top: 50px;
+	}
+	.alternet-login {
+		margin-top: 50px;
+		a {
+			color: #444;
+			text-transform: uppercase;
+			font-weight: 500;
+			img{
+				margin-top: 10px;
+			}
+		}
+	}
+}
+.dataTables_wrapper {
+	input.form-control.input-sm {
+		padding: 5px 20px;
+		min-height: auto;
+	}
+	.row{
+		padding-bottom: 20px;
+	}
+}

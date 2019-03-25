@@ -1,0 +1,156 @@
+
+/*common*/
+*:hover,
+*:focus{
+	outline: none !important;
+}
+.container-fluid{
+	@media (min-width: 1600px){
+		width: 1600px;
+	}
+}
+/*common*/
+.dropdown-toggle::after{
+	border-right: 4px solid transparent;
+	border-left: 4px solid transparent;
+	border-top: 6px solid #989898;
+	position: relative;
+	left: 18px;
+	top: 2px;
+	@include breakpoint(wide){
+		left: 3px;
+	}
+}
+
+.dashboard-wrapper{
+	@media (min-width: 1600px){
+		width: 1600px;
+		margin: 0 auto;
+	}
+	.overlap-full{
+		position: fixed;
+		background: rgba(0,0,0,0.5);
+		left: 0;
+		right: 0;
+		top: 0;
+		bottom: 0;
+		z-index: 11;
+		opacity: 0;
+		visibility: hidden;
+		transition: all ease-in-out 0.5s;
+		-webkit-transition: all ease-in-out 0.5s;
+		-moz-transition: all ease-in-out 0.5s;
+		-o-transition: all ease-in-out 0.5s;
+		-ms-transition: all ease-in-out 0.5s;
+		&.toggle-overlap{
+			opacity: 1;
+			visibility: visible;
+		}
+	}
+	.mobile-hamburger{
+		position: absolute;
+		left: 4px;
+		z-index: 1;
+		display: none;
+		margin-top: 10px;
+		background: #fff;
+		width: 30px;
+		height: 30px;
+		border-radius: 50%;
+		border: 1px solid #e0e0e0;
+		display: flex !important;
+		text-align: center;
+		justify-content: center;
+		align-items: center;
+		line-height: 16px;
+		cursor: pointer;
+		@media (max-width: 991px) and (min-width: 768px){
+			margin-top: 22px;
+		}
+		@media (min-width: 992px){
+			display: none !important;
+		}
+		@include breakpoint(medium){
+			display: block;
+		}
+		@include breakpoint(small){
+			left: 14px;
+			margin-top: 20px;
+		}
+	}
+	.dashboard-box{
+		transition: all ease-in-out 0.5s;
+		-webkit-transition: all ease-in-out 0.5s;
+		-moz-transition: all ease-in-out 0.5s;
+		-ms-transition: all ease-in-out 0.5s;
+		-o-transition: all ease-in-out 0.5s;
+
+		@include breakpoint(medium){
+			position: fixed;
+			min-height: 100vh;
+			z-index: 11;
+			left: -999px;
+			top: 0;
+			width: 300px;
+			overflow-y: auto;
+		}
+
+		.users-wrap{
+			background: #292929;
+			padding: 20px;
+			color: #fff;
+			position: relative !important;
+			&:after{
+					display: block;
+					content: '';
+					clear: both;
+				}
+			.dropdown-menu{
+				left: 0 !important;
+				width: 100%;
+				position: static !important;
+				transform: none !important;
+				margin-top: 10px;
+				padding-top: 10px;
+				background: #000 !important;
+				display: block !important;
+				z-index: 1;
+				a{
+					padding-left: 20px;
+				}
+
+			}
+			.dropdown {
+				position: static !important;
+			}
+			@media (min-width: 992px){
+				display: none !important;
+			}
+			.user-name{
+				font-size: 12px !important;
+				float: left;
+			}
+			.user-img{
+				margin-left: 10px;
+				float: left;
+			}
+			.dropdown-btn{
+				background: none;
+				border: none;
+				margin-left: 10px;
+
+			}
+		}
+		&.slide-dashboard{
+			left: 0;
+		}
+		ul{
+			padding-top: 50px;
+			overflow-y: auto;
+			@include breakpoint(medium){
+				padding-top: 30px;
+			}
+		}
+	}
+
+}
