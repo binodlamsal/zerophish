@@ -471,3 +471,24 @@ func IsGroupAccessibleByUser(gid, uid int64) bool {
 
 	return false
 }
+
+// GetTargetsFullName finds and returns full name of a target user
+// with the given email which is in a user group owned by the given user (oid).
+// If no matching target user found then an empty string will be returned.
+func GetTargetsFullName(email string, oid int64) string {
+	groups, err := GetGroups(oid)
+
+	if err != nil {
+		return ""
+	}
+
+	for _, g := range groups {
+		for _, t := range g.Targets {
+			if t.Email == email {
+				return t.FirstName + " " + t.LastName
+			}
+		}
+	}
+
+	return ""
+}

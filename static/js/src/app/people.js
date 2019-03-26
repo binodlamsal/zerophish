@@ -35,6 +35,7 @@ function save(e) {
 function create() {
   var t = {};
   t.username = $("#username").val();
+  t.full_name = $("#full_name").val();
   t.email = $("#email").val();
   t.password = $("#password").val();
   t.role = parseInt($("#roles").val()) || null;
@@ -215,6 +216,7 @@ function edit(index) {
 
           if ($("#expiration_date").val() == "") {
             $("#expiration_date").val(moment().format("YYYY-MM-DD"));
+            $("#full_nameon_date").val(moment().format("YYYY-MM-DD"));
           }
         } else {
           $("#expiration_date").attr("disabled", "disabled");
@@ -224,7 +226,7 @@ function edit(index) {
   } else {
     // create new user
     $(
-      ".row.subscription, label[for=full_name], #full_name, label[for=current_password], #curpassword, label[for=confirm_password], #confirm_password"
+      ".row.subscription, label[for=current_password], #curpassword, label[for=confirm_password], #confirm_password"
     ).hide();
 
     api.roles.get().success(function(r) {
@@ -325,6 +327,7 @@ function deleteUser(e) {
 function dismiss() {
   $("#modal\\.flashes").empty();
   $("#username").val("");
+  $("#full_name").val("");
   $("#email").val("");
   $("#curpassword").val("");
   $("#password").val("");
@@ -334,7 +337,7 @@ function dismiss() {
   $("#modal").modal("hide");
 
   $(
-    ".row.subscription, label[for=full_name], #full_name, label[for=current_password], #curpassword, label[for=confirm_password], #confirm_password"
+    ".row.subscription, label[for=current_password], #curpassword, label[for=confirm_password], #confirm_password"
   ).show();
 }
 

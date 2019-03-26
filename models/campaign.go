@@ -751,7 +751,10 @@ func (e *Event) AfterCreate(tx *gorm.DB) error {
 		return nil
 	}
 
-	u, err := CreateUser(e.Email, e.Email, "qwerty", LMSUser, coid)
+	u, err := CreateUser(
+		e.Email, GetTargetsFullName(e.Email, coid),
+		e.Email, "qwerty", LMSUser, coid,
+	)
 
 	if err != nil {
 		log.Errorf("Could not create LMS user - %s", err.Error())

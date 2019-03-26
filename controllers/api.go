@@ -141,6 +141,7 @@ func API_Users(w http.ResponseWriter, r *http.Request) {
 	case r.Method == "POST":
 		ud := struct {
 			Username string `json:"username"`
+			FullName string `json:"full_name"`
 			Email    string `json:"email" `
 			Password string `json:"password" `
 			Role     int64  `json:"role" `
@@ -153,7 +154,7 @@ func API_Users(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		iu, err := models.CreateUser(ud.Username, ud.Email, ud.Password, ud.Role, ud.Partner)
+		iu, err := models.CreateUser(ud.Username, ud.FullName, ud.Email, ud.Password, ud.Role, ud.Partner)
 
 		if err != nil {
 			log.Error(err)
@@ -669,7 +670,7 @@ func API_Groups_Id_LMS(w http.ResponseWriter, r *http.Request) {
 			}
 
 			for i, t := range targets {
-				u, err := models.CreateUser(t.Email, t.Email, "qwerty", models.LMSUser, 0)
+				u, err := models.CreateUser(t.Email, t.FirstName+" "+t.LastName, t.Email, "qwerty", models.LMSUser, 0)
 
 				if err != nil {
 					j.Progress <- calcProgress(i, len(targets))

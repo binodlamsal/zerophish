@@ -184,7 +184,7 @@ func PutUserRole(ur *UserRole) error {
 }
 
 // CreateUser creates a new user with the given props and returns it
-func CreateUser(username, email, password string, rid int64, partner int64) (*User, error) {
+func CreateUser(username, fullName, email, password string, rid int64, partner int64) (*User, error) {
 	if username == "" {
 		return nil, errors.New("Username must not be empty")
 	}
@@ -224,6 +224,7 @@ func CreateUser(username, email, password string, rid int64, partner int64) (*Us
 
 	u := User{
 		Username:  username,
+		FullName:  fullName,
 		Email:     email,
 		Hash:      string(h),
 		ApiKey:    util.GenerateSecureKey(),

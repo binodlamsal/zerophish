@@ -199,7 +199,7 @@ func SSO(handler http.Handler) http.HandlerFunc {
 					return
 				}
 
-				newUser, err := models.CreateUser(c.User, c.Email, "qwerty", int64(rid), 0)
+				newUser, err := models.CreateUser(c.User, "", c.Email, "qwerty", int64(rid), 0)
 
 				if err != nil {
 					logoutWithError(err)
