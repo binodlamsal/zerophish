@@ -5,7 +5,7 @@
     line-height: 50px;
     font-size: 50px;
   }
-  
+
   .rating label {
     position: absolute;
     top: 0;
@@ -13,54 +13,163 @@
     height: 100%;
     cursor: pointer;
   }
-  
+
   .rating label:last-child {
     position: static;
   }
-  
+
   .rating label:nth-child(1) {
     z-index: 5;
   }
-  
+
   .rating label:nth-child(2) {
     z-index: 4;
   }
-  
+
   .rating label:nth-child(3) {
     z-index: 3;
   }
-  
+
   .rating label:nth-child(4) {
     z-index: 2;
   }
-  
+
   .rating label:nth-child(5) {
     z-index: 1;
   }
-  
+
   .rating label input {
     position: absolute;
     top: 0;
     left: 0;
     opacity: 0;
   }
-  
+
   .rating label .icon {
     float: left;
     color: transparent;
     font-size: 40px;
   }
-  
+
   .rating label:last-child .icon {
     color: #000;
   }
-  
+
   .rating:not(:hover) label input:checked ~ .icon,
   .rating:hover label:hover input ~ .icon {
     color: #09f;
   }
-  
+
   .rating label input:focus:not(:checked) ~ .icon:last-child {
     color: #000;
     text-shadow: 0 0 5px #09f;
   }
+  .re-btn {
+	font-size: 14px;
+	padding: 3px 12px;
+	margin-top: 7px;
+  }
+.dashboard-wrapper .table .pull-right{
+	display: flex;
+}
+.dashboard-wrapper .no-padding {
+  z-index: 999;
+}
+
+  .camp-header {
+    position: relative;
+  }
+  .camp-header .camp-title {
+    position: absolute;
+    top:23px;
+  }
+  .view-btn {
+    position: absolute;
+    right: 10px;
+    top: 23px;
+    z-index: 99;
+  }
+  .header-clean {
+    margin-top: 30px;
+  }
+  .camp-header .flate-button.btn {
+    padding: 7px 26px 8px 20px;
+  }
+
+  .setting-navTabs {
+    margin-bottom:50px;
+  }
+  .top-page-header .setting-title .page-header {
+    position: absolute;
+    top: 84px;
+    z-index: 1;
+}
+div.dataTables_wrapper div.dataTables_info {
+
+    padding-left: 10px;
+}
+
+.dataTables_wrapper .row {
+    border-bottom: 1px solid #dee2e6;
+    margin-bottom: 40px;
+    padding-bottom: 25px;
+}
+.setting-navTabs .nav-tabs{
+    padding-top:20px;
+  }
+
+
+  .setting-navTabs .nav-tabs>li>a {
+    margin:0 0 -2px;
+    border:none;
+  }
+  .setting-navTabs .nav-tabs>li> a.active {
+    border-bottom-color: transparent;
+  }
+  .setting-navTabs .nav-tabs>li a.active,
+  .setting-navTabs .nav-tabs>li a.active:focus,
+  .setting-navTabs .nav-tabs>li a.active:hover {
+    color: #555;
+    cursor: default;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-bottom-color: transparent;
+    cursor: pointer;
+}
+.nav-tabs li a {
+    margin-bottom: -1px;
+}
+.nav-tabs>li>a {
+    margin-right: 2px;
+    line-height: 1.42857143;
+    border: 1px solid transparent;
+    border-radius: 4px 4px 0 0;
+}
+span.for-des i {
+  padding-right: 2px;
+}
+div.dataTables_wrapper div.dataTables_length select {
+    margin: 0 5px;
+}
+.btn-green, .modal-footer .btn.btn-primary, .btn-blue {
+  padding:13px 40px;
+}
+@media (max-width: 767px){
+  #mainSettings #reset-logo,
+    #mainSettings #reset-avatar{
+    margin-bottom: 20px;
+  }
+ #mainSettings #apiResetForm{
+      margin-top: 20px;
+      margin-left: 20px;
+  }
+}
+@media (max-width: 991px){
+    .top-page-header .setting-title .page-header {
+      position: static;
+    }
+}
+
+#refresh_message {
+  display: none !important;
+}

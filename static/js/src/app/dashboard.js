@@ -322,6 +322,7 @@ function load(filter) {
   if (campaignTable === undefined) {
     // Create the overview chart data
     campaignTable = $("#campaignTable").DataTable({
+      autoWidth: false,
       columnDefs: [
         {
           orderable: false,

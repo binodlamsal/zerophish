@@ -61,6 +61,7 @@ function dismiss() {
 function edit(e) {
   if (
     ((targets = $("#targetsTable").dataTable({
+      autoWidth: false,
       destroy: !0,
       columnDefs: [
         {
@@ -213,6 +214,7 @@ function addTarget(e, a, t, s) {
 function load(filter) {
   if (groupTable === undefined) {
     groupTable = $("#groupTable").DataTable({
+      autoWidth: false,
       destroy: !0,
       columnDefs: [
         {

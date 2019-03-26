@@ -380,6 +380,7 @@ $(document).ready(function() {
 function load(filter) {
   if (campaignTable === undefined) {
     campaignTable = $("#campaignTable").DataTable({
+      autoWidth: false,
       columnDefs: [
         {
           orderable: !1,

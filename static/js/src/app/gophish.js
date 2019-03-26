@@ -75,6 +75,9 @@ var capitalize = function(e) {
       get: function() {
         return query("/people", "GET", {}, !1);
       },
+      post: function(e) {
+        return query("/people", "POST", e, !1);
+      },
       partners: function() {
         return query("/people/partner", "GET", {}, !0);
       }

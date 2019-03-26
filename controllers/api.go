@@ -139,18 +139,40 @@ func API_Users(w http.ResponseWriter, r *http.Request) {
 		JSONResponse(w, resp, http.StatusOK)
 
 	case r.Method == "POST":
-		//Attempt to register
-		succ, err := auth.Register(r)
-		//If we've registered, redirect to the login page
-		if succ {
-			JSONResponse(w, models.Response{Success: true, Message: "User signup become successful"}, http.StatusOK)
+		ud := struct {
+			Username string `json:"username"`
+			Email    string `json:"email" `
+			Password string `json:"password" `
+			Role     int64  `json:"role" `
+			Partner  int64  `json:"partner"`
+		}{}
+
+		if err := json.NewDecoder(r.Body).Decode(&ud); err != nil {
+			log.Error(err)
+			JSONResponse(w, models.Response{Success: false, Message: "Malformed request body"}, http.StatusBadRequest)
 			return
 		}
-		// Check the error
-		m := err.Error()
-		log.Error(err)
-		JSONResponse(w, models.Response{Success: false, Message: m}, http.StatusInternalServerError)
-		return
+
+		iu, err := models.CreateUser(ud.Username, ud.Email, ud.Password, ud.Role, ud.Partner)
+
+		if err != nil {
+			log.Error(err)
+			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
+			return
+		}
+
+		if os.Getenv("USERSYNC_DISABLE") == "" {
+			err = usersync.PushUser(iu.Id, iu.Username, iu.Email, "", ud.Password, ud.Role, ud.Partner)
+
+			if err != nil {
+				_ = models.DeleteUser(iu.Id)
+				log.Error(err)
+				JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
+				return
+			}
+		}
+
+		JSONResponse(w, models.Response{Success: true, Message: "User has been created"}, http.StatusOK)
 	}
 }
 

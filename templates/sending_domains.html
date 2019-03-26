@@ -1,14 +1,27 @@
 {{define "body"}}
+<section class="dashboard-wrapper">
+        <div class="overlap-full"></div>
+        <div class="container-fluid">
+          <div class="mobile-hamburger">
+            <a href="javascript:void(0)"> <i class="fa fa-bars" aria-hidden="true"></i> </a>
+          </div><!-- .mobile-hamburger -->
+          <div class="row">
+
+
 {{template "sidebar" .}}
-<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-    <h1 class="page-header">
-        Sending Domains
-    </h1>
-    <div id="flashes" class="row"></div>
-    <div class="row">
-        <button type="button" class="btn btn-primary" onclick="edit(-1)" data-toggle="modal" data-backdrop="static"
+<div class="col-lg-10 main">
+     <div class="top-page-header d-flex justify-content-between">
+            <div class="tp-page-title">
+                <h1 class="page-header">
+               Sending Domains
+             </h1>
+         </div> <!-- .tp-page-title -->
+         <div class="tp-page-btn">
+             <button type="button" class="btn btn-primary flate-button" onclick="edit(-1)" data-toggle="modal" data-backdrop="static"
             data-target="#modal"><i class="fa fa-plus"></i> New Domain</button>
-    </div>
+        </div> <!-- .tp-page-btn -->
+    </div> <!-- .top-page-header -->
+
     &nbsp;
     <div id="loading">
         <i class="fa fa-spinner fa-spin fa-4x"></i>
@@ -22,10 +35,10 @@
         <table id="profileTable" class="table" style="display:none;">
             <thead>
                 <tr>
-                    <th class="col-md-4">Name</th>
-                    <th>Interface Type</th>
-                    <th>Last Modified Date</th>
-                    <th class="col-md-2 no-sort"></th>
+                    <th> <span class="for-des"><i class="fa fa-file-text-o"></i> </span> Name</th>
+                    <th> <span class="for-des"><i class="fa fa-delicious"></i> Interface Type</th>
+                    <th> <span class="for-des"><i class="fa fa-calendar-o"></i> </span> Last Modified Date</th>
+                    <th class="no-sort"></th>
                 </tr>
             </thead>
             <tbody>
@@ -38,10 +51,11 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <!-- New Template Modal -->
-            <div class="modal-header">
+             <div class="modal-header">
+                 <h4 class="modal-title" id="templateModalLabel">New Sending Domain</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="dismiss()"><span
-                        aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="profileModalLabel">New Sending Domain</h4>
+                        aria-hidden="true"><img src="images/close.png" alt=""></span></button>
+
             </div>
             <div class="modal-body">
                 <div class="row" id="modal.flashes"></div>
@@ -139,6 +153,10 @@
         </div>
     </div>
 </div>
+</div> <!-- col-xs-9 -->
+</div>
+</div> <!-- container-fluid -->
+</section>
 {{end}} {{define "scripts"}}
 <script src="/js/dist/app/sending_domains.min.js"></script>
 {{end}}

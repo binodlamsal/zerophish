@@ -1,25 +1,35 @@
 {{define "body"}}
-{{template "sidebar" .}}
-<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-    <div class="row">
-        <h1 class="page-header">
-            Email Templates
-        </h1>
-    </div>
-    <div id="flashes" class="row"></div>
-    <div class="row">
-        <button type="button" class="btn btn-primary" onclick="edit(-1)" data-toggle="modal" data-backdrop="static"
-            data-target="#modal"><i class="fa fa-plus"></i> New Template</button>
+<section class="dashboard-wrapper">
+        <div class="overlap-full"></div>
+        <div class="container-fluid">
+          <div class="mobile-hamburger">
+            <a href="javascript:void(0)"> <i class="fa fa-bars" aria-hidden="true"></i> </a>
+          </div><!-- .mobile-hamburger -->
+          <div class="row">
 
-            <div style="display: inline-block; position: absolute; right: 0%; transform: translate(-15%, 0%)">
-                <strong>Filter: &nbsp;</strong>
-                <input type="radio" name="filter" value="own" id="filter-own" checked> Own &nbsp;
-                <input type="radio" name="filter" value="public" id="filter-public"> Public &nbsp;
-                {{if or (eq role "admin") (eq role "partner") (eq role "child_user")}}
-                <input type="radio" name="filter" value="customers" id="filter-customers"> Customers &nbsp;
-                {{end}}
-            </div>
-    </div>
+{{template "sidebar" .}}
+<div class="col-lg-10 main">
+    <div id="flashes" class=""></div>
+    <div class="top-page-header d-flex justify-content-between">
+        <div class="tp-page-title">
+            <h1 class="page-header">
+                Email Templates
+            </h1>
+        </div> <!-- .tp-page-title -->
+        <div class="tp-page-btn">
+            <button type="button" class="btn btn-primary flate-button" data-toggle="modal" data-backdrop="static" data-target="#modal"
+            onclick="edit(-1)">
+           New Template <i class="fa fa-plus"></i> </button>
+        </div> <!-- .tp-page-btn -->
+        <div style="display: inline-block; position: absolute; right: 0%; transform: translate(-15px, 100px)">
+            <strong>Filter: &nbsp;</strong>
+            <input type="radio" name="filter" value="own" id="filter-own" checked> Own &nbsp;
+            <input type="radio" name="filter" value="public" id="filter-public"> Public &nbsp;
+            {{if or (eq role "admin") (eq role "partner") (eq role "child_user")}}
+            <input type="radio" name="filter" value="customers" id="filter-customers"> Customers &nbsp;
+            {{end}}
+        </div>
+    </div> <!-- .top-page-header -->
     &nbsp;
     <div id="loading">
         <i class="fa fa-spinner fa-spin fa-4x"></i>
@@ -33,11 +43,11 @@
         <table id="templateTable" class="table" style="display:none;">
             <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Creator</th>
-                    <th>Rating</th>
-                    <th>Modified Date</th>
-                    <th class="col-md-2 no-sort"></th>
+                    <th> <span class="for-des"> <i class="fa fa-file-text-o"></i> </span> Name</th>
+                    <th> <span class="for-des"> <i class="fa fa-file-text-o"></i> </span> Creator</th>
+                    <th><span class="for-des"><i class="fa fa-star" ></i> </span> Rating</th>
+                    <th width="30%"> <span class="for-des"> <i class="fa fa-calendar-o"></i> </span> Modified Date</th>
+                    <th class="no-sort"></th>
                 </tr>
             </thead>
             <tbody>
@@ -51,9 +61,10 @@
         <div class="modal-content">
             <!-- New Template Modal -->
             <div class="modal-header">
+                 <h4 class="modal-title" id="templateModalLabel">New Template</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="dismiss()"><span
-                        aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="templateModalLabel">New Template</h4>
+                        aria-hidden="true"><img src="images/close.png" alt=""></span></button>
+
             </div>
             <div class="modal-body">
                 <div class="row" id="modal.flashes"></div>
@@ -63,7 +74,7 @@
                         autofocus />
                 </div>
                 <div class="form-group">
-                    <button class="btn btn-danger" data-toggle="modal" data-backdrop="static" data-target="#importEmailModal"><i
+                    <button class="btn common-btn" data-toggle="modal" data-backdrop="static" data-target="#importEmailModal"><i
                             class="fa fa-envelope"></i>
                         Import Email</button>
                 </div>
@@ -73,21 +84,23 @@
                                 <option val = "">Select Category</option>
                             </select>
                 </div>
+
                 <label class="control-label" for="subject">From:</label>
                 <div class="form-group">
                     <input type="text" class="form-control" placeholder="First Last <test@example.com>" id="from_address" />
                 </div>
+
                 <label class="control-label" for="subject">Subject:</label>
                 <div class="form-group">
                     <input type="text" class="form-control" placeholder="Email Subject" id="subject" />
                 </div>
                 <!-- Nav tabs -->
-                <ul class="nav nav-tabs" role="tablist">
+                <ul class="nav nav-tabs text-nav" role="tablist">
                     <li class="active" role="text"><a href="#text" aria-controls="text" role="tab" data-toggle="tab">Text</a></li>
                     <li role="html"><a href="#html" aria-controls="html" role="tab" data-toggle="tab">HTML</a></li>
                 </ul>
                 <!-- Tab panes -->
-                <div class="tab-content">
+                <div class="tab-content btm-space">
                     <div role="tabpanel" class="tab-pane active" id="text">
                         <textarea rows="10" id="text_editor" class="gophish-editor form-control" placeholder="Plaintext"></textarea>
                     </div>
@@ -95,18 +108,28 @@
                         <textarea id="html_editor"></textarea>
                     </div>
                 </div>
-                <div class="checkbox checkbox-primary">
-                    <input id="use_tracker_checkbox" type="checkbox" checked>
+
+                <div class="checkbox checkbox-primary btm-space">
+                    <label class="checkbx">
+                        <input class="checkAll" type="checkbox" for="use_tracker_checkbox" name="rembember" value="rembember" checked="">
+                        <span class="checkbox-btn"><img src="images/tick.png" alt=""></span>
+                        <!--  Add Tracking Image -->
+                    </label>
                     <label for="use_tracker_checkbox">Add Tracking Image</label>
                 </div>
+                {{if (eq .Role "admin") }}
 
-                <div class="checkbox checkbox-primary">
-                    <input id="publicly_available" type="checkbox">
+                <div class="checkbox checkbox-primary btm-space">
+                     <label class="checkbx">
+                        <input class="checkAll" id="publicly_available" type="checkbox"  name="rembember" value="rembember" checked="">
+                        <span class="checkbox-btn"><img src="images/tick.png" alt=""></span>
+                      <!--    Add Tracking Image -->
+                    </label>
                     <label for="publicly_available">Publicly available <i class="fa fa-question-circle"
                             data-toggle="tooltip" data-placement="right" title="Check this box if you want to make this template publicly available."></i></label>
                 </div>
-
-                <span class="btn btn-danger btn-file"><i class="fa fa-plus"></i> Add Files
+                {{end}}
+                <span class="btn btn-file"><i class="fa fa-plus"></i> Add Files
                     <input id="attachmentUpload" type="file" onchange="attach(this.files)" multiple>
                 </span>
                 <br />
@@ -114,9 +137,9 @@
                 <table id="attachmentsTable" class="table">
                     <thead>
                         <tr>
-                            <th class="col-md-1 no-sort"></th>
-                            <th class="col-md-10">Name</th>
-                            <th class="col-md-1 no-sort"></th>
+                            <th class="no-sort"></th>
+                            <th>Name</th>
+                            <th class="no-sort"></th>
                             <th class="datatable_hidden no-sort">Content</th>
                             <th class="datatable_hidden no-sort">Type</th>
                         </tr>
@@ -164,8 +187,8 @@
 
             </div>
             <div class="modal-footer">
-                <button type="button" data-dismiss="modal" class="btn btn-default" onclick="dismiss()">Cancel</button>
-                <button type="button" class="btn btn-primary" id="modalSubmit">Save Template</button>
+                <button type="button" data-dismiss="modal" class="btn btn-gray" onclick="dismiss()">Cancel</button>
+                <button type="button" class="btn btn-green" id="modalSubmit">Save Template <img src="images/icon03.png"></button>
             </div>
         </div>
     </div>
@@ -177,17 +200,13 @@
         <!-- Preview Template Modal -->
         <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="dismiss()"><span
-                aria-hidden="true">&times;</span></button>
+                aria-hidden="true"><img src="images/close.png" alt=""></span></button>
         <h4 class="modal-title" id="templateModalLabel">Preview Template - <span class="tempname"> </span></h4>
-        </div>
-        <div class="modal-header">
-            <strong>From:</strong>&nbsp;<span class="from_address"></span><br>
-            <strong>Subject:</strong>&nbsp;<span class="subject"></span>
         </div>
         <div class="modal-body">
         </div>
         <div class="modal-footer">
-        <button type="button" data-dismiss="modal" class="btn btn-default" onclick="dismiss()">Cancel</button>
+        <button type="button" data-dismiss="modal" class="btn common-btn" onclick="dismiss()">Cancel</button>
         </div>
         </div>
     </div>
@@ -199,7 +218,7 @@
         <div class="modal-content">
             <!-- New Email Modal -->
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true"><img src="images/close.png" alt=""></span></button>
                 <h4 class="modal-title" id="importEmailModalLabel">Import Email</h4>
             </div>
             <div class="modal-body">
@@ -208,18 +227,26 @@
                 <div class="form-group">
                     <textarea rows="10" id="email_content" class="gophish-editor form-control" placeholder="Raw Email Source"></textarea>
                 </div>
-                <div class="checkbox checkbox-primary">
-                    <input id="convert_links_checkbox" type="checkbox" checked>
-                    <label for="convert_links_checkbox">Change Links to Point to Landing Page</label>
+                <div class="checkbox checkbox-primary btm-space">
+                   <label class="checkbx">
+                        <input class="checkAll" type="checkbox" name="rembember" value="rembember">
+                        <span class="checkbox-btn"><img src="images/tick.png" alt=""></span>
+                         Change Links to Point to Landing Page
+                    </label>
+                    <label for="convert_links_checkbox"></label>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" data-dismiss="modal" class="btn btn-default">Cancel</button>
-                <button type="button" class="btn btn-primary" id="modalSubmit" onclick="importEmail()">Import</button>
+                <button type="button" class="btn custom-btn" id="modalSubmit" onclick="importEmail()">Import</button>
             </div>
         </div>
     </div>
 </div>
+</div> <!-- col-xs-9 -->
+</div>
+</div> <!-- container-fluid -->
+</section>
 
 {{end}}
 {{define "scripts"}}
