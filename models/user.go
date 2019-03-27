@@ -3,8 +3,6 @@ package models
 import (
 	"errors"
 	"fmt"
-	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/everycloud-technologies/phishing-simulation/bakery"
@@ -13,7 +11,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	log "github.com/everycloud-technologies/phishing-simulation/logger"
-	"github.com/vincent-petithory/dataurl"
 )
 
 // Roles
@@ -35,7 +32,6 @@ type User struct {
 	ApiKey          string    `json:"api_key" sql:"not null;unique"`
 	PlainApiKey     string    `json:"plain_api_key" gorm:"-"`
 	FullName        string    `json:"full_name" sql:"not null"`
-	Avatar          string    `json:"avatar"`
 	EmailVerifiedAt time.Time `json:"email_verified_at"`
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`
@@ -363,6 +359,17 @@ func (u User) GetLogo() *Logo {
 	return nil
 }
 
+// GetAvatar returns Avatar which was assigned to this user or nil
+func (u User) GetAvatar() *Avatar {
+	a := Avatar{}
+
+	if db.Debug().Table("avatars").Where("user_id = ?", u.Id).First(&a).Error == nil {
+		return &a
+	}
+
+	return nil
+}
+
 // GetSubscription returns user subscription or nil if there is none
 func (u User) GetSubscription() *Subscription {
 	s := Subscription{}
@@ -497,20 +504,6 @@ func GetUserPartners() ([]User, error) {
 	u := []User{}
 	err = db.Raw("SELECT * FROM users u LEFT JOIN users_role ur ON (u.id = ur.uid) where ur.rid in (?, ?)", 1, 2).Scan(&u).Error
 	return u, err
-}
-
-// ServeAvatar writes proper headers and content of this user's avatar image to the given ResponseWriter
-func (u User) ServeAvatar(w http.ResponseWriter) {
-	dataURL, err := dataurl.DecodeString(u.Avatar)
-
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	w.Header().Set("Content-Type", dataURL.MediaType.ContentType())
-	w.Header().Set("Content-Length", strconv.Itoa(len(dataURL.Data)))
-	w.Write(dataURL.Data)
 }
 
 func (u *User) BeforeSave() (err error) {

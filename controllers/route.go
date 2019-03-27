@@ -50,6 +50,7 @@ func CreateAdminRouter() http.Handler {
 	router.HandleFunc("/people", Use(People, mid.RequireRoles([]int64{models.Administrator, models.Partner, models.ChildUser}), mid.RequireLogin, mid.SSO))
 	router.HandleFunc("/roles", Use(Roles, mid.RequireRoles([]int64{models.Administrator}), mid.RequireLogin, mid.SSO))
 	router.HandleFunc("/logo", Use(Logo))
+	router.HandleFunc("/avatar", Use(Avatar))
 	router.HandleFunc("/avatars/{id:[0-9]+}", Use(Avatars_Id))
 	// Create the API routes
 	api := router.PathPrefix("/api").Subrouter()
@@ -444,20 +445,33 @@ func Logo(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/images/logo1.png", 302)
 }
 
-// Avatars_Id serves avatar image by the given user id or the default avatar
-func Avatars_Id(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, _ := strconv.ParseInt(vars["id"], 0, 64)
-	user, err := models.GetUser(id)
+// Avatar serves avatar image of the logged-in user
+func Avatar(w http.ResponseWriter, r *http.Request) {
+	u, ok := ctx.Get(r, "user").(models.User)
 
-	if err == nil {
-		if user.Avatar != "" {
-			user.ServeAvatar(w)
+	if ok {
+		a := u.GetAvatar()
+
+		if a != nil {
+			a.Serve(w)
 			return
 		}
 	}
 
 	http.Redirect(w, r, "/images/noavatar.png", 302)
+}
+
+// Avatars_Id serves avatar image by the given id or the default avatar
+func Avatars_Id(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, _ := strconv.ParseInt(vars["id"], 0, 64)
+	a, err := models.GetAvatar(id)
+
+	if err != nil {
+		http.Redirect(w, r, "/images/noavatar.png", 302)
+	}
+
+	a.Serve(w)
 }
 
 // SSO_Login handles Bakery Single Sign-On authentication flow for a user.

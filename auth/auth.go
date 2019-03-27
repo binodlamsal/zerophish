@@ -183,15 +183,22 @@ func ChangePassword(r *http.Request) error {
 	u.FullName = r.Form.Get("full_name")
 
 	if r.Form.Get("avatar") != "" {
-		if r.Form.Get("avatar") == "DELETE" {
-			u.Avatar = ""
+		a := u.GetAvatar()
+
+		if a == nil {
+			a = &models.Avatar{UserId: u.Id, Data: r.Form.Get("avatar")}
 		} else {
-			u.Avatar = r.Form.Get("avatar")
+			if r.Form.Get("avatar") == "DELETE" {
+				return models.DeleteAvatar(a.Id)
+			}
+
+			a.Data = r.Form.Get("avatar")
 		}
+
+		return models.PutAvatar(a)
 	}
 
-	err := models.PutUser(&u)
-	return err
+	return models.PutUser(&u)
 }
 
 func ChangeLogo(r *http.Request) error {

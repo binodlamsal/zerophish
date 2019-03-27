@@ -105,13 +105,14 @@ func API_Campaigns(w http.ResponseWriter, r *http.Request) {
 
 // API_Users returns a list of Users if requested via GET.
 func API_Users(w http.ResponseWriter, r *http.Request) {
-	type userWithRoleAndSubscription struct {
+	type userWithExtraProps struct {
 		models.User
 		Role         string               `json:"role"`
 		Subscription *models.Subscription `json:"subscription"`
+		AvatarId     int64                `json:"avatar_id"`
 	}
 
-	type response []userWithRoleAndSubscription
+	type response []userWithExtraProps
 	resp := response{}
 
 	switch {
@@ -133,7 +134,13 @@ func API_Users(w http.ResponseWriter, r *http.Request) {
 				roleName = role.DisplayName()
 			}
 
-			resp = append(resp, userWithRoleAndSubscription{user, roleName, user.GetSubscription()})
+			var aid int64
+
+			if a := user.GetAvatar(); a != nil {
+				aid = a.Id
+			}
+
+			resp = append(resp, userWithExtraProps{user, roleName, user.GetSubscription(), aid})
 		}
 
 		JSONResponse(w, resp, http.StatusOK)
