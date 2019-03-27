@@ -511,7 +511,7 @@ func SSO_Login(w http.ResponseWriter, r *http.Request) {
 		template.Must(templates, err).ExecuteTemplate(w, "base", params)
 	case r.Method == "POST":
 		username, password := r.FormValue("username"), r.FormValue("password")
-		cookie, err := bakery.CreateOatmealCookie(username, password, "login", auth.SSOSlaveURL)
+		cookie, err := bakery.CreateOatmealCookie(username, password, "login", "https://"+r.Host+"/")
 
 		if err != nil {
 			Flash(w, r, "danger", err.Error())

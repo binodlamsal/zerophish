@@ -22,7 +22,6 @@ import (
 )
 
 const SSODomain = ".everycloudtech.com"                                 // ".localhost"
-const SSOSlaveURL = "https://awareness-test.everycloudtech.com:3333/"   // "https://localhost:3333/"
 const SSOMasterLoginURL = "https://www.everycloudtech.com/bakery/login" // "https://localhost:3333/sso/mock"
 
 //init registers the necessary models to be saved in the session later
