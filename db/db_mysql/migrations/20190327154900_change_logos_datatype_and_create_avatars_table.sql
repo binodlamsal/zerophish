@@ -2,7 +2,7 @@
 -- SQL in this section is executed when the migration is applied.
 
 ALTER TABLE `logos`	CHANGE COLUMN `data` `data` MEDIUMBLOB NOT NULL AFTER `user_id`;
-ALTER TABLE `users`	DROP COLUMN `avatar_id`;
+ALTER TABLE `users`	DROP COLUMN `avatar`;
 CREATE TABLE IF NOT EXISTS avatars (id integer primary key auto_increment,user_id int(10) unsigned not null,data mediumblob not null);
 
 -- +goose Down
