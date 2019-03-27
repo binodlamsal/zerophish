@@ -83,9 +83,9 @@ $(document).ready(function() {
 
   function readURL(input, type) {
     if (input.files && input.files[0]) {
-      if (input.files[0].size * 1.4 > 65000) {
+      if (input.files[0].size * 1.4 > 5000000) {
         alert(
-          "The " + type + " image file is too large (must not exceed 64KB)"
+          "The " + type + " image file is too large (must not exceed ~5MB)"
         );
         return;
       }

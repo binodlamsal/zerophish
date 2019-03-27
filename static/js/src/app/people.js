@@ -409,7 +409,9 @@ $(document).ready(function() {
                 peopleTable.row
                   .add([
                     '<img style="max-height: 40px" src="' +
-                      (a.avatar || "/images/noavatar.png") +
+                      (a.avatar_id
+                        ? "/avatars/" + a.avatar_id
+                        : "/images/noavatar.png") +
                       '"> ' +
                       a.username,
                     a.full_name,
