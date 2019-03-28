@@ -154,6 +154,13 @@ div.dataTables_wrapper div.dataTables_length select {
 .btn-green, .modal-footer .btn.btn-primary, .btn-blue {
   padding:13px 40px;
 }
+/*.select2-container .select2-search--inline .select2-search__field{
+  width: auto !important;
+}*/
+.select2-container--bootstrap .select2-selection--multiple .select2-search--inline .select2-search__field{
+  width: auto !important;
+}
+
 @media (max-width: 767px){
   #mainSettings #reset-logo,
     #mainSettings #reset-avatar{

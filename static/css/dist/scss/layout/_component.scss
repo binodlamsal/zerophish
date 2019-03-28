@@ -1,0 +1,149 @@
+
+/*modal*/
+.modal {
+	.modal-dialog {
+		max-width: 700px;
+	}
+	.modal-header {
+		padding:31px 39px 29px 48px;
+		@include breakpoint(small){
+			padding: 15px 25px;
+		}
+		button{
+			opacity: 1;
+			&:hover{
+				opacity: 0.5;
+			}
+			img{
+				@include breakpoint(small){
+					width: 25px;
+				}
+			}
+		}
+		h4 {
+			background-image: linear-gradient(to right, #00caff 0%, #25419d), linear-gradient(to bottom, #444444, #444444);
+		    -webkit-background-clip: text;
+		    background-clip: text;
+		    -webkit-text-fill-color: transparent;
+		    font-size: 20px;
+		    font-weight: 500;
+		    line-height: 1.1;
+		    text-transform: uppercase;
+		    margin-top: 9px;
+		    position: relative;
+		    padding-left: 30px;
+		    @include breakpoint(small){
+		    	padding-left: 25px;
+		    }
+		    margin-top: 0;
+		    &:before {
+		    	content: "";
+			    background: url(../../images/plus1.png);
+			    background-repeat: no-repeat;
+			    position: absolute;
+			    width: 20px;
+			    height: 20px;
+			    left: 0;
+			    top: 3px;
+			}
+		}
+	}
+	.modal-content {
+		border:none;
+	}
+	.modal-body {
+		padding: 20px 53px;
+		overflow: hidden;
+		@include breakpoint(small){
+			padding: 20px 25px;
+		}
+			label {
+			font-size: 10px;
+			color:#989898;
+			font-weight: 400px;
+			text-transform: uppercase;
+		}
+		input,
+		select {
+			color: rgba(127, 127, 127, 0.6);
+			font-size: 12px;
+			font-weight: 500;
+		}
+		.input-group-text {
+			background: none;
+		    border-color: #e6e7e8;
+		    border-top-left-radius: 0;
+		    border-bottom-left-radius: 0;
+		    padding: 15px 40px;
+		    color: rgba(127, 127, 127, 0.6);
+		    font-size: 12px;
+		    font-weight: 500;
+		    i {
+		    	padding-right: 5px;
+		    }
+		}
+		.group-wrap {
+			input {
+				border-top-right-radius: 0;
+    			border-bottom-right-radius: 0;
+			}
+		}
+
+	}
+	.gap {
+		margin-top: 30px;
+	}
+	hr{
+		    margin-top: 30px;
+    width: calc(100% + 113px);
+    margin-left: -57px;
+	}
+	.btn-green {
+		padding:10px 40px;
+		font-size: 14px;
+		font-weight: 400;
+		img {
+			padding-left: 7px;
+		}
+	}
+	.modal-footer {
+		padding: 38px 52px 36px;
+		background:#fff;
+
+		@include breakpoint(small){
+			padding: 20px 25px;
+		}
+		@media (max-width: 380px){
+		   flex-direction: column;
+		  justify-content: flex-start;
+		  tex-align: left;
+		  .btn-gray{
+		  	margin-bottom: 10px;
+		  }
+		}
+	}
+	.group-wrap {
+		display: flex;
+		&.send-email{
+			@include breakpoint(smaller){
+				display: block;
+							.input-group-append{
+				margin-top: 20px;
+			}
+			}
+		}
+	}
+	.selt {
+		width: 70%;
+	}
+	.snd {
+		width:30%;
+	}
+	.checkbox-primary {
+		label{
+			padding-top: 7px;
+		}
+	}
+	
+}
+
