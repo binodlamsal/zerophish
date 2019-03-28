@@ -33,7 +33,13 @@ func CreateAdminRouter() http.Handler {
 	router := mux.NewRouter()
 	// Base Front-end routes
 	router.HandleFunc("/", Use(Base, mid.RequireLogin, mid.SSO))
-	router.HandleFunc("/login", SSO_Login)
+
+	if os.Getenv("SSO_BYPASS") != "" {
+		router.HandleFunc("/login", Login)
+	} else {
+		router.HandleFunc("/login", SSO_Login)
+	}
+
 	router.HandleFunc("/bakery/login", SSO_Login)
 	// router.HandleFunc("/sso/mock", SSO_Mock)
 	router.HandleFunc("/logout", Use(Logout))

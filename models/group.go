@@ -298,10 +298,19 @@ func PutGroup(g *Group) error {
 		// If the target does not exist in the group any longer, we delete it
 		if !tExists {
 			err = db.Where("group_id=? and target_id=?", g.Id, t.Id).Delete(&GroupTarget{}).Error
+
 			if err != nil {
 				log.WithFields(logrus.Fields{
 					"email": t.Email,
-				}).Error("Error deleting email")
+				}).Error("Error deleting target-to-group relationship")
+			}
+
+			err = db.Where("id=?", t.Id).Delete(&Target{}).Error
+
+			if err != nil {
+				log.WithFields(logrus.Fields{
+					"email": t.Email,
+				}).Error("Error deleting target")
 			}
 		}
 	}
