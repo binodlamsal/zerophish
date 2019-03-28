@@ -238,6 +238,7 @@ function copy(e) {
   (t = templates[e]),
     $("#name").val("Copy of " + t.name),
     $("#subject").val(t.subject),
+    $("#from_address").val(t.from_address),
     $("#html_editor").val(t.html),
     $("#text_editor").val(t.text),
     $(":radio").prop("checked", false);
@@ -266,6 +267,25 @@ function copy(e) {
     -1 != t.html.indexOf("{{.Tracker}}")
       ? $("#use_tracker_checkbox").prop("checked", !0)
       : $("#use_tracker_checkbox").prop("checked", !1);
+
+  //fill the categories by the API
+  $("#category")
+    .find("option")
+    .not(":first")
+    .remove();
+
+  api.phishtags.get().success(function(s) {
+    $.each(s, function(e, ss) {
+      var sel = "";
+      if (t.tag == ss.id) {
+        sel = 'selected = "selected"';
+      }
+
+      $("#category").append(
+        '<option value="' + ss.id + '"  ' + sel + ">" + ss.name + "</option>"
+      );
+    });
+  });
 }
 
 function preview(e) {
