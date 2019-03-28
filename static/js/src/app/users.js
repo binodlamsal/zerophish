@@ -90,7 +90,7 @@ function edit(e) {
                 escapeHtml(a.last_name),
                 escapeHtml(a.email),
                 escapeHtml(a.position),
-                '<span style="cursor:pointer;"><i class="fa fa-trash-o"></i></span>'
+                '<span style="cursor:pointer;" onclick="removeTarget()"><i class="fa fa-trash-o"></i></span>'
               ])
               .draw();
           });
@@ -193,7 +193,7 @@ function addTarget(e, a, t, s) {
       escapeHtml(a),
       o,
       escapeHtml(s),
-      '<span style="cursor:pointer;"><i class="fa fa-trash-o"></i></span>'
+      '<span style="cursor:pointer;" onclick="removeTarget()"><i class="fa fa-trash-o"></i></span>'
     ],
     n = targets.DataTable(),
     i = n
@@ -344,7 +344,7 @@ $(document).ready(function() {
         $("#position").val()
       ),
       targets.DataTable().draw(),
-      $("#targetForm>div>input").val(""),
+      $("#targetForm input").val(""),
       $("#firstName").focus(),
       !1
     );
@@ -551,4 +551,12 @@ function delayedAlert(message) {
   setTimeout(function() {
     alert(message);
   }, 500);
+}
+
+function removeTarget() {
+  $("#targetsTable")
+    .DataTable()
+    .row($(event.target).parents("tr"))
+    .remove()
+    .draw();
 }
