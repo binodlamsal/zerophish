@@ -305,12 +305,15 @@ func PutGroup(g *Group) error {
 				}).Error("Error deleting target-to-group relationship")
 			}
 
-			err = db.Where("id=?", t.Id).Delete(&Target{}).Error
+			if DeleteGroupTarget(t.Id) != nil {
+				continue
+			}
 
-			if err != nil {
-				log.WithFields(logrus.Fields{
-					"email": t.Email,
-				}).Error("Error deleting target")
+			// Delete related LMS user (if any)
+			if u, err := GetLMSUser(t.Email); err == nil {
+				if DeleteUser(u.Id) == nil {
+					log.Infof("Deleted related LMS user %s", u.Email)
+				}
 			}
 		}
 	}
@@ -354,7 +357,21 @@ func DeleteGroup(g *Group) error {
 		log.Error(err)
 		return err
 	}
-	return err
+
+	for _, t := range g.Targets {
+		if DeleteGroupTarget(t.Id) != nil {
+			continue
+		}
+
+		// Delete related LMS user (if any)
+		if u, err := GetLMSUser(t.Email); err == nil {
+			if DeleteUser(u.Id) == nil {
+				log.Infof("Deleted related LMS user %s", u.Email)
+			}
+		}
+	}
+
+	return nil
 }
 
 func insertTargetIntoGroup(t Target, gid int64) error {
@@ -420,7 +437,11 @@ func GetTargets(gid int64) ([]Target, error) {
 
 	err := db.
 		Table("targets").
-		Select("targets.id, targets.email, targets.first_name, targets.last_name, targets.position, (SELECT COUNT(*) FROM users WHERE users.email = targets.email LIMIT 1) AS is_lms_user").
+		Select(
+			`targets.id, targets.email, targets.first_name, targets.last_name, targets.position,
+			(SELECT COUNT(*) FROM users LEFT JOIN users_role ON users_role.uid = users.id
+			WHERE users.email = targets.email AND users_role.rid = 5 LIMIT 1) AS is_lms_user`,
+		).
 		Joins("left join group_targets gt ON targets.id = gt.target_id").
 		Where("gt.group_id=?", gid).
 		Scan(&ts).Error
@@ -500,4 +521,23 @@ func GetTargetsFullName(email string, oid int64) string {
 	}
 
 	return ""
+}
+
+// DeleteGroupTarget deletes a group target identified by the given id if
+// such target belongs to not more than one group, otherwise returns an error.
+func DeleteGroupTarget(id int64) error {
+	var groups int
+	db.Table("group_targets").Where("target_id=?", id).Count(&groups)
+
+	if groups > 0 {
+		return errors.New("Won't delete this target because it belongs to another group")
+	}
+
+	err = db.Where("id=?", id).Delete(&Target{}).Error
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -140,6 +140,28 @@ func GetUser(id int64) (User, error) {
 	return u, err
 }
 
+// GetLMSUser returns a user with LMS role and given email
+func GetLMSUser(email string) (User, error) {
+	u := User{}
+	u, err := GetUserByUsername(email)
+
+	if err != nil {
+		return u, err
+	}
+
+	ur, err := GetUserRole(u.Id)
+
+	if err != nil {
+		return u, err
+	}
+
+	if ur.Is(LMSUser) {
+		return u, nil
+	}
+
+	return u, errors.New("Not LMS user")
+}
+
 // GetUserByAPIKey returns the user that the given API Key corresponds to. If no user is found, an
 // error is thrown.
 func GetUserByAPIKey(key string) (User, error) {
@@ -256,8 +278,13 @@ func GetUsers(uid int64) ([]User, error) {
 
 	if role.Is(Administrator) {
 		err = db.Order("id asc").Find(&users).Error
-	} else if role.Is(Partner) {
-		err = db.Where("partner = ?", uid).Order("id asc").Find(&users).Error
+	} else if role.Is(Partner) || role.Is(Customer) {
+		err = db.
+			Joins("LEFT JOIN targets ON targets.email=users.email").
+			Joins("LEFT JOIN group_targets ON group_targets.target_id=targets.id").
+			Joins("LEFT JOIN groups ON groups.id=group_targets.group_id").
+			Where("partner = ? OR groups.user_id = ?", uid, uid).
+			Order("id asc").Find(&users).Error
 	} else if role.Is(ChildUser) {
 		user, err := GetUser(uid)
 
@@ -265,7 +292,12 @@ func GetUsers(uid int64) ([]User, error) {
 			return users, err
 		}
 
-		err = db.Where("partner = ? and id <> ?", user.Partner, uid).Order("id asc").Find(&users).Error
+		err = db.
+			Joins("LEFT JOIN targets ON targets.email=users.email").
+			Joins("LEFT JOIN group_targets ON group_targets.target_id=targets.id").
+			Joins("LEFT JOIN groups ON groups.id=group_targets.group_id").
+			Where("(users.partner = ? OR groups.user_id = ?) AND users.id <> ?", user.Partner, user.Partner, uid).
+			Order("users.id asc").Find(&users).Error
 	}
 
 	return users, err
