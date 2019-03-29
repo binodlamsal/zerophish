@@ -8,7 +8,7 @@
               <p>Hello<br><span>{{.User.Username}}</span></p>
             </div>
             <div class="user-img">
-             
+
               <img src="/avatars/{{.User.Id}} " alt="user" width="35" height="35">
             </div> <!-- user-img -->
             <div class="dropdown linkdown">
@@ -20,7 +20,7 @@
                 <li><a href="#"><i class="fa fa-info-circle" aria-hidden="true"></i> Help</a></li>
                 <li><a href="/logout"><i class="fa fa-sign-out" aria-hidden="true"></i> Logout</a></li>
               </ul>
-            </div> 
+            </div>
           </div><!-- .users-wrap  -->
 
           {{else}}
@@ -30,22 +30,22 @@
           {{end}}
 
           <ul>
-            <li {{if eq page "dashboard"}}class="active"{{end}}><a href="/"><span class="icon-left"><img src="/images/dashboard.svg" alt="" width="12" height="16"></span> Dahboard</a></li>
+            <li {{if eq page "dashboard"}}class="active"{{end}}><a href="/"><span class="icon-left"><img src="/images/dashboard.svg" alt="" width="12" height="16"></span> Dashboard</a></li>
             <li {{if eq page "campaigns"}}class="active"{{end}}><a class="dash-cam" href="/campaigns" ><span class="icon-left"><img src="/images/campaigns.svg" class="svg" alt="" ></span> Campaigns</a></li>
             <li {{if eq page "users"}}class="active"{{end}}><a class="dash-users" href="/users" ><span class="icon-left"><img src="/images/userandgroup.svg" class="svg" alt="" ></span> Users & Groups</a></li>
             <li {{if eq page "templates"}}class="active"{{end}}><a class="dash-email" href="/templates" ><span class="icon-left"><img src="/images/email-template.svg" class="svg" alt="" ></span>Email Templates</a></li>
             <li {{if eq page "landing_pages"}}class="active"{{end}}><a class="dash-landing" href="/landing_pages" ><span class="icon-left"><img src="/images/landingpages.svg" class="svg" alt="" ></span>Landing Pages</a></li>
-            
+
             {{if eq role "admin"}}
             <li {{if eq page "sending_domains"}}class="active"{{end}}><a class="dash-domains" href="/our_domains" ><span class="icon-left"><img src="/images/our-domain.svg" class="svg" alt="" ></span>Our Domains</a></li>
             {{end}}
-             
+
             <li {{if eq page "settings"}}class="active"{{end}}><a class="dash-settings" href="/settings" ><span class="icon-left"><img src="/images/setting.svg" class="svg" alt="" ></span>Settings</a></li>
-           
-            {{if or (eq role "admin") (eq role "partner") (eq role "child_user")}}
+
+            {{if or (eq role "admin") (eq role "partner") (eq role "child_user") (eq role "customer")}}
             <li {{if eq page "people"}}class="active"{{end}}><a class="dash-people" href="/people" ><span class="icon-left"><img src="/images/people.svg" class="svg" alt="" ></span>People</a></li>
             {{end}}
-            
+
             {{if eq role "admin"}}
             <li {{if eq page "roles"}}class="active"{{end}}><a class="dash-roles" href="/roles" ><span class="icon-left"><img src="/images/rules.svg" class="svg" alt="" ></span>Roles</a></li>
             {{end}}
