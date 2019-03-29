@@ -1247,14 +1247,14 @@ func API_Send_Test_Email(w http.ResponseWriter, r *http.Request) {
 	// If a Template is not specified use a default
 	if s.Template.Name == "" {
 		//default message body
-		text := "It works!\n\nThis is an email letting you know that your gophish\nconfiguration was successful.\n" +
+		text := "It works!\n\nThis is an email letting you know that your security awareness training\nconfiguration was successful.\n" +
 			"Here are the details:\n\nWho you sent from: {{.From}}\n\nWho you sent to: \n" +
 			"{{if .FirstName}} First Name: {{.FirstName}}\n{{end}}" +
 			"{{if .LastName}} Last Name: {{.LastName}}\n{{end}}" +
 			"{{if .Position}} Position: {{.Position}}\n{{end}}" +
 			"\nNow go send some phish!"
 		t := models.Template{
-			Subject: "Default Email from Gophish",
+			Subject: "Default Email from Security Awraeness Training",
 			Text:    text,
 		}
 		s.Template = t
