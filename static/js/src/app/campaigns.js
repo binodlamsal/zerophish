@@ -81,6 +81,9 @@ function launch() {
                   e.responseJSON.message +
                   "</div>"
               ),
+              $('#modal').animate({
+                scrollTop: $("#modal\\.flashes").offset().top
+              }, 200),
               swal.close();
           });
       });
