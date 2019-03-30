@@ -81,6 +81,7 @@ function launch() {
                   e.responseJSON.message +
                   "</div>"
               ),
+              scrollToError()
               swal.close();
           });
       });

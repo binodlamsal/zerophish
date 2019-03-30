@@ -89,6 +89,12 @@ function edit(index) {
       }, 500);
     }
 
+    if (user.role == "LMS User") {
+      $(".subscription").hide();
+    } else {
+      $(".subscription").show();
+    }
+
     $("#modalSubmit")
       .unbind("click")
       .click(function() {

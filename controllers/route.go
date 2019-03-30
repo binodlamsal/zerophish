@@ -53,7 +53,7 @@ func CreateAdminRouter() http.Handler {
 	router.HandleFunc("/categories", Use(PhishingCategories, mid.RequireRoles([]int64{models.Administrator}), mid.RequireLogin, mid.SSO))
 	router.HandleFunc("/register", Use(Register, mid.RequireRoles([]int64{models.Administrator, models.Partner, models.ChildUser}), mid.RequireLogin, mid.SSO))
 	router.HandleFunc("/settings", Use(Settings, mid.RequireLogin, mid.SSO))
-	router.HandleFunc("/people", Use(People, mid.RequireRoles([]int64{models.Administrator, models.Partner, models.ChildUser}), mid.RequireLogin, mid.SSO))
+	router.HandleFunc("/people", Use(People, mid.RequireRoles([]int64{models.Administrator, models.Partner, models.ChildUser, models.Customer}), mid.RequireLogin, mid.SSO))
 	router.HandleFunc("/roles", Use(Roles, mid.RequireRoles([]int64{models.Administrator}), mid.RequireLogin, mid.SSO))
 	router.HandleFunc("/logo", Use(Logo))
 	router.HandleFunc("/avatar", Use(Avatar))
