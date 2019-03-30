@@ -19,6 +19,7 @@
         </div>
     </div>
     <div class="row">
+        <div class="main-table-wrap-div">
         <table id="profileTable" class="table" style="display:none;">
             <thead>
                 <tr>
@@ -31,6 +32,7 @@
             <tbody>
             </tbody>
         </table>
+    </div>
     </div>
 </div>
 <!-- Modal -->
@@ -60,9 +62,11 @@
                     <label class="control-label" for="password">Password:</label>
                     <input type="password" class="form-control" placeholder="Password" id="password" />
                     <div class="checkbox checkbox-primary">
-                        <input id="ignore_cert_errors" type="checkbox" checked>
-                        <label for="ignore_cert_errors">Ignore Certificate Errors <i class="fa fa-question-circle"
-                                data-toggle="tooltip" data-placement="right" title="Ignore common certificate errors such as self-signed certs (exposes you to MiTM attacks - use carefully!)"></i></label>
+                      <label for="ignore_cert_errors">
+                         <input id="ignore_cert_errors" type="checkbox" checked> 
+                         <span class="checkbox-btn"><img src="images/tick.png" alt=""></span> Ignore Certificate Errors <i class="fa fa-question-circle"
+                         data-toggle="tooltip" data-placement="right" title="Ignore common certificate errors such as self-signed certs (exposes you to MiTM attacks - use carefully!)"></i>
+                     </label>
                     </div>
                     <label class="control-label" for="headersForm">Email Headers:</label>
                     <form id="headersForm">
@@ -79,17 +83,19 @@
                     </form>
                     <br />
                     <br />
-                    <table id="headersTable" class="table table-hover table-striped table-condensed">
-                        <thead>
-                            <tr>
-                                <th>Header</th>
-                                <th>Value</th>
-                                <th class="no-sort"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
+                    <div class="main-table-wrap-div">
+                        <table id="headersTable" class="table table-hover table-striped table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>Header</th>
+                                    <th>Value</th>
+                                    <th class="no-sort"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                   </div>
                     <button type="button" data-toggle="modal" data-backdrop="static" data-target="#sendTestEmailModal"
                         class="btn btn-primary"><i class="fa fa-envelope"></i> Send Test Email</button>
                 </div>

@@ -32,11 +32,12 @@
         </div>
     </div>
     <div class="row">
+         <div class="main-table-wrap-div">
         <table id="profileTable" class="table" style="display:none;">
             <thead>
                 <tr>
                     <th> <span class="for-des"><i class="fa fa-file-text-o"></i> </span> Name</th>
-                    <th> <span class="for-des"><i class="fa fa-delicious"></i> Interface Type</th>
+                    <th> <span class="for-des"><i class="fa fa-delicious"></i> </span> Interface Type</th>
                     <th> <span class="for-des"><i class="fa fa-calendar-o"></i> </span> Last Modified Date</th>
                     <th class="no-sort"></th>
                 </tr>
@@ -44,6 +45,7 @@
             <tbody>
             </tbody>
         </table>
+    </div>
     </div>
 </div>
 <!-- Modal -->
@@ -73,23 +75,27 @@
                     <input type="text" class="form-control" placeholder="Username" id="username" />
                     <label class="control-label" for="password">Password:</label>
                     <input type="password" class="form-control" placeholder="Password" id="password" />
-                    <div class="checkbox checkbox-primary">
-                        <input id="ignore_cert_errors" type="checkbox" checked>
-                        <label for="ignore_cert_errors">Ignore Certificate Errors <i class="fa fa-question-circle"
-                                data-toggle="tooltip" data-placement="right" title="Ignore common certificate errors such as self-signed certs (exposes you to MiTM attacks - use carefully!)"></i></label>
+                    <div class="checkbox checkbox-primary space-top">
+                        <label for="ignore_cert_errors" class="checkbx"> 
+                           <input id="ignore_cert_errors" type="checkbox" checked>
+                            <span class="checkbox-btn"><img src="images/tick.png" alt=""></span> Ignore Certificate Errors <i class="fa fa-question-circle"
+                                data-toggle="tooltip" data-placement="right" title="Ignore common certificate errors such as self-signed certs (exposes you to MiTM attacks - use carefully!)"></i>
+                        </label>
                     </div>
                     <label class="control-label" for="headersForm">Email Headers:</label>
                     <form id="headersForm">
-                        <div class="col-md-4">
-                            <input type="text" class="form-control" name="headerKey" id="headerKey" placeholder="X-Custom-Header">
-                        </div>
-                        <div class="col-md-4">
-                            <input type="text" class="form-control" name="headerValue" id="headerValue" placeholder='{{"{{"}}.URL{{"}}"}}-gophish'>
-                        </div>
-                        <div class="col-md-2">
-                            <button class="btn btn-danger btn-headers" type="submit"><i class="fa fa-plus"></i> Add
-                                Custom Header</button>
-                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" name="headerKey" id="headerKey" placeholder="X-Custom-Header">
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" name="headerValue" id="headerValue" placeholder='{{"{{"}}.URL{{"}}"}}-gophish'>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-danger btn-headers btn-custom" type="submit"><i class="fa fa-plus"></i> Add
+                                    Custom Header</button>
+                            </div>
+                       </div>
                     </form>
                     <br />
                     <br />
@@ -105,7 +111,7 @@
                         </tbody>
                     </table>
                     <button type="button" data-toggle="modal" data-backdrop="static" data-target="#sendTestEmailModal"
-                        class="btn btn-primary"><i class="fa fa-envelope"></i> Send Test Email</button>
+                        class="btn btn btn-green btn-primary"><i class="fa fa-envelope"></i> Send Test Email</button>
                 </div>
             </div>
             <div class="modal-footer">
