@@ -79,7 +79,7 @@ $(document).ready(function() {
                 //     t = "Launch Date: " + moment(a.launch_date).format("MMMM Do YYYY, h:mm:ss a");
                 //     var n = t + "<br><br>Number of recipients: " + a.stats.total + "<br><br>Emails opened: " + a.stats.opened + "<br><br>Emails clicked: " + a.stats.clicked + "<br><br>Submitted Credentials: " + a.stats.submitted_data + "<br><br>Errors : " + a.stats.error + "Reported : " + a.stats.reported
                 // }
-                peopleTable.row.add([a.name, a.display_name, a.weight]).draw();
+                peopleTable.row.add([a.display_name, a.name, a.weight]).draw();
               }))
             : $("#emptyMessage").show();
       })

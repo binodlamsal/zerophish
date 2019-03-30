@@ -27,7 +27,7 @@ function save(e) {
               dismiss();
           })
           .error(function(e) {
-            modalError(e.responseJSON.message);
+            modalError(e.responseJSON.message), scrollToError();
           });
 }
 

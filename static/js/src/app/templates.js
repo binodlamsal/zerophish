@@ -43,7 +43,8 @@ function save(e) {
               dismiss();
           })
           .error(function(e) {
-            modalError(e.responseJSON.message);
+            modalError(e.responseJSON.message),
+            scrollToError()
           }))
       : api.templates
           .post(t)
@@ -53,7 +54,7 @@ function save(e) {
               dismiss();
           })
           .error(function(e) {
-            modalError(e.responseJSON.message);
+            modalError(e.responseJSON.message), scrollToError()
           });
 }
 

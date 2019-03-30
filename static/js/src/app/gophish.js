@@ -26,6 +26,12 @@ function modalError(e) {
     );
 }
 
+function scrollToError(e) {
+  $('#modal').animate({
+    scrollTop: $("#modal\\.flashes").offset().top
+  }, 200)
+}
+
 function query(e, t, n, r) {
   const sep = e.includes("?") ? "&" : "?";
 
