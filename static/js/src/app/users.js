@@ -32,7 +32,7 @@ function save(e) {
             $("#modal").modal("hide");
         })
         .error(function(e) {
-          modalError(e.responseJSON.message);
+          modalError(e.responseJSON.message), scrollToError();
         }))
     : api.groups
         .post(t)
@@ -43,7 +43,7 @@ function save(e) {
             $("#modal").modal("hide");
         })
         .error(function(e) {
-          modalError(e.responseJSON.message);
+          modalError(e.responseJSON.message), scrollToError();
         });
 }
 

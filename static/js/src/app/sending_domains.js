@@ -41,11 +41,11 @@ function save(e) {
     }), a.name = $("#name").val(), a.interface_type = $("#interface_type").val(), a.from_address = $("#from").val(), a.host = $("#host").val(), a.username = $("#username").val(), a.password = $("#password").val(), a.ignore_cert_errors = $("#ignore_cert_errors").prop("checked"), -1 != e ? (a.id = profiles[e].id, api.SMTPId.put(a).success(function(e) {
         successFlash("Profile edited successfully!"), load(), dismiss()
     }).error(function(e) {
-        modalError(e.responseJSON.message)
+        modalError(e.responseJSON.message), scrollToError()
     })) : api.SMTP.post(a).success(function(e) {
         successFlash("Profile added successfully!"), load(), dismiss()
     }).error(function(e) {
-        modalError(e.responseJSON.message)
+        modalError(e.responseJSON.message), scrollToError()
     })
 }
 
