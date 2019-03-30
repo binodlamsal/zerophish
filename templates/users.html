@@ -24,9 +24,17 @@
         </div> <!-- .tp-page-btn -->
         {{if or (eq role "admin") (eq role "partner") (eq role "child_user")}}
         <div style="display: inline-block; position: absolute; right: 0%; transform: translate(-15px, 100px)">
-            <strong>Filter: &nbsp;</strong>
-            <input type="radio" name="filter" value="own" id="filter-own" checked> Own &nbsp;
-            <input type="radio" name="filter" value="customers" id="filter-customers"> Customers &nbsp;
+            <div class="filter-section">
+             <strong>Filter: &nbsp;</strong>
+             <label class="radiobx"> 
+                <input class="checkAll" type="radio" name="filter" value="own" id="filter-own" checked> 
+                <span class="radio-btn"><img src="images/tick.png" alt=""></span> Own &nbsp;
+            </label>
+            <label class="radiobx"> 
+                <input class="checkAll" type="radio" name="filter" value="customers" id="filter-customers"> 
+                <span class="radio-btn"><img src="images/tick.png" alt=""></span>Customers &nbsp;
+            </label>
+        </div> <!-- filter -->
         </div>
         {{end}}
     </div> <!-- .top-page-header -->
@@ -40,19 +48,21 @@
         </div>
     </div>
     <div class="row">
-        <table id="groupTable" class="table" style="display:none;">
-            <thead>
-                <tr>
-                    <th> <span class="for-des"><i class="fa fa-file-text-o"></i> </span>  Name</th>
-                    <th> <span class="for-des"><i class="fa fa-file-text-o"></i> </span>  Creator</th>
-                    <th><span class="for-des"><i class="fa fa-user-o" aria-hidden="true"></i>  </span> of Members</th>
-                    <th> <span class="for-des"><i class="fa fa-calendar-o"></i> </span> Modified Date</th>
-                    <th class="no-sort"></th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
+        <div class="main-table-wrap-div">
+            <table id="groupTable" class="table" style="display:none;">
+                <thead>
+                    <tr>
+                        <th> <span class="for-des"><i class="fa fa-file-text-o"></i> </span>  Name</th>
+                        <th> <span class="for-des"><i class="fa fa-file-text-o"></i> </span>  Creator</th>
+                        <th><span class="for-des"><i class="fa fa-user-o" aria-hidden="true"></i>  </span> of Members</th>
+                        <th> <span class="for-des"><i class="fa fa-calendar-o"></i> </span> Modified Date</th>
+                        <th class="no-sort"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 <!-- Modal -->
@@ -102,6 +112,7 @@
                           </div>
                     </form>
                 <br />
+                <div class="main-table-wrap-div">
                 <table id="targetsTable" class="table table-hover table-striped table-condensed">
                     <thead>
                         <tr>
@@ -110,9 +121,12 @@
                             <th>Email</th>
                             <th>Position</th>
                             <th></th>
+                        </tr>
+                    </thead>
                     <tbody>
                     </tbody>
                 </table>
+            </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -141,18 +155,28 @@
                         <i class="fa fa-minus"></i> Delete User(s)</button>
                 </div>
                 <br />
-                <table id="lmsTargetsTable" class="table table-hover table-striped table-condensed">
-                    <thead>
-                        <tr>
-                            <th><input style="margin-left: 12px" type="checkbox" id="toggle-all"></th>
-                            <th>First Name</th>
-                            <th>Last Name</th>
-                            <th>Email</th>
-                            <th>Position</th>
-                            <th>LMS</th>
-                    <tbody>
-                    </tbody>
-                </table>
+
+                <div class="main-table-wrap-div">
+                    <table id="lmsTargetsTable" class="table table-hover table-striped table-condensed">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <label class="checkbx lms-checkbox"> 
+                                        <input type="checkbox" id="toggle-all"> 
+                                        <span class="checkbox-btn"><img src="images/tick.png" alt=""></span>
+                                    </label>
+                                </th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Email</th>
+                                <th>Position</th>
+                                <th>LMS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <div class="modal-footer">
                 <i id="lms-spinner" class="fa fa-spinner fa-spin" style="position: absolute; left: 50px; top: 200px; display: none"></i>

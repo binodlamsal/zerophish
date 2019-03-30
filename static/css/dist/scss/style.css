@@ -15684,12 +15684,6 @@ table.dataTable thead .sorting.empty:after {
 .bs-tooltip-auto[x-placement^=top] .arrow::before, .bs-tooltip-top .arrow::before {
   border-top-color: #e8e9ea; }
 
-.rating label:last-child .icon {
-  color: #444 !important; }
-
-.rating label .icon {
-  font-size: 25px !important; }
-
 /*@import 'gophish';*/
 * {
   margin: 0;
@@ -15790,9 +15784,6 @@ button {
   .btn.btn-success:hover, .btn.btn-success:focus {
     color: #fff; }
 
-.space-top {
-  margin-top: 15px; }
-
 .btn.btn-danger {
   background: #bdc3c7; }
 
@@ -15868,27 +15859,12 @@ button {
       right: 15px; }
 
 .btn-file {
-  background-color: #bdc3c7;
-  border: 1px solid #bdc3c7;
   position: relative;
+  overflow: hidden;
+  background: #0062cc;
   color: #fff;
-  line-height: 18px;
-  border: none;
-  font-size: 15px;
-  font-weight: 400;
-  line-height: 1.4;
-  border-radius: 4px;
-  padding: 18px 15px;
-  -webkit-font-smoothing: subpixel-antialiased;
-  -webkit-transition: border .25s linear,color .25s linear,background-color .25s linear;
-  transition: border .25s linear,color .25s linear,background-color .25s linear;
-  border-radius: 0; }
-
-#settingsForm .btn.btn-file,
-#settingsForm .no-border-btn {
-  border-radius: 5px 0 0 5px;
-  padding: 18px 30px;
-  margin-top: 1px; }
+  border-radius: 18px;
+  padding: 5px 30px; }
 
 .btn-file input[type=file] {
   position: absolute;
@@ -16199,10 +16175,10 @@ button {
   .checkbx input[type="radio"],
   .radiobx input[type="radio"] {
     position: absolute;
-    left: 3px;
+    left: 0;
     width: 19px;
     height: 20px;
-    top: 1px;
+    top: 0;
     opacity: 0; }
   .checkbx .checkbox-btn,
   .checkbx .radio-btn,
@@ -16266,8 +16242,7 @@ button {
   background: #00bfa5;
   border: none;
   color: #fff;
-  /* font-size: 12px;*/
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   padding: 15px 48px;
   border-radius: 29px;
@@ -16454,16 +16429,11 @@ h1.page-header {
     display: block; }
     .nav.nav-tabs li a:hover {
       background: #f3f0f0; }
-  .nav.nav-tabs li a.active {
+  .nav.nav-tabs li.active a {
     border-bottom: 0 !important;
     background: #f3f0f0; }
 
 /*unique for user page*/
-.checkbx-groups {
-  margin-top: 20px; }
-  .checkbx-groups .checkbox-btn {
-    top: 2px; }
-
 .add_btn {
   font-size: 16px !important;
   margin-top: 10px; }
@@ -16474,32 +16444,6 @@ form#targetForm.user-form-section div[class^='col-'] {
 form#targetForm.user-form-section .row {
   margin-left: -5px;
   margin-right: -5px; }
-
-#apiResetForm .btn-green {
-  border-radius: 5px;
-  padding: 17px 20px; }
-
-.filter-section {
-  margin-top: 15px;
-  /* Large Devices, Wide Screens */
-  /* Large Devices, Wide Screens */ }
-  @media (max-width: 1199px) {
-    .filter-section {
-      margin-top: 44px; } }
-  @media (max-width: 767px) {
-    .filter-section {
-      margin-top: 60px; } }
-  .filter-section .radiobx span img {
-    left: 0px !important; }
-
-#flashes {
-  position: fixed;
-  top: 40px;
-  right: 40px;
-  z-index: 111; }
-
-.btn-headers.btn-custom {
-  padding: 8px 25px; }
 
 .main-wrap {
   background-image: linear-gradient(to right, #83c1e4, #b6eafe);
@@ -16528,8 +16472,6 @@ form#targetForm.user-form-section .row {
   @media (max-width: 767px) {
     .header-inner {
       padding-bottom: 30px; } }
-  .header-inner .logo img {
-    max-height: 120px; }
   .header-inner .users-wrap .dropdown-menu {
     left: auto !important;
     right: 0;
@@ -18078,61 +18020,6 @@ span.for-des {
   #loading i {
     color: #144197; }
 
-.dataTables_wrapper {
-  width: 100%; }
-
-#groupTable .btn[data-target="#lms-modal"] {
-  font-family: FontAwesome;
-  font-size: 0; }
-
-#groupTable .btn[data-target="#lms-modal"]:before {
-  content: '';
-  font-family: FontAwesome;
-  content: "\f2c0";
-  font-size: 15px;
-  display: block;
-  font-weight: bold; }
-
-#loading {
-  background: #fff;
-  z-index: 1111;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  top: -40px;
-  padding: 50px;
-  display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
-  display: -webkit-flex;
-  display: flex;
-  align-items: center;
-  justify-content: center; }
-
-#settingsForm .btn-gray {
-  padding: 17px 40px;
-  color: #fff;
-  border-radius: 5px; }
-
-div#mainSettings img {
-  max-width: 80px; }
-
-.checkbx-groups {
-  min-height: 24px; }
-
-.lms-checkbox {
-  height: 27px;
-  left: 10px; }
-
-.modal-body textarea {
-  height: 150px;
-  width: 100%; }
-
-.main-table-wrap-div {
-  overflow-x: auto; }
-
 /*common*/
 *:hover,
 *:focus {
@@ -18361,3 +18248,9 @@ h1.page-header {
   cursor: pointer; }
 
 /*# sourceMappingURL=style.css.map */
+.modal .table.dataTable{
+  min-width: 100% !important;
+}
+.srijana{
+  background: red;
+}

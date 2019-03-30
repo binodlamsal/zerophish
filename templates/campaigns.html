@@ -23,9 +23,17 @@
                     </div> <!-- .tp-page-btn -->
                     {{if or (eq role "admin") (eq role "partner") (eq role "child_user")}}
                     <div style="display: inline-block; position: absolute; right: 0%; transform: translate(-15px, 100px)">
-                        <strong>Filter: &nbsp;</strong>
-                        <input type="radio" name="filter" value="own" id="filter-own" checked> Own &nbsp;
-                        <input type="radio" name="filter" value="customers" id="filter-customers"> Customers &nbsp;
+                        <div class="filter-section">
+                           <strong>Filter: &nbsp;</strong>
+                            <label class="radiobx"> 
+                                <input type="radio" name="filter" value="own" id="filter-own" checked> 
+                                <span class="radio-btn"><img src="images/tick.png" alt=""></span> Own &nbsp;
+                            </label>
+                              <label class="radiobx"> 
+                                <input type="radio" name="filter" value="customers" id="filter-customers"> 
+                                <span class="radio-btn"><img src="images/tick.png" alt=""></span>Customers &nbsp;
+                            </label>
+                        </div> <!-- filter -->
                     </div>
                     {{end}}
                 </div> <!-- .top-page-header -->
@@ -41,6 +49,7 @@
                     </div>
                 </div>
                 <div class="row">
+                    <div class="main-table-wrap-div">
                     <table id="campaignTable" class="table" style="display:none;">
                         <thead>
                             <tr>
@@ -54,6 +63,7 @@
                         <tbody>
                         </tbody>
                     </table>
+                </div>
                 </div>
             </div>
             <!-- Modal -->

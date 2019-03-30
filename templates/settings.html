@@ -119,11 +119,11 @@
                                     Browse… <input type="file" id="avatar-input">
                                 </span>
                             </span>
-                            <input type="text" class="form-control" style="margin-left: 10px;" readonly>
+                            <input type="text" class="form-control" readonly>
                         </div>
                     </div>
                     <div class="col-md-2">
-                        <button class="btn avatar btn-gray " id="reset-avatar">Reset</button>
+                        <button class="btn no-border-btn avatar btn-gray " id="reset-avatar">Reset</button>
                     </div>
                     <div class="col-md-1">
                         <img id="avatar-preview"  src="/avatar"/>
@@ -163,10 +163,15 @@
         </div>
         <div role="tabpanel" class="tab-pane" id="uiSettings">
             <br />
-            <div class="checkbox checkbox-primary">
+            <label class="checkbx"> 
+               <input id="use_map" type="checkbox">
+               <span class="checkbox-btn"><img src="images/tick.png" alt=""></span>
+               Show campaign results map
+           </label>
+           <!--  <div class="checkbox checkbox-primary">
                 <input id="use_map" type="checkbox">
                 <label for="use_map">Show campaign results map</label>
-            </div>
+            </div> -->
         </div>
     </div>
 </div>

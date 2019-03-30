@@ -22,12 +22,23 @@
            New Template <i class="fa fa-plus"></i> </button>
         </div> <!-- .tp-page-btn -->
         <div style="display: inline-block; position: absolute; right: 0%; transform: translate(-15px, 100px)">
-            <strong>Filter: &nbsp;</strong>
-            <input type="radio" name="filter" value="own" id="filter-own" checked> Own &nbsp;
-            <input type="radio" name="filter" value="public" id="filter-public"> Public &nbsp;
+         <div class="filter-section">
+             <strong>Filter: &nbsp;</strong>
+             <label class="radiobx"> 
+                <input class="checkAll" type="radio" name="filter" value="own" id="filter-own" checked> 
+                <span class="radio-btn"><img src="images/tick.png" alt=""></span> Own &nbsp;
+            </label>
+             <label class="radiobx"> 
+                <input class="checkAll" type="radio" name="filter" value="public" id="filter-public"> 
+                <span class="radio-btn"><img src="images/tick.png" alt=""></span>Public &nbsp;
+            </label>
             {{if or (eq role "admin") (eq role "partner") (eq role "child_user")}}
-            <input type="radio" name="filter" value="customers" id="filter-customers"> Customers &nbsp;
+            <label class="radiobx"> 
+                <input class="checkAll" type="radio" name="filter" value="customers" id="filter-customers"> 
+                <span class="radio-btn"><img src="images/tick.png" alt=""></span>Customers &nbsp;
+            </label>
             {{end}}
+           </div> <!-- filter -->
         </div>
     </div> <!-- .top-page-header -->
     &nbsp;
@@ -40,19 +51,21 @@
         </div>
     </div>
     <div class="row">
-        <table id="templateTable" class="table" style="display:none;">
-            <thead>
-                <tr>
-                    <th> <span class="for-des"> <i class="fa fa-file-text-o"></i> </span> Name</th>
-                    <th> <span class="for-des"> <i class="fa fa-file-text-o"></i> </span> Creator</th>
-                    <th><span class="for-des"><i class="fa fa-star" ></i> </span> Rating</th>
-                    <th width="30%"> <span class="for-des"> <i class="fa fa-calendar-o"></i> </span> Modified Date</th>
-                    <th class="no-sort"></th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
+       <div class="main-table-wrap-div">
+            <table id="templateTable" class="table" style="display:none;">
+                <thead>
+                    <tr>
+                        <th> <span class="for-des"> <i class="fa fa-file-text-o"></i> </span> Name</th>
+                        <th> <span class="for-des"> <i class="fa fa-file-text-o"></i> </span> Creator</th>
+                        <th><span class="for-des"><i class="fa fa-star" ></i> </span> Rating</th>
+                        <th width="30%"> <span class="for-des"> <i class="fa fa-calendar-o"></i> </span> Modified Date</th>
+                        <th class="no-sort"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+       </div>
     </div>
 </div>
 <!-- Modal -->
@@ -134,19 +147,21 @@
                 </span>
                 <br />
                 <br />
-                <table id="attachmentsTable" class="table">
-                    <thead>
-                        <tr>
-                            <th class="no-sort"></th>
-                            <th>Name</th>
-                            <th class="no-sort"></th>
-                            <th class="datatable_hidden no-sort">Content</th>
-                            <th class="datatable_hidden no-sort">Type</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
+                <div class="main-table-wrap-div">
+                    <table id="attachmentsTable" class="table">
+                        <thead>
+                            <tr>
+                                <th class="no-sort"></th>
+                                <th>Name</th>
+                                <th class="no-sort"></th>
+                                <th class="datatable_hidden no-sort">Content</th>
+                                <th class="datatable_hidden no-sort">Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
                 <hr>
                 <label class="control-label" for="rating">Difficulty rating:</label>
                 <div class="form-group">

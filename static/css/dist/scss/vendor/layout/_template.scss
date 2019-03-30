@@ -1,0 +1,113 @@
+
+#templateTable_wrapper{
+	#templateTable_length{
+		.form-control{
+			margin: 0 15px;
+		}
+	}
+	#templateTable_filter{
+		input{
+			margin-left: 20px;
+		}
+	}
+}
+.text-nav{
+	font-size: 12px;
+}
+
+h1.page-header {
+    font-size: 16px;
+    background-image: linear-gradient(to right, #00caff 0%, #25419d), linear-gradient(to bottom, #444444, #444444);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1.1;
+    text-transform: uppercase;
+    margin-top: 4px;
+    position: relative;
+    font-style: normal;
+}
+
+.dataTables_wrapper{
+    .table thead th{
+        border-top: 0;
+    }
+    .row{
+        width: 100%;
+    }
+} 
+.modal-footer{
+    @include breakpoint(small){
+        .btn {
+            margin-bottom: 15px;
+        }
+    }
+}
+#campaignTable_wrapper{
+    > .row{
+        border-bottom: 1px solid #dee2e6;
+        margin-bottom: 40px;
+        padding-bottom: 25px;
+    }
+}
+.top-page-header{
+    position: relative;
+    @media (max-width: 1200px){
+        padding-top: 20px;
+    }
+    @include breakpoint(smaller){
+        display: block !important;
+    }
+    .page-header{
+       position: absolute;
+       top: 22px;
+       z-index: 1;
+       @media (max-width: 1200px){
+        position: static;
+    }
+   }
+   .tp-page-btn{
+    margin-top: 5px;
+   }
+.tp-page-btn{
+    position: absolute;
+    right: 10px;
+    top: 17px;
+    z-index: 1;
+    @media (max-width: 1200px){
+        position: static;
+    }
+}
+}
+#campaignTable_wrapper{
+  #campaignTable_length{
+    text-align: right;
+    @media (max-width: 1200px){
+        text-align: left;
+    }
+    label{
+        display: inline-block;
+    }
+}  
+}
+.tp-page-title{
+    @include breakpoint(medium){
+        padding-left: 40px;
+    }
+}
+@media (max-width: 1300px){
+    table.dataTable {
+        min-width: 1100px;
+    }
+}
+@media (max-width: 767px){
+    .dataTables_length,
+    .dataTables_filter{
+        padding-left: 20px;
+    }
+}
+.setting-navTabs .nav-tabs>li.active>a, .setting-navTabs .nav-tabs>li.active>a:focus, .setting-navTabs .nav-tabs>li.active>a:hover{
+    cursor: pointer;
+}
