@@ -55,7 +55,16 @@ function launch() {
           campaign.start_time &&
           (!campaign.end_time || !campaign.time_zone)
         ) {
-          throw new Error("End Time and/or Time Zone not specified");
+          $("#modal\\.flashes")
+            .empty()
+            .append(
+              '<div style="text-align:center" class="alert alert-danger">            <i class="fa fa-exclamation-circle"></i> ' +
+                "End Time and/or Time Zone not specified" +
+                "</div>"
+            );
+          scrollToError();
+          swal.close();
+          return;
         }
 
         if (
@@ -65,7 +74,16 @@ function launch() {
             moment(campaign.start_time, "h:mm A")
           )
         ) {
-          throw new Error("The End Time cannot be earlier than the Start Time");
+          $("#modal\\.flashes")
+            .empty()
+            .append(
+              '<div style="text-align:center" class="alert alert-danger">            <i class="fa fa-exclamation-circle"></i> ' +
+                "The End Time cannot be earlier than the Start Time" +
+                "</div>"
+            );
+          scrollToError();
+          swal.close();
+          return;
         }
 
         api.campaigns
@@ -81,8 +99,8 @@ function launch() {
                   e.responseJSON.message +
                   "</div>"
               ),
-              scrollToError()
-              swal.close();
+              scrollToError();
+            swal.close();
           });
       });
     }
