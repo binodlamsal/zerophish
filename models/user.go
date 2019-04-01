@@ -516,6 +516,12 @@ func DeleteUserSubscriptions(uid int64) error {
 	return err
 }
 
+// DeleteUserAvatar deletes avatar of a given uid
+func DeleteUserAvatar(uid int64) error {
+	err = db.Delete(Avatar{}, "user_id = ?", uid).Error
+	return err
+}
+
 // DeleteUser deletes the specified user
 func DeleteUser(uid int64) error {
 	if err := db.Delete(&User{Id: uid}).Error; err != nil {
@@ -523,6 +529,12 @@ func DeleteUser(uid int64) error {
 	}
 
 	err = DeleteUserSubscriptions(uid)
+
+	if err != nil {
+		return err
+	}
+
+	err = DeleteUserAvatar(uid)
 
 	if err != nil {
 		return err
