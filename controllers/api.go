@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/mail"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -89,6 +90,16 @@ func API_Campaigns(w http.ResponseWriter, r *http.Request) {
 			JSONResponse(w, models.Response{Success: false, Message: "Invalid JSON structure"}, http.StatusBadRequest)
 			return
 		}
+
+		parsedURL, err := url.Parse("http://" + r.Host)
+
+		if err != nil {
+			JSONResponse(w, models.Response{Success: false, Message: "Could not determine hostname"}, http.StatusInternalServerError)
+			return
+		}
+
+		c.URL = "http://" + parsedURL.Hostname()
+
 		err = models.PostCampaign(&c, ctx.Get(r, "user_id").(int64))
 		if err != nil {
 			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusBadRequest)
