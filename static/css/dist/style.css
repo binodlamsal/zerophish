@@ -16590,6 +16590,13 @@ h1.page-header {
   font-size: 16px !important;
   margin-top: 10px; }
 
+.top-btn-result {
+  padding: 10px 0; }
+
+.top-btn-result button {
+  padding: 20px;
+  font-size: 14px !important; }
+
 form#targetForm.user-form-section div[class^='col-'] {
   padding: 0 5px; }
 
@@ -16604,7 +16611,7 @@ form#targetForm.user-form-section .row {
 .filter-section {
   position: relative;
   z-index: 1;
-  /*margin-top: 65px;*/
+  /* margin-top: 65px;*/
   margin-bottom: 30px;
   display: -webkit-box;
   display: -ms-flexbox;
@@ -16638,6 +16645,15 @@ div.page-title-section {
       padding-top: 20px; } }
   div.page-title-section .dropdown-toggle::after {
     display: none; }
+  div.page-title-section .btn-group {
+    flex-wrap: wrap; }
+
+.top-btn-result button {
+  margin-right: 10px;
+  /* Large Devices, Wide Screens */ }
+  @media (max-width: 767px) {
+    .top-btn-result button {
+      margin-bottom: 0; } }
 
 .button-section-field {
   margin-top: 25px; }
@@ -18305,9 +18321,14 @@ div#mainSettings img {
 
 .page-title-section {
   padding: 30px 0; }
-  .page-title-section .btn {
+  .page-title-section .btn,
+  .page-title-section a {
     font-size: 16px !important;
-    margin-bottom: 10px; }
+    margin-bottom: 10px;
+    padding: 10px 24px;
+    border-radius: 25px !important;
+    display: inline-block;
+    margin-right: 10px; }
 
 #campaignResults h2 {
   font-size: 18px;
