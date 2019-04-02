@@ -477,7 +477,7 @@ function load() {
                   a.full_name,
                   a.email,
                   a.role,
-                  moment(a.last_login_at).format("llll"),
+                  moment(a.last_login_at).fromNow(),
                   a.subscription
                     ? a.subscription.plan +
                       (a.subscription.expired ? " (expired)" : " ✔")
