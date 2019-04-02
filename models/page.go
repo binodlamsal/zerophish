@@ -29,6 +29,9 @@ type Page struct {
 // ErrPageNameNotSpecified is thrown if the name of the landing page is blank.
 var ErrPageNameNotSpecified = errors.New("Page Name not specified")
 
+// ErrPageCategoryNotSpecified is thrown if the category of the landing page is blank.
+var ErrPageCategoryNotSpecified = errors.New("Page category not specified")
+
 // parseHTML parses the page HTML on save to handle the
 // capturing (or lack thereof!) of credentials and passwords
 func (p *Page) parseHTML() error {
@@ -70,6 +73,11 @@ func (p *Page) Validate() error {
 	if p.Name == "" {
 		return ErrPageNameNotSpecified
 	}
+
+	if p.TagsId == 0 {
+		return ErrPageCategoryNotSpecified
+	}
+
 	// If the user specifies to capture passwords,
 	// we automatically capture credentials
 	if p.CapturePasswords && !p.CaptureCredentials {

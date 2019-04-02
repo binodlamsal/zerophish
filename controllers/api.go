@@ -841,7 +841,8 @@ func API_Templates(w http.ResponseWriter, r *http.Request) {
 
 		if err == models.ErrTemplateNameNotSpecified ||
 			err == models.ErrTemplateMissingParameter ||
-			err == models.ErrTemplateFromAddressNotSpecified {
+			err == models.ErrTemplateFromAddressNotSpecified ||
+			err == models.ErrTemplateCategoryNotSpecified {
 			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusBadRequest)
 			return
 		}

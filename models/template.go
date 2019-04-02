@@ -47,6 +47,9 @@ var ErrTemplateFromAddressNotValid = errors.New("The sender's address is not val
 // ErrTemplateMissingParameter is thrown when a needed parameter is not provided
 var ErrTemplateMissingParameter = errors.New("Need to specify at least plaintext or HTML content")
 
+// ErrTemplateCategoryNotSpecified is thrown if the category of the template is blank.
+var ErrTemplateCategoryNotSpecified = errors.New("Template category not specified")
+
 // Validate checks the given template to make sure values are appropriate and complete
 func (t *Template) Validate() error {
 	switch {
@@ -56,6 +59,8 @@ func (t *Template) Validate() error {
 		return ErrTemplateMissingParameter
 	case t.FromAddress == "":
 		return ErrTemplateFromAddressNotSpecified
+	case t.TagsId == 0:
+		return ErrTemplateCategoryNotSpecified
 	}
 
 	if _, err = mail.ParseAddress(t.FromAddress); err != nil {
