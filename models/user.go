@@ -395,7 +395,7 @@ func (u User) GetLogo() *Logo {
 func (u User) GetAvatar() *Avatar {
 	a := Avatar{}
 
-	if db.Debug().Table("avatars").Where("user_id = ?", u.Id).First(&a).Error == nil {
+	if db.Table("avatars").Where("user_id = ?", u.Id).First(&a).Error == nil {
 		return &a
 	}
 

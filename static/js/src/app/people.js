@@ -1,4 +1,5 @@
 var people = [];
+var peopleTable;
 
 function save(e) {
   var t = {};
@@ -25,7 +26,7 @@ function save(e) {
     .post(t)
     .success(function(e) {
       successFlash("User updated successfully!"), dismiss();
-      location.reload();
+      load();
     })
     .error(function(e) {
       modalError(e.responseJSON.message);
@@ -53,7 +54,7 @@ function create() {
     .post(t)
     .success(function(e) {
       successFlash("User created successfully!"), dismiss();
-      location.reload();
+      load();
     })
     .error(function(e) {
       modalError(e.responseJSON.message);
@@ -325,7 +326,7 @@ function deleteUser(e) {
   }).then(function() {
     swal("User Deleted!", "This user has been deleted!", "success"),
       $('button:contains("OK")').on("click", function() {
-        location.reload();
+        load();
       });
   });
 }
@@ -385,63 +386,9 @@ $(document).ready(function() {
     $("#modal").on("hidden.bs.modal", function(e) {
       dismiss();
     }),
-    api.users
-      .get()
-      .success(function(e) {
-        people = e;
-        $("#loading").hide(),
-          people.length > 0
-            ? ($("#peopleTable").show(),
-              (peopleTable = $("#peopleTable").DataTable({
-                columnDefs: [
-                  {
-                    orderable: !1,
-                    targets: "no-sort"
-                  }
-                ],
-                order: [[4, "desc"]]
-              })),
-              $.each(people, function(i, a) {
-                // label = labels[a.status] || "label-default";
-                // var t;
-                // if (moment(a.launch_date).isAfter(moment())) {
-                //     t = "Scheduled to start: " + moment(a.launch_date).format("MMMM Do YYYY, h:mm:ss a");
-                //     var n = t + "<br><br>Number of recipients: " + a.stats.total
-                // } else {
-                //     t = "Launch Date: " + moment(a.launch_date).format("MMMM Do YYYY, h:mm:ss a");
-                //     var n = t + "<br><br>Number of recipients: " + a.stats.total + "<br><br>Emails opened: " + a.stats.opened + "<br><br>Emails clicked: " + a.stats.clicked + "<br><br>Submitted Credentials: " + a.stats.submitted_data + "<br><br>Errors : " + a.stats.error + "Reported : " + a.stats.reported
-                // }
+    load();
 
-                peopleTable.row
-                  .add([
-                    '<img style="max-height: 40px" src="' +
-                      (a.avatar_id
-                        ? "/avatars/" + a.avatar_id
-                        : "/images/noavatar.png") +
-                      '"> ' +
-                      a.username,
-                    a.full_name,
-                    a.email,
-                    a.role,
-                    moment(a.last_login_at).format("llll"),
-                    a.subscription
-                      ? a.subscription.plan +
-                        (a.subscription.expired ? " (expired)" : " ✔")
-                      : "✖",
-                    "<div class='pull-right'><span data-toggle='modal' data-backdrop='static' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='' onclick='edit(" +
-                      i +
-                      ")' data-original-title='Edit Page'>  <i class='fa fa-pencil'></i> </button> </span>  <span data-backdrop='static' data-target='#modal'><button class='btn btn-danger' onclick='deleteUser(" +
-                      a.id +
-                      ")' data-toggle='tooltip' data-placement='left' title='Delete User'> <i class='fa fa-trash-o'></i></button></span></div>"
-                  ])
-                  .draw();
-              }))
-            : $("#emptyMessage").show();
-      })
-      .error(function() {
-        $("#loading").hide(), errorFlash("Error fetching peoples");
-      }),
-    $.fn.select2.defaults.set("width", "100%"),
+  $.fn.select2.defaults.set("width", "100%"),
     $.fn.select2.defaults.set("dropdownParent", $("#modal_body")),
     $.fn.select2.defaults.set("theme", "bootstrap"),
     $.fn.select2.defaults.set("sorter", function(e) {
@@ -483,4 +430,69 @@ function isValidPassword(password) {
   }
 
   return true;
+}
+
+function load() {
+  if (peopleTable === undefined) {
+    peopleTable = $("#peopleTable").DataTable({
+      columnDefs: [
+        {
+          orderable: !1,
+          targets: "no-sort"
+        }
+      ],
+      order: [[4, "desc"]]
+    });
+  } else {
+    peopleTable.clear();
+    peopleTable.draw();
+  }
+
+  api.users
+    .get()
+    .success(function(e) {
+      people = e;
+      $("#loading").hide(),
+        people.length > 0
+          ? ($("#peopleTable").show(),
+            $.each(people, function(i, a) {
+              // label = labels[a.status] || "label-default";
+              // var t;
+              // if (moment(a.launch_date).isAfter(moment())) {
+              //     t = "Scheduled to start: " + moment(a.launch_date).format("MMMM Do YYYY, h:mm:ss a");
+              //     var n = t + "<br><br>Number of recipients: " + a.stats.total
+              // } else {
+              //     t = "Launch Date: " + moment(a.launch_date).format("MMMM Do YYYY, h:mm:ss a");
+              //     var n = t + "<br><br>Number of recipients: " + a.stats.total + "<br><br>Emails opened: " + a.stats.opened + "<br><br>Emails clicked: " + a.stats.clicked + "<br><br>Submitted Credentials: " + a.stats.submitted_data + "<br><br>Errors : " + a.stats.error + "Reported : " + a.stats.reported
+              // }
+
+              peopleTable.row
+                .add([
+                  '<img style="max-height: 40px" src="' +
+                    (a.avatar_id
+                      ? "/avatars/" + a.avatar_id
+                      : "/images/noavatar.png") +
+                    '"> ' +
+                    a.username,
+                  a.full_name,
+                  a.email,
+                  a.role,
+                  moment(a.last_login_at).format("llll"),
+                  a.subscription
+                    ? a.subscription.plan +
+                      (a.subscription.expired ? " (expired)" : " ✔")
+                    : "✖",
+                  "<div class='pull-right'><span data-toggle='modal' data-backdrop='static' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='' onclick='edit(" +
+                    i +
+                    ")' data-original-title='Edit Page'>  <i class='fa fa-pencil'></i> </button> </span>  <span data-backdrop='static' data-target='#modal'><button class='btn btn-danger' onclick='deleteUser(" +
+                    a.id +
+                    ")' data-toggle='tooltip' data-placement='left' title='Delete User'> <i class='fa fa-trash-o'></i></button></span></div>"
+                ])
+                .draw();
+            }))
+          : $("#emptyMessage").show();
+    })
+    .error(function() {
+      $("#loading").hide(), errorFlash("Error fetching peoples");
+    });
 }
