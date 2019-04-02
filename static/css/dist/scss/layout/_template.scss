@@ -86,11 +86,17 @@ h1.page-header {
     text-align: right;
     @media (max-width: 1200px){
         text-align: left;
+
     }
     label{
         display: inline-block;
     }
 }  
+}
+.dataTables_length{
+    @media (max-width: 1200px){
+        padding-left: 20px;
+    }
 }
 .tp-page-title{
     @include breakpoint(medium){
@@ -99,7 +105,7 @@ h1.page-header {
 }
 @media (max-width: 1300px){
     table.dataTable {
-        min-width: 1100px;
+        min-width: 1000px;
     }
 }
 @media (max-width: 767px){
@@ -110,4 +116,9 @@ h1.page-header {
 }
 .setting-navTabs .nav-tabs>li.active>a, .setting-navTabs .nav-tabs>li.active>a:focus, .setting-navTabs .nav-tabs>li.active>a:hover{
     cursor: pointer;
+}
+#campaignResults{
+  div[style='height:200px;']{
+
+  }
 }

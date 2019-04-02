@@ -82,9 +82,19 @@
   font-size: 1.2em;
   margin: 0; }
 
-.bootstrap-datetimepicker-widget button[data-action] {
-  padding: 6px; }
 
+.bootstrap-datetimepicker-widget button[data-action] {
+  padding: 6px;
+  color: #141f91;
+   }
+ .bootstrap-datetimepicker-widget .btn[data-action]{
+   color: #141f91 ;
+ }
+ .bootstrap-datetimepicker-widget .btn[data-action="togglePeriod"]{
+  background:  #141f91 ;
+  color: #fff ;
+  border: none;
+}
 .bootstrap-datetimepicker-widget .btn[data-action="incrementHours"]::after {
   position: absolute;
   width: 1px;
@@ -105,7 +115,9 @@
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   border: 0;
-  content: "Increment Minutes"; }
+  content: "Increment Minutes"; 
+
+}
 
 .bootstrap-datetimepicker-widget .btn[data-action="decrementHours"]::after {
   position: absolute;
@@ -373,3 +385,9 @@
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   border: 0; }
+
+
+
+
+
+
