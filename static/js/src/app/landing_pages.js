@@ -70,10 +70,12 @@ function edit(e) {
     .click(function() {
       save(e);
     }),
+    $("#modal .modal-title").html("NEW LANDING PAGE"),
     $("#html_editor").ckeditor();
   var a = {};
   -1 != e &&
     ((a = pages[e]),
+    $("#modal .modal-title").html("EDIT LANDING PAGE"),
     $("#name").val(a.name),
     $("#html_editor").val(a.html),
     $("#publicly_available").prop("checked", a.public),
@@ -108,6 +110,7 @@ function copy(e) {
     .click(function() {
       save(-1);
     }),
+    $("#modal .modal-title").html("COPY LANDING PAGE"),
     $("#html_editor").ckeditor();
   var a = pages[e];
   $("#name").val("Copy of " + a.name), $("#html_editor").val(a.html);

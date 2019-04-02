@@ -145,12 +145,13 @@ function edit(idx) {
             targets: "no-sort"
         }]
     })
-
+    $("#modal .modal-title").html("NEW SENDING DOMAIN")
     $("#modalSubmit").unbind('click').click(function () {
         save(idx)
     })
     var profile = {}
     if (idx != -1) {
+        $("#modal .modal-title").html("EDIT SENDING DOMAIN"),
         profile = profiles[idx]
         $("#name").val(profile.name)
         $("#interface_type").val(profile.interface_type)

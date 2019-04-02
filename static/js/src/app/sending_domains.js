@@ -60,10 +60,12 @@ function edit(e) {
             orderable: !1,
             targets: "no-sort"
         }]
-    }), $("#modalSubmit").unbind("click").click(function() {
+    }), 
+    $("#modal .modal-title").html("NEW SENDING DOMAIN"),
+    $("#modalSubmit").unbind("click").click(function() {
         save(e)
     });
-    var a = {}; - 1 != e && (a = profiles[e], $("#name").val(a.name), $("#interface_type").val(a.interface_type), $("#from").val(a.from_address), $("#host").val(a.host), $("#username").val(a.username), $("#password").val(a.password), $("#ignore_cert_errors").prop("checked", a.ignore_cert_errors), $.each(a.headers, function(e, a) {
+    var a = {}; - 1 != e && (a = profiles[e], $("#modal .modal-title").html("EDIT SENDING DOMAIN"), $("#name").val(a.name), $("#interface_type").val(a.interface_type), $("#from").val(a.from_address), $("#host").val(a.host), $("#username").val(a.username), $("#password").val(a.password), $("#ignore_cert_errors").prop("checked", a.ignore_cert_errors), $.each(a.headers, function(e, a) {
         addCustomHeader(a.key, a.value)
     }))
 }

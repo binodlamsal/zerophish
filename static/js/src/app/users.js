@@ -70,17 +70,20 @@ function edit(e) {
         }
       ]
     })),
+    $("#modal .modal-title").html("NEW GROUP"),
     $("#modalSubmit")
       .unbind("click")
       .click(function() {
         save(e);
       }),
     -1 == e)
+    
   );
   else
     api.groupId
       .get(e)
       .success(function(e) {
+        $("#modal .modal-title").html("EDIT GROUP"),
         $("#name").val(e.name),
           $.each(e.targets, function(e, a) {
             targets

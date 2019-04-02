@@ -125,6 +125,7 @@ function edit(e) {
     .click(function() {
       save(e);
     }),
+    $("#modal .modal-title").html("NEW TEMPLATE"),
     $("#attachmentUpload")
       .unbind("click")
       .click(function() {
@@ -152,7 +153,7 @@ function edit(e) {
   };
   -1 != e &&
     ((t = templates[e]),
-    console.log(t),
+    $("#modal .modal-title").html("EDIT TEMPLATE"),
     $("#publicly_available").prop("checked", t.public),
     $("#name").val(t.name),
     $("#from_address").val(t.from_address),
@@ -211,6 +212,8 @@ function copy(e) {
     .click(function() {
       save(-1);
     }),
+
+    $("#modal .modal-title").html("COPY TEMPLATE"),
     $("#attachmentUpload")
       .unbind("click")
       .click(function() {

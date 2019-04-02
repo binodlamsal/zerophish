@@ -272,10 +272,12 @@ function setupOptions() {
 }
 
 function edit(e) {
+  $("#modal .modal-title").html("NEW CAMPAIGN"),
   setupOptions();
 }
 
 function copy(e) {
+  $("#modal .modal-title").html("COPY CAMPAIGN"),
   setupOptions(),
     api.campaignId
       .get(campaigns[e].id)
