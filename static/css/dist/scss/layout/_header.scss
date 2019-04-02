@@ -19,6 +19,9 @@
 	@include breakpoint(small){
 		padding-bottom: 30px;
 	}
+    .logo img {
+		max-height: 120px;
+	}
 	.users-wrap{
 		.dropdown-menu{
 			left: auto !important;
