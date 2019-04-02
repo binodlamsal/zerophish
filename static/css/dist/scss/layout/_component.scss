@@ -2,7 +2,7 @@
 /*modal*/
 .modal {
 	.modal-dialog {
-		max-width: 700px;
+		max-width: 800px;
 	}
 	.modal-header {
 		padding:31px 39px 29px 48px;
@@ -88,7 +88,6 @@
     			border-bottom-right-radius: 0;
 			}
 		}
-
 	}
 	.gap {
 		margin-top: 30px;
@@ -144,6 +143,13 @@
 			padding-top: 7px;
 		}
 	}
+	.table.dataTable{
+		@media (min-width: 1300px){
+			min-width: 100%;
+		}
+	}
 	
 }
-
+.modal .table.dataTable{
+	min-width: 100% !important;
+}
