@@ -278,12 +278,21 @@ func GetUsers(uid int64) ([]User, error) {
 
 	if role.Is(Administrator) {
 		err = db.Order("id asc").Find(&users).Error
-	} else if role.Is(Partner) || role.Is(Customer) {
+	} else if role.Is(Partner) {
 		err = db.
 			Joins("LEFT JOIN targets ON targets.email=users.email").
+			Joins("LEFT JOIN users_role ON users_role.uid=users.id").
 			Joins("LEFT JOIN group_targets ON group_targets.target_id=targets.id").
 			Joins("LEFT JOIN groups ON groups.id=group_targets.group_id").
-			Where("partner = ? OR groups.user_id = ?", uid, uid).
+			Where("(partner = ? OR groups.user_id = ?) AND users_role.rid IN (?)", uid, uid, []int{ChildUser, Customer, LMSUser}).
+			Order("id asc").Find(&users).Error
+	} else if role.Is(Customer) {
+		err = db.
+			Joins("LEFT JOIN targets ON targets.email=users.email").
+			Joins("LEFT JOIN users_role ON users_role.uid=users.id").
+			Joins("LEFT JOIN group_targets ON group_targets.target_id=targets.id").
+			Joins("LEFT JOIN groups ON groups.id=group_targets.group_id").
+			Where("(partner = ? OR groups.user_id = ?) AND users_role.rid = ?", uid, uid, LMSUser).
 			Order("id asc").Find(&users).Error
 	} else if role.Is(ChildUser) {
 		user, err := GetUser(uid)
@@ -294,9 +303,13 @@ func GetUsers(uid int64) ([]User, error) {
 
 		err = db.
 			Joins("LEFT JOIN targets ON targets.email=users.email").
+			Joins("LEFT JOIN users_role ON users_role.uid=users.id").
 			Joins("LEFT JOIN group_targets ON group_targets.target_id=targets.id").
 			Joins("LEFT JOIN groups ON groups.id=group_targets.group_id").
-			Where("(users.partner = ? OR groups.user_id = ?) AND users.id <> ?", user.Partner, user.Partner, uid).
+			Where(
+				"(users.partner = ? OR groups.user_id = ?) AND users.id <> ? AND users_role.rid IN (?)",
+				user.Partner, user.Partner, uid, []int{ChildUser, Customer, LMSUser},
+			).
 			Order("users.id asc").Find(&users).Error
 	}
 
