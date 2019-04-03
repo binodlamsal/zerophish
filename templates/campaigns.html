@@ -117,27 +117,32 @@
                     <hr>
                     <div class="row">
                         <div class="col-md-12">
-                            Business Hours
+                            <div class="checkbox checkbox-primary" id="during_certain_hours">
+                                <label for="during_certain_hours_checkbox" class="checkbx">
+                                    <input id="during_certain_hours_checkbox" type="checkbox">
+                                    <span class="checkbox-btn"><img src="images/tick.png" alt=""></span> Send during the following hours only
+                                </label>
+                            </div>
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="row" id="certain_hours">
 
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label class="control-label" for="url">Start Time </label>
-                                <input type="text" class="form-control" id="start_time" />
+                                <input type="text" class="form-control" id="start_time" disabled />
                             </div> <!-- .form-group -->
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label class="control-label" for="url">End Time </label>
-                                <input type="text" class="form-control" id="end_time" />
+                                <input type="text" class="form-control" id="end_time" disabled />
                             </div><!-- .form-group -->
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label class="control-label" for="url">Time Zone </label>
-                                <select type="text" class="form-control" id="time_zone" >
+                                <select type="text" class="form-control" id="time_zone" disabled>
                                     <option val="" disabled selected>Select Timezone</option>
                                 </select>
                             </div> <!-- .form-group -->

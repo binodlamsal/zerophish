@@ -46,20 +46,26 @@ function launch() {
               .format(),
             send_by_date: t || null,
             groups: groups,
-            start_time: $("#start_time").val(),
-            end_time: $("#end_time").val(),
-            time_zone: $("#time_zone").val()
+            start_time: $("#during_certain_hours_checkbox").prop("checked")
+              ? $("#start_time").val()
+              : "",
+            end_time: $("#during_certain_hours_checkbox").prop("checked")
+              ? $("#end_time").val()
+              : "",
+            time_zone: $("#during_certain_hours_checkbox").prop("checked")
+              ? $("#time_zone").val()
+              : ""
           });
 
         if (
-          campaign.start_time &&
-          (!campaign.end_time || !campaign.time_zone)
+          $("#during_certain_hours_checkbox").prop("checked") &&
+          (!campaign.start_time || !campaign.end_time || !campaign.time_zone)
         ) {
           $("#modal\\.flashes")
             .empty()
             .append(
               '<div style="text-align:center" class="alert alert-danger">            <i class="fa fa-exclamation-circle"></i> ' +
-                "End Time and/or Time Zone not specified" +
+                "Start/End Time and/or Time Zone not specified" +
                 "</div>"
             );
           scrollToError();
@@ -272,13 +278,12 @@ function setupOptions() {
 }
 
 function edit(e) {
-  $("#modal .modal-title").html("NEW CAMPAIGN"),
-  setupOptions();
+  $("#modal .modal-title").html("NEW CAMPAIGN"), setupOptions();
 }
 
 function copy(e) {
   $("#modal .modal-title").html("COPY CAMPAIGN"),
-  setupOptions(),
+    setupOptions(),
     api.campaignId
       .get(campaigns[e].id)
       .success(function(e) {
@@ -325,6 +330,17 @@ var labels = {
 $(document).ready(function() {
   $("input[type=radio][name=filter]").change(function(event) {
     load(event.target.value);
+  });
+
+  $("#during_certain_hours_checkbox").change(function(event) {
+    if ($(this).prop("checked")) {
+      $("#certain_hours input, #certain_hours select").prop("disabled", "");
+    } else {
+      $("#certain_hours input, #certain_hours select").prop(
+        "disabled",
+        "disabled"
+      );
+    }
   });
 
   var timeZones = moment.tz.names();
