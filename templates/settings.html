@@ -36,16 +36,6 @@
             </div> -->
             <br />
 
-            {{if or (eq role "admin") (eq role "partner") (eq role "child_user")}}
-            <div class="row">
-                <label class="col-sm-3 col-md-2 control-label form-label">Register a New User</label>
-                <div class="col-md-8 col-sm-7">
-                    <a href="/register" class="btn btn-green sml-btn"><i class="fa fa-plus"></i> Add User</a>
-                </div>
-            </div>
-            <br />
-            {{end}}
-
             <div class="row">
                 <label for="api_key" class="col-sm-3 col-md-2 control-label form-label">API Key:</label>
                 <div class="col-md-8 col-sm-7">
@@ -163,7 +153,7 @@
         </div>
         <div role="tabpanel" class="tab-pane" id="uiSettings">
             <br />
-            <label class="checkbx"> 
+            <label class="checkbx">
                <input id="use_map" type="checkbox">
                <span class="checkbox-btn"><img src="images/tick.png" alt=""></span>
                Show campaign results map

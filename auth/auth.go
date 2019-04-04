@@ -198,7 +198,7 @@ func ChangePassword(r *http.Request) error {
 		return models.PutAvatar(a)
 	}
 
-	return models.PutUser(&u)
+	return models.UpdateUser(&u)
 }
 
 func ChangeLogo(r *http.Request) error {

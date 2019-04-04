@@ -189,6 +189,11 @@ func PutUser(u *User) error {
 	return err
 }
 
+// UpdateUser update the given user (only non-empty fields will be updated)
+func UpdateUser(u *User) error {
+	return db.Model(u).Updates(u).Error
+}
+
 // PutRole updates role
 func PutRole(r *Role) error {
 	err := db.Save(r).Error
@@ -308,7 +313,7 @@ func GetUsers(uid int64) ([]User, error) {
 			Joins("LEFT JOIN groups ON groups.id=group_targets.group_id").
 			Where(
 				"(users.partner = ? OR groups.user_id = ?) AND users.id <> ? AND users_role.rid IN (?)",
-				user.Partner, user.Partner, uid, []int{ChildUser, Customer, LMSUser},
+				user.Partner, user.Partner, uid, []int{Customer, LMSUser},
 			).
 			Order("users.id asc").Find(&users).Error
 	}

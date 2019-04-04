@@ -16,11 +16,15 @@
                 People
              </h1>
          </div> <!-- .tp-page-title -->
+
+        {{if (or (eq .Role "admin") (eq .Role "partner") (eq .Role "child_user"))}}
          <div class="tp-page-btn">
             <button type="button" class="btn btn-primary flate-button" data-toggle="modal" data-backdrop="static" data-target="#modal"
             onclick="edit(-1)">
             Add New User <i class="fa fa-plus"></i> </button>
         </div> <!-- .tp-page-btn -->
+        {{end}}
+
     </div> <!-- .top-page-header -->
     &nbsp;
     <div id="loading">
@@ -73,17 +77,19 @@
                     <input type="text" name="email" id = 'email' class="form-control top-input" placeholder="Email" required autofocus/>
 
                     {{if (or (eq .Role "admin") (eq .Role "partner") (eq .Role "child_user"))}}
-                    <label class="control-label" for="template">Roles</label>
-                    <select  name="roles" id = "roles" class="form-control top-input" required autofocus {{if or (eq .Role "partner") (eq .Role "child_user")}}disabled{{end}}/>
-                        <option value="">Select Roles</option>
-                    </select>
-
-                    <div id="partner-container">
-                        <label class="control-label" for="template">Partner</label>
-                        <select  name="partner" id = "partner" class="form-control top-input" {{if or (eq .Role "partner") (eq .Role "child_user")}}disabled{{end}} autofocus>
-                            <option value="">Select Partner</option>
+                        <label class="control-label" for="template">Roles</label>
+                        <select  name="roles" id = "roles" class="form-control top-input" required autofocus/>
+                            <option value="">Select Roles</option>
                         </select>
-                    </div>
+
+                        {{if eq .Role "admin"}}
+                            <div id="partner-container">
+                                <label class="control-label" for="template">Partner</label>
+                                <select  name="partner" id = "partner" class="form-control top-input" autofocus>
+                                    <option value="">Select Partner</option>
+                                </select>
+                            </div>
+                        {{end}}
                     {{end}}
 
                     <label class="control-label" for="current_password">Current Password:</label>
@@ -95,6 +101,8 @@
                     <input type="hidden" name="id" id = "hidden_uid" value="">
                     <input type="hidden" name="hash" id = "hidden_hash" value="">
                     <input type="hidden" name="hash" id = "hidden_api_key" value="">
+                    <input type="hidden" id="hidden_partner" value="">
+                    <input type="hidden" id="hidden_plan_id" value="">
 
                     {{if .CanManageSubscriptions}}
                     <div class="row subscription">
@@ -125,5 +133,9 @@
 </div> <!-- container-fluid -->
 </section>
 {{end}} {{define "scripts"}}
+<script>
+    var role = "{{.Role}}";
+    var canManageSubscriptions = {{.CanManageSubscriptions}};
+</script>
 <script src="/js/dist/app/people.min.js"></script>
 {{end}}

@@ -13,8 +13,10 @@ function save(e) {
   t.api_key = $("#hidden_api_key").val();
   t.id = e;
   t.role = parseInt($("#roles").val());
-  t.partner = parseInt($("#partner").val());
-  t.plan_id = parseInt($("#plan_id").val());
+  t.partner =
+    parseInt($("#partner").val()) || parseInt($("#hidden_partner").val());
+  t.plan_id =
+    parseInt($("#plan_id").val()) || parseInt($("#hidden_plan_id").val());
 
   if ($("#expiration_date").length) {
     if ($("#expiration_date").val() != "") {
@@ -153,6 +155,12 @@ function edit(index) {
             }
           });
 
+        if (!$("#partner").length) {
+          $("#hidden_partner").val(partner);
+        } else {
+          $("#hidden_partner").val("");
+        }
+
         $.each(p, function(e, pp) {
           var selected = "";
           if (partner == pp.id) {
@@ -173,38 +181,46 @@ function edit(index) {
         });
       });
 
-      //populate the plans
-      api.plans.get().success(function(plans) {
-        $("#plan_id")
-          .find("option")
-          .each(function(i) {
-            if ($(this).val() !== "") {
-              $(this).remove();
+      if (canManageSubscriptions) {
+        //populate the plans
+        $("#hidden_plan_id").val("");
+
+        api.plans.get().success(function(plans) {
+          $("#plan_id")
+            .find("option")
+            .each(function(i) {
+              if ($(this).val() !== "") {
+                $(this).remove();
+              }
+            });
+
+          $.each(plans, function(e, plan) {
+            var selected = "";
+            if (
+              user.subscription != undefined &&
+              user.subscription.plan_id == plan.id
+            ) {
+              selected = 'selected = "selected"';
+            } else {
+              selected = "";
             }
+
+            $("#plan_id").append(
+              '<option value="' +
+                plan.id +
+                '"  ' +
+                selected +
+                ">" +
+                plan.name +
+                "</option>"
+            );
           });
-
-        $.each(plans, function(e, plan) {
-          var selected = "";
-          if (
-            user.subscription != undefined &&
-            user.subscription.plan_id == plan.id
-          ) {
-            selected = 'selected = "selected"';
-          } else {
-            selected = "";
-          }
-
-          $("#plan_id").append(
-            '<option value="' +
-              plan.id +
-              '"  ' +
-              selected +
-              ">" +
-              plan.name +
-              "</option>"
-          );
         });
-      });
+      } else {
+        $("#hidden_plan_id").val(
+          user.subscription !== null ? user.subscription.plan_id : ""
+        );
+      }
 
       // conditionally show and hide partner field depending on the selected role
       $("#roles").change(function() {
@@ -250,6 +266,12 @@ function edit(index) {
           '<option value="' + rr.rid + '" >' + rr.name + "</option>"
         );
       });
+
+      if (r.length == 1) {
+        $("#roles option")
+          .last()
+          .prop("selected", "selected");
+      }
     });
 
     //populate the partners
@@ -262,24 +284,26 @@ function edit(index) {
           }
         });
 
-      $.each(p, function(e, pp) {
-        var selected = "";
-        if (partner == pp.id) {
-          selected = 'selected = "selected"';
-        } else {
-          selected = "";
-        }
+      if (role == "admin") {
+        $.each(p, function(e, pp) {
+          var selected = "";
+          if (partner == pp.id) {
+            selected = 'selected = "selected"';
+          } else {
+            selected = "";
+          }
 
-        $("#partner").append(
-          '<option value="' +
-            pp.id +
-            '"  ' +
-            selected +
-            ">" +
-            pp.username +
-            "</option>"
-        );
-      });
+          $("#partner").append(
+            '<option value="' +
+              pp.id +
+              '"  ' +
+              selected +
+              ">" +
+              pp.username +
+              "</option>"
+          );
+        });
+      }
     });
 
     // conditionally show and hide partner field depending on the selected role
@@ -482,9 +506,13 @@ function load() {
                     ? a.subscription.plan +
                       (a.subscription.expired ? " (expired)" : " ✔")
                     : "✖",
-                  "<div class='pull-right'><span data-toggle='modal' data-backdrop='static' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='' onclick='edit(" +
-                    i +
-                    ")' data-original-title='Edit Page'>  <i class='fa fa-pencil'></i> </button> </span>  <span data-backdrop='static' data-target='#modal'><button class='btn btn-danger' onclick='deleteUser(" +
+                  "<div class='pull-right'>" +
+                    (role == "admin" || a.role !== "LMS User"
+                      ? "<span data-toggle='modal' data-backdrop='static' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='' onclick='edit(" +
+                        i +
+                        ")' data-original-title='Edit Page'>  <i class='fa fa-pencil'></i> </button> </span> "
+                      : "") +
+                    " <span data-backdrop='static' data-target='#modal'><button class='btn btn-danger' onclick='deleteUser(" +
                     a.id +
                     ")' data-toggle='tooltip' data-placement='left' title='Delete User'> <i class='fa fa-trash-o'></i></button></span></div>"
                 ])

@@ -157,6 +157,15 @@ func API_Users(w http.ResponseWriter, r *http.Request) {
 		JSONResponse(w, resp, http.StatusOK)
 
 	case r.Method == "POST":
+		user := ctx.Get(r, "user").(models.User)
+		role, err := models.GetUserRole(user.Id)
+
+		if err != nil {
+			log.Error(err)
+			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
+			return
+		}
+
 		ud := struct {
 			Username string `json:"username"`
 			FullName string `json:"full_name"`
@@ -170,6 +179,16 @@ func API_Users(w http.ResponseWriter, r *http.Request) {
 			log.Error(err)
 			JSONResponse(w, models.Response{Success: false, Message: "Malformed request body"}, http.StatusBadRequest)
 			return
+		}
+
+		if role.Is(models.Administrator) || role.Is(models.Partner) {
+			if ud.Role == models.Customer || ud.Role == models.ChildUser {
+				ud.Partner = user.Id
+			}
+		} else if role.Is(models.ChildUser) {
+			if ud.Role == models.Customer {
+				ud.Partner = user.Partner
+			}
 		}
 
 		iu, err := models.CreateUser(ud.Username, ud.FullName, ud.Email, ud.Password, ud.Role, ud.Partner)
@@ -211,11 +230,20 @@ func API_User_Partners(w http.ResponseWriter, r *http.Request) {
 func API_Roles(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case r.Method == "GET":
-		cs, err := models.GetRoles()
+		uid := ctx.Get(r, "user_id").(int64)
+		role, err := models.GetUserRole(uid)
+
 		if err != nil {
 			log.Error(err)
 		}
-		JSONResponse(w, cs, http.StatusOK)
+
+		roles, err := models.GetRoles()
+
+		if err != nil {
+			log.Error(err)
+		}
+
+		JSONResponse(w, roles.AvailableFor(role), http.StatusOK)
 	}
 }
 
