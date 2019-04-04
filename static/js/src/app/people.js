@@ -463,7 +463,9 @@ function load() {
         {
           orderable: !1,
           targets: "no-sort"
-        }
+        },
+        { targets: 4, orderData: 6 },
+        { targets: 6, visible: false }
       ],
       order: [[4, "desc"]]
     });
@@ -506,6 +508,7 @@ function load() {
                     ? a.subscription.plan +
                       (a.subscription.expired ? " (expired)" : " ✔")
                     : "✖",
+                  moment(a.last_login_at).format("X"),
                   "<div class='pull-right'>" +
                     (role == "admin" || a.role !== "LMS User"
                       ? "<span data-toggle='modal' data-backdrop='static' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='' onclick='edit(" +
