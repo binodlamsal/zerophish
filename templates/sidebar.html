@@ -43,7 +43,7 @@
             <li {{if eq page "settings"}}class="active"{{end}}><a class="dash-settings" href="/settings" ><span class="icon-left"><img src="/images/setting.svg" class="svg" alt="" ></span>Settings</a></li>
 
             {{if or (eq role "admin") (eq role "partner") (eq role "child_user") (eq role "customer")}}
-            <li {{if eq page "people"}}class="active"{{end}}><a class="dash-people" href="/people" ><span class="icon-left"><img src="/images/people.svg" class="svg" alt="" ></span>People</a></li>
+            <li {{if eq page "people"}}class="active"{{end}}><a class="dash-people" href="/people" ><span class="icon-left"><img src="/images/people.svg" class="svg" alt="" ></span>Account Access</a></li>
             {{end}}
 
             {{if eq role "admin"}}

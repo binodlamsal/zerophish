@@ -12,7 +12,8 @@
     <div id="flashes" class=""></div>
     <div class="top-page-header d-flex justify-content-between">
         <div class="tp-page-title">
-            <h1 class="page-header">
+            <h1 class="page-header" data-toggle="tooltip" data-placement="right" data-original-title="Here you manage the safe phishing emails that you'll
+            send to your users.">
                 Email Templates
             </h1>
         </div> <!-- .tp-page-title -->
@@ -22,7 +23,8 @@
            New Template <i class="fa fa-plus"></i> </button>
         </div> <!-- .tp-page-btn -->
         <div style="display: inline-block; position: absolute; right: 0%; transform: translate(-15px, 100px)">
-         <div class="filter-section">
+         <div class="filter-section" data-toggle="tooltip" data-placement="right" data-original-title="Chose to filter just your own templates, EveryCloud’s or
+         those of your customers.">
              <strong>Filter: &nbsp;</strong>
              <label class="radiobx"> 
                 <input class="checkAll" type="radio" name="filter" value="own" id="filter-own" checked> 
@@ -84,28 +86,34 @@
                 <label class="control-label" for="name">Name:</label>
                 <div class="form-group">
                     <input type="text" class="form-control" ng-model="template.name" placeholder="Template name" id="name"
-                        autofocus />
+                        autofocus data-toggle="tooltip" data-original-title="Give your template a name. This isn’t shown on the email, it’s just to help
+                        identifying it later." data-trigger="foucs" data-placement="right"/>
                 </div>
-                <div class="form-group">
+                <div class="form-group" data-toggle="tooltip" data-original-title="Import real emails by pasting the raw source (view > source in most
+                    clients)." data-placement="right">
                     <button class="btn common-btn" data-toggle="modal" data-backdrop="static" data-target="#importEmailModal"><i
                             class="fa fa-envelope"></i>
                         Import Email</button>
                 </div>
                 <label class="control-label" for="url">Category: </label>
                 <div class="form-group">
-                            <select type="text" class="form-control" id="category" >
+                            <select type="text" class="form-control" id="category" data-toggle="tooltip" data-original-title="To help you find the template in the right place later." data-placement="right">
                                 <option val = "">Select Category</option>
                             </select>
                 </div>
 
                 <label class="control-label" for="subject">From:</label>
                 <div class="form-group">
-                    <input type="text" class="form-control" placeholder="First Last <test@example.com>" id="from_address" />
+                    <input type="text" class="form-control" placeholder="First Last <test@example.com>" id="from_address" data-toggle="tooltip" data-original-title="Override the from address (as many real cyber criminals do). Leave it blank
+                        to use the sending domain and make the emails a little easier to spot. In a live environment
+                        an overridden from address would be less likely to get through a spam filter but would be
+                        more effective if it did." data-trigger="focus" data-placement="right" />
                 </div>
 
                 <label class="control-label" for="subject">Subject:</label>
                 <div class="form-group">
-                    <input type="text" class="form-control" placeholder="Email Subject" id="subject" />
+                    <input type="text" class="form-control" placeholder="Email Subject" id="subject" data-toggle="tooltip" data-original-title="A cyber-criminal would make the subject something that elicits action
+                    but is something the user may be familiar with." data-trigger="focus" data-placement="right" />
                 </div>
                 <!-- Nav tabs -->
                 <ul class="nav nav-tabs text-nav" role="tablist">
@@ -139,11 +147,15 @@
                       <!--    Add Tracking Image -->
                     </label>
                     <label for="publicly_available">Publicly available <i class="fa fa-question-circle"
-                            data-toggle="tooltip" data-placement="right" title="Check this box if you want to make this template publicly available."></i></label>
+                            data-toggle="tooltip" data-placement="right" title="Check this box it you’d like to make this
+                            template available to your all your customers or leave it unticked to use just in your own
+                            account.”"></i></label>
                 </div>
                 {{end}}
                 <span class="btn btn-file"><i class="fa fa-plus"></i> Add Files
-                    <input id="attachmentUpload" type="file" onchange="attach(this.files)" multiple>
+                    <input id="attachmentUpload" type="file" onchange="attach(this.files)" data-toggle="tooltip" data-placement="right" data-original-title="Add an attachment to the email. These are not currently tracked in
+                    reporting, but you can include a message in the file to explain what might have happened in
+                    a real phishing scenario." multiple> 
                 </span>
                 <br />
                 <br />
@@ -164,7 +176,8 @@
                 </div>
                 <hr>
                 <label class="control-label" for="rating">Difficulty rating:</label>
-                <div class="form-group">
+                <div class="form-group" data-toggle="tooltip" data-placement="right" data-original-title="Select a difficulty rating out of five, to help you manage your
+                templates later.">
                     <form class="rating">
                         <label>
                           <input type="radio" name="stars" value="1" />

@@ -12,9 +12,19 @@
         <div id="flashes" class=""></div>
         <div class="top-page-header d-flex justify-content-between">
             <div class="tp-page-title">
-                <h1 class="page-header">
-                People
-             </h1>
+                {{if (or (eq .Role "admin") (eq .Role "partner") (eq .Role "child_user"))}}
+                    <h1 class="page-header" data-toggle="tooltip" data-original-title="Here you can manage who in your organisation has access to your account, add
+                    new members and manage customers’ accounts." data-placement="right">
+                    Account Access
+                    </h1>
+                {{end}}
+                {{if (eq .Role "customer")}}
+                    <h1 class="page-header" data-toggle="tooltip" data-original-title="Here you can manage who in your organisation has access to your account and
+                    add new members." data-placement="right">
+                    Account Access
+                    </h1>
+                {{end}}
+
          </div> <!-- .tp-page-title -->
 
         {{if (or (eq .Role "admin") (eq .Role "partner") (eq .Role "child_user"))}}
