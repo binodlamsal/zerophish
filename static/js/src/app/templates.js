@@ -43,8 +43,7 @@ function save(e) {
               dismiss();
           })
           .error(function(e) {
-            modalError(e.responseJSON.message),
-            scrollToError()
+            modalError(e.responseJSON.message), scrollToError();
           }))
       : api.templates
           .post(t)
@@ -54,7 +53,7 @@ function save(e) {
               dismiss();
           })
           .error(function(e) {
-            modalError(e.responseJSON.message), scrollToError()
+            modalError(e.responseJSON.message), scrollToError();
           });
 }
 
@@ -70,7 +69,9 @@ function dismiss() {
     $("#subject").val(""),
     $("#text_editor").val(""),
     $("#html_editor").val(""),
-    $("#category").val(""),
+    $("#category")
+      .val("")
+      .change(),
     $("#modal").modal("hide");
 }
 
@@ -188,21 +189,36 @@ function edit(e) {
     });
 
   //fill the categories by the API
-  $("#category")
-    .find("option")
-    .not(":first")
-    .remove();
+  // $("#category")
+  //   .find("option")
+  //   .not(":first")
+  //   .remove();
   api.phishtags.get().success(function(s) {
-    $.each(s, function(e, ss) {
-      var sel = "";
-      if (t.tag == ss.id) {
-        sel = 'selected = "selected"';
-      }
+    // $.each(s, function(e, ss) {
+    //   var sel = "";
+    //   if (t.tag == ss.id) {
+    //     sel = 'selected = "selected"';
+    //   }
 
-      $("#category").append(
-        '<option value="' + ss.id + '"  ' + sel + ">" + ss.name + "</option>"
-      );
+    //   $("#category").append(
+    //     '<option value="' + ss.id + '"  ' + sel + ">" + ss.name + "</option>"
+    //   );
+    // });
+
+    var data = s.map(function(c) {
+      return {
+        id: c.id,
+        text: c.name
+      };
     });
+
+    $("#category.form-control").select2({
+      placeholder: "Select Category",
+      data: data
+    });
+
+    $("#category.form-control").val(t.tag);
+    $("#category.form-control").trigger("change.select2");
   });
 }
 
@@ -212,7 +228,6 @@ function copy(e) {
     .click(function() {
       save(-1);
     }),
-
     $("#modal .modal-title").html("COPY TEMPLATE"),
     $("#attachmentUpload")
       .unbind("click")
@@ -510,4 +525,17 @@ $(document).ready(function() {
     });
 
   load("own");
+
+  $.fn.select2.defaults.set("width", "100%"),
+    $.fn.select2.defaults.set("dropdownParent", $("#modal_body")),
+    $.fn.select2.defaults.set("theme", "bootstrap");
+  // $.fn.select2.defaults.set("sorter", function(e) {
+  //   return e.sort(function(e, a) {
+  //     return e.text.toLowerCase() > a.text.toLowerCase()
+  //       ? 1
+  //       : e.text.toLowerCase() < a.text.toLowerCase()
+  //       ? -1
+  //       : 0;
+  //   });
+  // });
 });
