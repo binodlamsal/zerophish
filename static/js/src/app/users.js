@@ -249,17 +249,18 @@ function load(filter) {
                   escapeHtml(t.num_targets),
                   moment(t.modified_date).format("MMMM Do YYYY, h:mm:ss a"),
                   "<div class='pull-right'>" +
-                    "<button class='btn btn-primary' data-toggle='modal' data-backdrop='static' data-target='#lms-modal' onclick='lms(" +
+                    "<span data-toggle='modal' data-backdrop='static' data-target='#lms-modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' data-original-title='Create Training Users' onclick='lms(" +
                     t.id +
-                    ")'>LMS</button> " +
-                    "<button class='btn btn-primary' data-toggle='modal' data-backdrop='static' data-target='#modal' onclick='edit(" +
+                    ")'>LMS</button></span>" +
+                    "<span data-toggle='modal' data-backdrop='static' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' data-original-title='Edit Group'  onclick='edit(" +
                     t.id +
-                    ")'>                    <i class='fa fa-pencil'></i>                    </button>                    <button class='btn btn-danger' onclick='deleteGroup(" +
+                    ")'>                    <i class='fa fa-pencil'></i>                    </button></span>                    <button class='btn btn-danger' data-toggle='tooltip' data-placement='left' data-original-title='Delete' onclick='deleteGroup(" +
                     t.id +
                     ")'>                    <i class='fa fa-trash-o'></i>                    </button></div>"
                 ])
                 .draw();
             });
+            $('[data-toggle="tooltip"]').tooltip()
         } else $("#emptyMessage").hide();
       })
       .error(function() {

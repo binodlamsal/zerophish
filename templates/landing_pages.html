@@ -11,7 +11,8 @@
     <div id="flashes" class=""></div>
     <div class="top-page-header d-flex justify-content-between">
         <div class="tp-page-title">
-            <h1 class="page-header">
+            <h1 class="page-header" data-toggle="tooltip" data-placement="right" data-original-title="When users click on your safe phishing emails they’ll be
+            taken to a landing page of your choice. Manage them here.">
                  Landing Pages
             </h1>
         </div> <!-- .tp-page-title -->
@@ -21,7 +22,8 @@
             New Page <i class="fa fa-plus"></i> </button>
         </div> <!-- .tp-page-btn -->
         <div style="display: inline-block; position: absolute; right: 0%; transform: translate(-15px, 100px)">
-            <div class="filter-section">
+            <div class="filter-section" data-toggle="tooltip" data-original-title="“Chose to filter just your own templates, EveryCloud’s or
+            those of your customers." data-placement="right">
                <strong>Filter: &nbsp;</strong>
                <label class="radiobx"> 
                 <input class="checkAll" type="radio" name="filter" value="own" id="filter-own" checked> 
@@ -81,16 +83,18 @@
                 <div class="" id="modal.flashes"></div>
                 <label class="control-label" for="name">Name:</label>
                 <div class="form-group">
-                    <input type="text" class="form-control" placeholder="Page name" id="name" autofocus />
+                    <input type="text" class="form-control" placeholder="Page name" id="name" autofocus data-toggle="tooltip" data-original-title="Give your landing page a name. This isn’t used on the page, it’s just to
+                    help you find it later." data-placement="right" data-trigger="focus" />
                 </div>
-                <div class="form-group">
+                <div class="form-group" data-toggle="tooltip" data-placement="right" data-original-title="Add the URL of an existing website to import as much as we can.
+                You can then make changes using the edit below.">
                     <button class="btn btn-danger" data-toggle="modal" data-backdrop="static" data-target="#importSiteModal"><i
                             class="fa fa-globe"></i>
                         Import Site</button>
                 </div>
                 <label class="control-label" for="url">Category: </label>
                 <div class="form-group">
-                            <select type="text" class="form-control" id="category" >
+                            <select type="text" class="form-control" id="category" data-toggle="tooltip" data-original-title="Select a category to help you find your template later." data-placement="right">
                                 <option val = "">Select Category</option>
                             </select>
                 </div>
@@ -109,8 +113,9 @@
                     <div class="checkbox checkbox-primary">
                          <label for="publicly_available" class="checkbx">
                             <input id="publicly_available" type="checkbox">
-                            <span class="checkbox-btn"><img src="images/tick.png" alt=""></span> Publicly available i class="fa fa-question-circle"
-                            data-toggle="tooltip" data-placement="right" title="Check this box if you want to make this landing page publicly available."></i>
+                            <span class="checkbox-btn"><img src="images/tick.png" alt=""></span> Publicly available <i class="fa fa-question-circle"
+                            data-toggle="tooltip" data-placement="right" title="Check this box it you’d like to make this template available to
+                            your all your customers or leave it unticked to use just in your own account.”"></i>
                         </label>
                     </div>
                     {{end}}
@@ -119,19 +124,23 @@
                                   <input id="capture_credentials_checkbox" type="checkbox">
                                   <span class="checkbox-btn"><img src="images/tick.png" alt=""></span>
                                   Capture Submitted Data <i class="fa fa-question-circle"
-                                  data-toggle="tooltip" data-placement="right" title="If the landing page contains a form, submitted input (except passwords!) will be captured."></i>
+                                  data-toggle="tooltip" data-placement="right" title="If your template includes a form, we’ll capture the
+                                  submitted data. This can be useful to demonstrate to the user how phishing works."></i>
                               </label>
                     </div>
                     <div class="checkbox checkbox-primary" id="capture_passwords">
                         <label for="capture_passwords_checkbox" class="checkbx">  
                             <input id="capture_passwords_checkbox" type="checkbox">
-                            <span class="checkbox-btn"><img src="images/tick.png" alt=""></span> Capture Passwords
+                            <span class="checkbox-btn"><img src="images/tick.png" alt=""></span> Capture Passwords <i class="fa fa-question-circle"
+                            data-toggle="tooltip" data-placement="right" title="If your template includes a form, we’ll capture the submitted
+                            password. This can be useful to demonstrate to the user, how phishing works."></i>
                         </label>
                     </div>
             </div>
                 <div id="redirect_url">
                     <label class="control-label" for="redirect_url_input">Redirect to: <i class="fa fa-question-circle"
-                            data-toggle="tooltip" data-placement="right" title="This option lets you redirect the user to a page after credentials are submitted."></i></label>
+                            data-toggle="tooltip" data-placement="right" title="If you’d like to redirect uses to a specific page after they’ve
+                            submitted data, you can do so here.”"></i></label>
                     <div class="form-group">
                         <input id="redirect_url_input" class="form-control" placeholder="http://example.com" />
                     </div>

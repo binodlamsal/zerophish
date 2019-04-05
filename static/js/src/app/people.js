@@ -513,7 +513,7 @@ function load() {
                     (role == "admin" || a.role !== "LMS User"
                       ? "<span data-toggle='modal' data-backdrop='static' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='' onclick='edit(" +
                         i +
-                        ")' data-original-title='Edit Page'>  <i class='fa fa-pencil'></i> </button> </span> "
+                        ")' data-original-title='Edit Member'>  <i class='fa fa-pencil'></i> </button> </span> "
                       : "") +
                     " <span data-backdrop='static' data-target='#modal'><button class='btn btn-danger' onclick='deleteUser(" +
                     a.id +
