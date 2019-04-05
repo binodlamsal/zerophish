@@ -1,4 +1,5 @@
 var campaignTable;
+var categories = [];
 
 function launch() {
   console.log($("#start_time").val());
@@ -53,7 +54,7 @@ function launch() {
               ? $("#end_time").val()
               : "",
             time_zone: $("#during_certain_hours_checkbox").prop("checked")
-              ? $("#time_zone").val()
+              ? $("#time_zone").select2("data")[0].text
               : ""
           });
 
@@ -183,7 +184,13 @@ function dismiss() {
     $("#users")
       .val("")
       .change(),
-    $("#modal").modal("hide");
+    $("#time_zone")
+      .val("")
+      .change();
+  if ($("#during_certain_hours_checkbox").prop("checked")) {
+    $("#during_certain_hours_checkbox").click();
+  }
+  $("#modal").modal("hide");
 }
 
 function deleteCampaign(e) {
@@ -237,6 +244,39 @@ function setupOptions() {
         return (e.text = e.name), e;
       });
 
+      var data = a
+        .map(function(t) {
+          return {
+            id: t.id,
+            text: t.name,
+            category: categories.find(function(c) {
+              return c.id === t.tag;
+            })
+          };
+        })
+        .reduce(function(groups, t) {
+          if (t.category !== undefined) {
+            if (groups[t.category.name] !== undefined) {
+              groups[t.category.name].push(t);
+            } else {
+              groups[t.category.name] = [t];
+            }
+          } else {
+            groups["Misc"] !== undefined
+              ? groups["Misc"].push(t)
+              : (groups["Misc"] = [t]);
+          }
+
+          return groups;
+        }, {});
+
+      data = Object.keys(data).map(function(group) {
+        return {
+          text: group,
+          children: data[group]
+        };
+      });
+
       t = $("#template.form-control");
 
       t.change(function(event) {
@@ -245,19 +285,53 @@ function setupOptions() {
 
       t.select2({
         placeholder: "Select a Template",
-        data: a
+        data: data
       }),
         1 === e.length && (t.val(a[0].id), t.trigger("change.select2"));
     }),
-    api.pages.get().success(function(e) {
+    api.pages.get("all").success(function(e) {
       if (0 == e.length) return modalError("No pages found!"), !1;
       var a = $.map(e, function(e) {
           return (e.text = e.name), e;
         }),
         t = $("#page.form-control");
+
+      var data = a
+        .map(function(p) {
+          return {
+            id: p.id,
+            text: p.name,
+            category: categories.find(function(c) {
+              return c.id === p.tag;
+            })
+          };
+        })
+        .reduce(function(groups, p) {
+          if (p.category !== undefined) {
+            if (groups[p.category.name] !== undefined) {
+              groups[p.category.name].push(p);
+            } else {
+              groups[p.category.name] = [p];
+            }
+          } else {
+            groups["Misc"] !== undefined
+              ? groups["Misc"].push(p)
+              : (groups["Misc"] = [p]);
+          }
+
+          return groups;
+        }, {});
+
+      data = Object.keys(data).map(function(group) {
+        return {
+          text: group,
+          children: data[group]
+        };
+      });
+
       t.select2({
         placeholder: "Select a Landing Page",
-        data: a
+        data: data
       }),
         1 === e.length && (t.val(a[0].id), t.trigger("change.select2"));
     }),
@@ -343,12 +417,16 @@ $(document).ready(function() {
     }
   });
 
-  var timeZones = moment.tz.names();
-  $.each(timeZones, function(e, time) {
-    $("#time_zone").append(
-      "<option value = " + time + ">" + time + "</option>"
-    );
+  api.phishtags.get().success(function(_categories) {
+    categories = _categories;
   });
+
+  setTimeout(function() {
+    $("#time_zone.form-control").select2({
+      placeholder: "Select Timezone",
+      data: moment.tz.names()
+    });
+  }, 1000);
 
   $("#launch_date").datetimepicker({
     widgetPositioning: {

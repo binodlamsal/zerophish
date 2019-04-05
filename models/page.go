@@ -227,15 +227,19 @@ func GetPageOwnerId(id int64) (int64, error) {
 // customers - customers' items
 // Note: empty "filter" will be treated as "own"
 func GetPages(uid int64, filter string) ([]Page, error) {
-	if filter != "own" && filter != "customers" && filter != "public" {
-		filter = "own"
-	}
-
 	ps := []Page{}
 	role, err := GetUserRole(uid)
 
 	if err != nil {
 		return ps, err
+	}
+
+	if filter != "own" && filter != "customers" && filter != "public" {
+		if !role.Is(Administrator) {
+			filter = "own"
+		} else if filter != "all" {
+			filter = "own"
+		}
 	}
 
 	query := db.Table("pages")
@@ -246,7 +250,9 @@ func GetPages(uid int64, filter string) ([]Page, error) {
 		query = query.Where("public = ?", 1)
 	} else {
 		if role.Is(Administrator) {
-			query = query.Where("user_id <> ?", uid)
+			if filter != "all" {
+				query = query.Where("user_id <> ?", uid)
+			}
 		} else if role.IsOneOf([]int64{Partner, ChildUser}) {
 			uids, err := GetUserIds(uid)
 
