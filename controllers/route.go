@@ -448,7 +448,7 @@ func Logo(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	http.Redirect(w, r, "/images/logo1.png", 302)
+	http.Redirect(w, r, "/images/EC_Logo_PS.png", 302)
 }
 
 // Avatar serves avatar image of the logged-in user
