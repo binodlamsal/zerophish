@@ -171,9 +171,7 @@ function sendTestEmail() {
 function dismiss() {
   $("#modal\\.flashes").empty(),
     $("#name").val(""),
-    $("#template")
-      .val("")
-      .change(),
+    $("#template").select2("data", null),
     $("#page")
       .val("")
       .change(),
@@ -236,7 +234,9 @@ function setupOptions() {
       placeholder: "Select Groups",
       data: a
     });
-  }),
+  });
+
+  if (!$("#template.form-control").hasClass("select2-hidden-accessible")) {
     api.templates.get("own-and-public").success(function(e) {
       if (0 == e.length) return modalError("No templates found!"), !1;
       var a = $.map(e, function(e) {
@@ -277,24 +277,27 @@ function setupOptions() {
         };
       });
 
-      t = $("#template.form-control");
-
-      t.change(function(event) {
+      $("#template.form-control").change(function(event) {
         $("#from_address").val(addresses[event.target.value]);
       });
 
-      t.select2({
+      $("#template.form-control").select2({
         placeholder: "Select a Template",
         data: data
-      }),
-        1 === e.length && (t.val(a[0].id), t.trigger("change.select2"));
-    }),
+      });
+
+      1 === e.length &&
+        ($("#template.form-control").val(a[0].id),
+        $("#template.form-control").trigger("change.select2"));
+    });
+  }
+
+  if (!$("#page.form-control").hasClass("select2-hidden-accessible")) {
     api.pages.get("all").success(function(e) {
       if (0 == e.length) return modalError("No pages found!"), !1;
       var a = $.map(e, function(e) {
-          return (e.text = e.name), e;
-        }),
-        t = $("#page.form-control");
+        return (e.text = e.name), e;
+      });
 
       var data = a
         .map(function(p) {
@@ -329,26 +332,31 @@ function setupOptions() {
         };
       });
 
-      t.select2({
+      $("#page.form-control").select2({
         placeholder: "Select a Landing Page",
         data: data
-      }),
-        1 === e.length && (t.val(a[0].id), t.trigger("change.select2"));
-    }),
-    api.SMTP.domains().success(function(e) {
-      if (0 == e.length) return modalError("No profiles found!"), !1;
-      var a = $.map(e, function(e) {
-          return (e.text = e.name), e;
-        }),
-        t = $("#profile.form-control");
-      t
-        .select2({
-          placeholder: "Select a Sending Profile",
-          data: a
-        })
-        .select2("val", a[0]),
-        1 === e.length && (t.val(a[0].id), t.trigger("change.select2"));
+      });
+
+      1 === e.length &&
+        ($("#page.form-control").val(a[0].id),
+        $("#page.form-control").trigger("change.select2"));
     });
+  }
+
+  api.SMTP.domains().success(function(e) {
+    if (0 == e.length) return modalError("No profiles found!"), !1;
+    var a = $.map(e, function(e) {
+        return (e.text = e.name), e;
+      }),
+      t = $("#profile.form-control");
+    t
+      .select2({
+        placeholder: "Select a Sending Profile",
+        data: a
+      })
+      .select2("val", a[0]),
+      1 === e.length && (t.val(a[0].id), t.trigger("change.select2"));
+  });
 }
 
 function edit(e) {
