@@ -85,23 +85,8 @@ function edit(e) {
     a.capture_credentials &&
       ($("#capture_passwords").show(), $("#redirect_url").show()));
 
-  //fill the categories by the API
-  $("#category")
-    .find("option")
-    .not(":first")
-    .remove();
-  api.phishtags.get().success(function(s) {
-    $.each(s, function(e, ss) {
-      var sel = "";
-      if (a.tag == ss.id) {
-        sel = 'selected = "selected"';
-      }
-
-      $("#category").append(
-        '<option value="' + ss.id + '"  ' + sel + ">" + ss.name + "</option>"
-      );
-    });
-  });
+  $("#category.form-control").val(a.tag);
+  $("#category.form-control").trigger("change.select2");
 }
 
 function copy(e) {
@@ -114,6 +99,9 @@ function copy(e) {
     $("#html_editor").ckeditor();
   var a = pages[e];
   $("#name").val("Copy of " + a.name), $("#html_editor").val(a.html);
+  $("#category.form-control")
+    .val(null)
+    .trigger("change.select2");
 }
 
 function load(filter) {
@@ -256,5 +244,25 @@ $(document).ready(function() {
       load(event.target.value);
     });
 
+  setTimeout(function() {
+    api.phishtags.get().success(function(s) {
+      var data = s.map(function(c) {
+        return {
+          id: c.id,
+          text: c.name
+        };
+      });
+
+      $("#category.form-control").select2({
+        placeholder: "Select Category",
+        data: data
+      });
+    });
+  }, 1000);
+
   load("own");
+
+  $.fn.select2.defaults.set("width", "100%"),
+    $.fn.select2.defaults.set("dropdownParent", $("#modal_body")),
+    $.fn.select2.defaults.set("theme", "bootstrap");
 });

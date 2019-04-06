@@ -25,17 +25,17 @@
             <div class="filter-section" data-toggle="tooltip" data-original-title="“Chose to filter just your own templates, EveryCloud’s or
             those of your customers." data-placement="right">
                <strong>Filter: &nbsp;</strong>
-               <label class="radiobx"> 
-                <input class="checkAll" type="radio" name="filter" value="own" id="filter-own" checked> 
+               <label class="radiobx">
+                <input class="checkAll" type="radio" name="filter" value="own" id="filter-own" checked>
                 <span class="radio-btn"><img src="images/tick.png" alt=""></span> Own &nbsp;
             </label>
-            <label class="radiobx"> 
-                <input class="checkAll" type="radio" name="filter" value="public" id="filter-public"> 
+            <label class="radiobx">
+                <input class="checkAll" type="radio" name="filter" value="public" id="filter-public">
                 <span class="radio-btn"><img src="images/tick.png" alt=""></span>Public &nbsp;
             </label>
             {{if or (eq role "admin") (eq role "partner") (eq role "child_user")}}
-            <label class="radiobx"> 
-                <input class="checkAll" type="radio" name="filter" value="customers" id="filter-customers"> 
+            <label class="radiobx">
+                <input class="checkAll" type="radio" name="filter" value="customers" id="filter-customers">
                 <span class="radio-btn"><img src="images/tick.png" alt=""></span>Customers &nbsp;
             </label>
             {{end}}
@@ -79,7 +79,7 @@
                         aria-hidden="true"><img src="images/close.png" alt=""></span></button>
 
             </div>
-            <div class="modal-body">
+            <div class="modal-body" id="modal_body">
                 <div class="" id="modal.flashes"></div>
                 <label class="control-label" for="name">Name:</label>
                 <div class="form-group">
@@ -92,11 +92,12 @@
                             class="fa fa-globe"></i>
                         Import Site</button>
                 </div>
-                <label class="control-label" for="url">Category: </label>
+
                 <div class="form-group">
-                            <select type="text" class="form-control" id="category" data-toggle="tooltip" data-original-title="Select a category to help you find your template later." data-placement="right">
-                                <option val = "">Select Category</option>
-                            </select>
+                    <label class="control-label" for="url">Category: </label>
+                    <select type="text" class="form-control" id="category" data-toggle="tooltip" data-original-title="Select a category to help you find your template later." data-placement="right">
+                        <option></option>
+                    </select>
                 </div>
                 <!-- Nav tabs -->
                 <ul class="nav nav-tabs" role="tablist">
@@ -129,7 +130,7 @@
                               </label>
                     </div>
                     <div class="checkbox checkbox-primary" id="capture_passwords">
-                        <label for="capture_passwords_checkbox" class="checkbx">  
+                        <label for="capture_passwords_checkbox" class="checkbx">
                             <input id="capture_passwords_checkbox" type="checkbox">
                             <span class="checkbox-btn"><img src="images/tick.png" alt=""></span> Capture Passwords <i class="fa fa-question-circle"
                             data-toggle="tooltip" data-placement="right" title="If your template includes a form, we’ll capture the submitted
