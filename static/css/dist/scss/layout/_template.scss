@@ -1,4 +1,3 @@
-
 #templateTable_wrapper{
 	#templateTable_length{
 		.form-control{
@@ -15,9 +14,12 @@
 	font-size: 12px;
 }
 
-h1.page-header {
+h1.page-header,
+#dashboard .detail-row > h2 ,
+#campaignResults .detail-row > h2 {
     font-size: 16px;
-    background-image: linear-gradient(to right, #00caff 0%, #25419d), linear-gradient(to bottom, #444444, #444444);
+    background-image: linear-gradient(to right, #00caff 0%, #25419d), 
+    linear-gradient(to bottom, #444444, #444444);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -71,15 +73,15 @@ h1.page-header {
    .tp-page-btn{
     margin-top: 5px;
    }
-.tp-page-btn{
-    position: absolute;
-    right: 10px;
-    top: 17px;
-    z-index: 1;
-    @media (max-width: 1200px){
-        position: static;
+    .tp-page-btn{
+        position: absolute;
+        right: 10px;
+        top: 17px;
+        z-index: 1;
+        @media (max-width: 1200px){
+            position: static;
+        }
     }
-}
 }
 #campaignTable_wrapper{
   #campaignTable_length{
@@ -100,7 +102,8 @@ h1.page-header {
 }
 .tp-page-title{
     @include breakpoint(medium){
-        padding-left: 40px;
+        padding-left: 0;
+        margin-bottom: 25px;
     }
 }
 @media (max-width: 1300px){
@@ -114,11 +117,104 @@ h1.page-header {
         padding-left: 20px;
     }
 }
-.setting-navTabs .nav-tabs>li.active>a, .setting-navTabs .nav-tabs>li.active>a:focus, .setting-navTabs .nav-tabs>li.active>a:hover{
+.setting-navTabs .nav-tabs>li.active>a, 
+.setting-navTabs .nav-tabs>li.active>a:focus, 
+.setting-navTabs .nav-tabs>li.active>a:hover{
     cursor: pointer;
 }
-#campaignResults{
-  div[style='height:200px;']{
 
-  }
+#sent_chart *,
+#opened_chart *,
+#clicked_chart *,
+#submitted_data_chart *,
+#email_reported_chart *,
+#email_reported_chart .col-lg-2 ,
+#timeline_chart .highcharts-title tspan,
+#overview_chart .highcharts-title tspan,
+tspan,
+.chart-block tspan{
+  font-family: 'Gotham HTF';
+  color: #989898 !important; 
+  text-transform: uppercase;
+}
+.chart-block{
+    height: 200px;
+    &.no-height{
+        height: auto;
+    }
+}
+
+#timeline_chart .highcharts-title tspan,
+#overview_chart .highcharts-title tspan{
+  fill: #00b5eb !important;
+}
+#dashboard .col-lg-2 .highcharts-root tspan,
+#campaignResults .col-lg-2 .highcharts-root tspan,
+#overview_chart .col-lg-2 .highcharts-root tspan{
+  fill: #00b5eb !important; 
+  font-family: 'Gotham HTF';
+   text-transform: uppercase;
+   font-size: 16px;
+}
+#peopleTable{
+    width: 100% !important;
+}
+
+/*setting*/
+#settingsForm {
+    .input-group{
+        margin-bottom: 20px;
+    }
+}
+/*setting*/
+
+.camp-header {
+    @include flex();
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-top: 20px;
+    @include breakpoint(wide){
+        padding-bottom: 50px;
+    }
+     @include breakpoint(small){
+        padding-bottom: 30px;
+    }
+    .camp-title,
+    .view-btn{
+        @include breakpoint(wide){
+            position: static !important;
+        }
+    }
+     .page-header.camp-title{
+        @include breakpoint(wide){
+            margin-top: 8px !important;
+        }
+     }
+}
+
+.chart-row{
+    @include breakpoint(small){
+        padding: 30px 0;
+    }
+}
+div#modalforpreview {
+    .modal-body{
+        overflow-x: auto !important;
+    }
+    table{
+     td{
+       border: none !important;
+       div{
+        background: none !important;
+    }
+    hr{
+        width: 100%;
+        margin: 0;
+        border: 0;
+    }
+}
+}
+img {
+    height: auto  !important;
+}
 }

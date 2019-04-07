@@ -2,9 +2,10 @@
 <section class="dashboard-wrapper">
     <div class="overlap-full"></div>
     <div class="container-fluid">
-        <div class="mobile-hamburger">
+       <!--  <div class="mobile-hamburger">
             <a href="javascript:void(0)"> <i class="fa fa-bars" aria-hidden="true"></i> </a>
-        </div><!-- .mobile-hamburger -->
+        </div> -->
+        <!-- .mobile-hamburger -->
         <div class="row">
 
             {{template "sidebar" .}}
@@ -164,7 +165,7 @@
                 <label class="control-label" for="users">Groups:</label>
                 <select class="form-control" id="users" multiple="multiple"></select>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer no-lr-paddding">
                 <button type="button" class="btn btn-default" data-dismiss="modal" onclick="dismiss()">Close</button>
                 <button type="button" id="launchButton" class="btn btn-primary" onclick="launch()">
                     <i class="fa fa-rocket"></i> Launch Campaign</button>

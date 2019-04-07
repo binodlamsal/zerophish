@@ -1054,11 +1054,13 @@ pointer-events:auto;
 .dataTables_wrapper {
   width: 100%;
 }
-#groupTable .btn[data-target="#lms-modal"]{
+#groupTable .btn[data-target="#lms-modal"],
+#groupTable span[data-target="#lms-modal"] .btn{
    font-family: FontAwesome;
    font-size: 0;
 }
-#groupTable .btn[data-target="#lms-modal"]:before{
+#groupTable .btn[data-target="#lms-modal"]:before,
+#groupTable span[data-target="#lms-modal"] .btn:before{
   content: '';
   font-family: FontAwesome;
   content: "\f2c0";
@@ -1111,9 +1113,14 @@ div#mainSettings img {
 }
 .page-title-section{
 	padding: 30px 0;
-	.btn{
+	.btn,
+	a{
 		font-size: 16px !important;
-		margin-bottom: 10px;
+    margin-bottom: 10px;
+    padding: 10px 24px;
+    border-radius: 25px !important;
+    display: inline-block;
+    margin-right: 10px;
 	}
 }
 #campaignResults h2{
