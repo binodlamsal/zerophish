@@ -77,7 +77,7 @@ func API_Campaigns(w http.ResponseWriter, r *http.Request) {
 			JSONResponse(
 				w, models.Response{
 					Success: false,
-					Message: "It's not possible to create more campaigns for this subscription plan",
+					Message: `You’re currently using a free one-off phish subscription. If you’d like to run more campaigns, please <a href="https://www.everycloudtech.com/talk-us" target="_blank">contact us</a> to upgrade.`,
 				},
 				http.StatusConflict)
 			return
@@ -1489,6 +1489,7 @@ func prepare(data interface{}, r *http.Request) interface{} {
 			resp = append(resp, map[string]interface{}{
 				"id":   smtp.Id,
 				"name": smtp.Name,
+				"host": smtp.Host,
 			})
 		}
 

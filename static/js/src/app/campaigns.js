@@ -40,7 +40,7 @@ function launch() {
               name: $("#page").select2("data")[0].text
             },
             smtp: {
-              name: $("#profile").select2("data")[0].text
+              name: $("#profile").select2("data")[0].id
             },
             launch_date: moment($("#launch_date").val(), "MM/DD/YYYY hh:mm a")
               .utc()
@@ -138,7 +138,7 @@ function sendTestEmail() {
       name: $("#page").select2("data")[0].text
     },
     smtp: {
-      name: $("#profile").select2("data")[0].text
+      name: $("#profile").select2("data")[0].id
     }
   };
 
@@ -346,9 +346,10 @@ function setupOptions() {
   api.SMTP.domains().success(function(e) {
     if (0 == e.length) return modalError("No profiles found!"), !1;
     var a = $.map(e, function(e) {
-        return (e.text = e.name + " (" + e.host + ")"), e;
+        return ((e.id = e.name), (e.text = e.name + " (" + e.host + ")")), e;
       }),
       t = $("#profile.form-control");
+
     t
       .select2({
         placeholder: "Select a Sending Profile",
@@ -383,7 +384,7 @@ function copy(e) {
                 placeholder: e.page.name
               }),
           e.smtp.id
-            ? ($("#profile").val(e.smtp.id.toString()),
+            ? ($("#profile").val(e.smtp.name.toString()),
               $("#profile").trigger("change.select2"))
             : $("#profile").select2({
                 placeholder: e.smtp.name
