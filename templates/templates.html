@@ -155,7 +155,7 @@
                 <span class="btn btn-file"><i class="fa fa-plus"></i> Add Files
                     <input id="attachmentUpload" type="file" onchange="attach(this.files)" data-toggle="tooltip" data-placement="right" data-original-title="Add an attachment to the email. These are not currently tracked in
                     reporting, but you can include a message in the file to explain what might have happened in
-                    a real phishing scenario." multiple> 
+                    a real phishing scenario." multiple>
                 </span>
                 <br />
                 <br />
@@ -230,6 +230,11 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="dismiss()"><span
                 aria-hidden="true"><img src="images/close.png" alt=""></span></button>
         <h4 class="modal-title" id="templateModalLabel">Preview Template - <span class="tempname"> </span></h4>
+        </div>
+        <div class="modal-header">
+            <div><strong>From:</strong>&nbsp;<span class="from_address"></span></div>
+            <div><strong>Reply-To:</strong>&nbsp;<span class="from_address"></span></div>
+            <div><strong>Subject:</strong>&nbsp;<span class="subject"></span></div>
         </div>
         <div class="modal-body">
         </div>
