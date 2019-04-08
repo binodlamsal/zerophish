@@ -346,7 +346,7 @@ function setupOptions() {
   api.SMTP.domains().success(function(e) {
     if (0 == e.length) return modalError("No profiles found!"), !1;
     var a = $.map(e, function(e) {
-        return (e.text = e.name), e;
+        return (e.text = e.name + " (" + e.host + ")"), e;
       }),
       t = $("#profile.form-control");
     t
