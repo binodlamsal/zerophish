@@ -18577,7 +18577,8 @@ h1.page-header,
   text-transform: uppercase;
   margin-top: 4px;
   position: relative;
-  font-style: normal; }
+  font-style: normal;
+  display: inline-block; }
 
 .dataTables_wrapper .table thead th {
   border-top: 0; }
