@@ -191,6 +191,10 @@ function dismiss() {
   $("#modal").modal("hide");
 }
 
+function dismissPreview() {
+  $("#modalforpreview").modal("hide");
+}
+
 function deleteCampaign(e) {
   swal({
     title: "Are you sure?",
@@ -279,6 +283,11 @@ function setupOptions() {
 
       $("#template.form-control").change(function(event) {
         $("#from_address").val(addresses[event.target.value]);
+        if ($(this).val() !== "") {
+          $("#preview-btn").prop("disabled", "");
+        } else {
+          $("#preview-btn").prop("disabled", "disabled");
+        }
       });
 
       $("#template.form-control").select2({
@@ -580,4 +589,28 @@ function load(filter) {
     .error(function() {
       $("#loading").hide(), errorFlash("Error fetching campaigns");
     });
+}
+
+function preview() {
+  $("#modalforpreview").modal("show");
+
+  if ($("#preview-btn").prop("disabled")) {
+    return;
+  }
+
+  api.templateId.get($("#template").select2("data")[0].id).success(function(t) {
+    $("#modalforpreview .tempname").html(t.name);
+    $("#modalforpreview .from_address").text(
+      $("#from_address").val() ||
+        t.from_address ||
+        "First Last <first.last@test.com>"
+    );
+    $("#modalforpreview .subject").html(t.subject);
+
+    if (t.html != "") {
+      $("#modalforpreview .modal-body").html(t.html);
+    } else {
+      $("#modalforpreview .modal-body").html(t.text);
+    }
+  });
 }

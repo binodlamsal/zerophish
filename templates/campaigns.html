@@ -83,15 +83,29 @@
                                 <label for="name">Name:</label>
                                 <input type="text" class="form-control" id="name" placeholder="Campaign name" autofocus>
                             </div> <!-- -->
-                            <div class="form-group">
-                                <label class="control-label" for="template">Email Template:</label>
-                                <select class="form-control" placeholder="Template Name" id="template" />
-                                <option></option>
-                            </select>
+
+
+                            <label class="control-label" for="template">Email Template:</label>
+                            <div class="form-row">
+                                <div class="col-11">
+                                    <select class="form-control" placeholder="Template Name" id="template" />
+                                        <option></option>
+                                    </select>
+                                </div>
+
+                                <div class="col-1">
+
+                                    <button class="btn btn-primary" id="preview-btn" data-toggle="tooltip" data-placement="left" title="Preview Template" onclick="preview()" disabled>
+                                        <i class="fa fa-eye"></i>
+                                    </button>
+
+                                </div>
+                            </div>
+                            <br>
+
                             <div class="form-group">
                                 <label class="control-label" for="from_address">From:</label>
                                 <input type="text" class="form-control" placeholder="First Last <test@example.com>" id="from_address" />
-                            </select>
                         </div> <!-- .form-group -->
                         <div class="form-group">
                             <label class="control-label" for="page">Landing Page:</label>
@@ -220,6 +234,30 @@
             </div>
         </div>
     </div>
+
+<!-- Modal -->
+<div class="modal fade" id="modalforpreview" tabindex="-1" role="dialog" aria-labelledby="modalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+        <!-- Preview Template Modal -->
+        <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="dismissPreview()"><span
+                aria-hidden="true"><img src="images/close.png" alt=""></span></button>
+        <h4 class="modal-title" id="templateModalLabel">Preview Template - <span class="tempname"> </span></h4>
+        </div>
+        <div class="modal-header">
+            <div><strong>From:</strong>&nbsp;<span class="from_address"></span></div>
+            <div><strong>Reply-To:</strong>&nbsp;<span class="from_address"></span></div>
+            <div><strong>Subject:</strong>&nbsp;<span class="subject"></span></div>
+        </div>
+        <div class="modal-body">
+        </div>
+        <div class="modal-footer">
+        <button type="button" data-dismiss="modal" class="btn common-btn" onclick="dismissPreview()">Cancel</button>
+        </div>
+        </div>
+    </div>
+</div>
 </div> <!-- col-xs-9 -->
 </div>
 </div> <!-- container-fluid -->
