@@ -4,6 +4,11 @@ jQuery(function($) {
         $('body').toggleClass('slide-body');
         $('.overlap-full').toggleClass('toggle-overlap');
     });
+     $('.hamburger-menu').click(function(){
+        $('.dashboard-box').toggleClass('slide-dashboard');
+        $('body').toggleClass('slide-body');
+        $('.overlap-full').toggleClass('toggle-overlap');
+    });
     $('.overlap-full').click(function(){
       $('.dashboard-box').toggleClass('slide-dashboard');
         $('body').toggleClass('slide-body');

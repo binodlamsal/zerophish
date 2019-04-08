@@ -183,8 +183,8 @@ button {
 #settingsForm .btn.btn-file,
 #settingsForm .no-border-btn{
   border-radius: 5px 0 0 5px;
-  padding: 18px 30px;
-  margin-top: 1px;
+  padding: 16px 30px;
+  margin-top: 0px;
 }
 .btn-file input[type=file] {
     position: absolute;
@@ -679,8 +679,13 @@ select.form-control:not([size]):not([multiple]) {
  height:auto; 
 }
 .tooltip {
-  width: 150px;
+  /*width: 400px;*/
+  max-width: 100%;
  /* margin-top: 120px;*/
+
+}
+.tooltip-inner{
+  max-width: 250px;
 }
 .tooltip > .tooltip-inner{
  background:#e6e7e8;
@@ -701,7 +706,8 @@ select.form-control:not([size]):not([multiple]) {
   font-size: 11.5px;
   text-align: justify;
   font-weight: 500;
-  width: 200px;
+  width: 500px;
+  max-width: 100%;
   left:130px;
   
 }
@@ -855,6 +861,13 @@ h1.page-header{
   font-size: 16px !important;
   margin-top: 10px;
 }
+.top-btn-result{
+  padding: 10px 0;
+}
+.top-btn-result button{
+  padding: 20px;
+  font-size: 14px !important;
+}
 form#targetForm.user-form-section div[class^='col-'] {
     padding: 0 5px
 }
@@ -867,18 +880,33 @@ form#targetForm.user-form-section .row{
   padding: 17px 20px;
 }
 .filter-section{
-    position: relative;
-    z-index: 1;
+  position: relative;
+  z-index: 1;
+  /* margin-top: 65px;*/
+  margin-bottom: 30px;
+  @include flex();
+  justify-content: flex-end;
+  @media (max-width: 1199px){
+    margin-top: 45px;
+    justify-content: flex-start;
+  }
+  @include breakpoint(medium){
     margin-top: 65px;
-    margin-bottom: 30px;
-    @include flex();
-    justify-content: flex-end;
-    @media (max-width: 1199px){
-      margin-top: 0;
-      justify-content: flex-start;
+  }
+ .radiobx{
+     @include breakpoint(extrasmall){
+       padding-left: 29px;
+     }
+     span img{
+      left: 0px !important;
     }
-  .radiobx span img{
-    left: 0px !important;
+  }
+}
+.dashboard-filter{
+  @include breakpoint(small){
+    position: static !important;
+    transform: none !important;
+    margin-bottom: 30px;
   }
 }
 #flashes,
@@ -894,11 +922,23 @@ form#targetForm.user-form-section .row{
 div.page-title-section{
   padding: 30px 0;
   @media (max-width: 1199px){
-      padding-left: 35px;
+      /*padding-left: 35px;*/
+      padding-left: 0;
       padding-top: 20px;
   }
   .dropdown-toggle::after{
     display: none;
+  }
+  .btn-group{
+    flex-wrap: wrap;
+  }
+}
+.top-btn-result{
+  button{
+    margin-right: 10px;
+    @include breakpoint(small){
+      margin-bottom: 0;
+    }
   }
 }
 .button-section-field{
@@ -940,3 +980,23 @@ div.page-title-section{
 .label-danger[href]:hover {
     background-color: #c9302c
 }
+/* color status*/
+.label-danger,
+.label-default,
+.label-primary,
+.label-success,
+.label-info,
+.label-warning,
+.label-danger{
+  background: none;
+}
+.label-success{
+  color: #3988e0;
+}
+.label-warning{
+  color: #00bfa5;
+}
+.label-danger{
+  color: #989898;
+}
+/*color status end*/

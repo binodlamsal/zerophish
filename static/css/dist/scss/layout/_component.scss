@@ -32,6 +32,7 @@
 		    margin-top: 9px;
 		    position: relative;
 		    padding-left: 30px;
+		    font-style: normal !important;
 		    @include breakpoint(small){
 		    	padding-left: 25px;
 		    }
@@ -108,7 +109,10 @@
 	.modal-footer {
 		padding: 38px 52px 36px;
 		background:#fff;
-
+		&.no-lr-paddding{
+			padding-left: 0;
+			padding-right: 0;
+		}
 		@include breakpoint(small){
 			padding: 20px 25px;
 		}
@@ -148,7 +152,11 @@
 			min-width: 100%;
 		}
 	}
-	
+	.user-form-section input {
+		@include breakpoint(small){
+			margin-bottom: 15px;
+		}
+	}
 }
 .modal .table.dataTable{
 	min-width: 100% !important;

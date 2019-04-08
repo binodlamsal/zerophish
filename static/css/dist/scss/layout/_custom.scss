@@ -5948,7 +5948,7 @@ input[type=checkbox].styled:checked+label:after,input[type=radio].styled:checked
 .select2-container--bootstrap .select2-selection--single {
      height: 52px;
     line-height: 1.42857143;
-    padding: 13px 24px 13px 12px;
+    padding: 17px 24px 13px 12px;
 }
 
 .select2-container--bootstrap .select2-selection--single .select2-selection__arrow {
@@ -5973,7 +5973,7 @@ input[type=checkbox].styled:checked+label:after,input[type=radio].styled:checked
 }
 
 .select2-container--bootstrap .select2-selection--single .select2-selection__rendered {
-    color: #b2beda;
+    color: #989898;
     padding: 0;
     font-weight: normal;
     font-size: 12px;
@@ -6298,10 +6298,10 @@ table.dataTable thead .sorting.empty:after{
 }
 /*tool-tip*/
 .tooltip .arrow {
-      margin-right: 10px; 
+      margin-right: 0; 
 }
 .tooltip{
-    padding: 15px;
+    padding: 5px;
 }
 .tooltip > .tooltip-inner {
     padding: 15px;
