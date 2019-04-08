@@ -21,6 +21,9 @@
 	}
     .logo img {
 		max-height: 120px;
+		    width: 100%;
+    max-height: 120px;
+    max-width: 292px;
 	}
 	.users-wrap{
 		.dropdown-menu{
@@ -59,6 +62,10 @@
 	}
 	.menu-section{
 		.hamburger-menu{
+			display: none;
+			@include breakpoint(medium){
+				display: block;
+			}
 			@include breakpoint(small){
 				margin-top: -13px;
 				img{

@@ -71,11 +71,16 @@
 			display: none !important;
 		}
 		@include breakpoint(medium){
-			display: block;
+			display: none !important;
 		}
 		@include breakpoint(small){
 			left: 14px;
 			margin-top: 20px;
+		}
+	}
+	.page-header{
+		@include breakpoint(small){
+			margin-top: 25px !important;
 		}
 	}
 	.dashboard-box{
@@ -113,7 +118,6 @@
 				margin-top: 10px;
 				padding-top: 10px;
 				background: #000 !important;
-				display: block !important;
 				z-index: 1;
 				a{
 					padding-left: 20px;
@@ -153,4 +157,16 @@
 		}
 	}
 
+}
+
+.dataTables_wrapper .primary .label-primary{
+	font-size: 16px;
+}
+.dataTables_wrapper td .label-info{
+	background: none !important;
+	color: #55b8d2;
+}
+body .dataTables_wrapper .label.label-success{
+background: none ;
+color: #55b8d2 !important;
 }

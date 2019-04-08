@@ -2,9 +2,10 @@
 <section class="dashboard-wrapper">
     <div class="overlap-full"></div>
     <div class="container-fluid">
-      <div class="mobile-hamburger">
+      <!-- <div class="mobile-hamburger">
         <a href="javascript:void(0)"> <i class="fa fa-bars" aria-hidden="true"></i> </a>
-    </div><!-- .mobile-hamburger -->
+    </div> -->
+    <!-- .mobile-hamburger -->
     <div class="row">
 
         {{template "sidebar" .}}
@@ -58,14 +59,14 @@
                             <div id="timeline_chart"></div>
                         </div>
                     </div>
-                    <div class="row">
-                        <div style="height:200px;" class="col-lg-1 col-md-1"></div>
-                        <div id="sent_chart" style="height:200px;" class="col-lg-2 col-md-2"></div>
-                        <div id="opened_chart" style="height:200px;" class="col-lg-2 col-md-2"></div>
-                        <div id="clicked_chart" style="height:200px;" class="col-lg-2 col-md-2"></div>
-                        <div id="submitted_data_chart" style="height:200px;" class="col-lg-2 col-md-2"></div>
-                        <div id="reported_chart" style="height:200px;" class="col-lg-2 col-md-2"></div>
-                        <div style="height:200px;" class="col-lg-1 col-md-1"></div>
+                    <div class="row chart-row">
+                        <div  class="col-lg-1 no-height col-md-1 chart-block"></div>
+                        <div id="sent_chart"  class="col-lg-2 col-md-2 chart-block"></div>
+                        <div id="opened_chart" class="col-lg-2 col-md-2 chart-block"></div>
+                        <div id="clicked_chart" class="col-lg-2 col-md-2 chart-block"></div>
+                        <div id="submitted_data_chart" class="col-lg-2 col-md-2 chart-block"></div>
+                        <div id="reported_chart" class="col-lg-2 col-md-2 chart-block"></div>
+                        <div class="col-lg-1 col-md-1 chart-block no-height"></div>
                     </div>
                     <div class="row" id="resultsMapContainer">
                         <div class="col-md-6">
