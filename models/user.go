@@ -488,6 +488,20 @@ func (u User) CanManageSubscriptions() bool {
 	return false
 }
 
+// HasTemplates tells if this user owns any email templates
+func (u User) HasTemplates() bool {
+	var count int64
+	db.Model(&Template{}).Where("user_id = ?", u.Id).Count(&count)
+	return count > 0
+}
+
+// HasPages tells if this user owns any landing pages
+func (u User) HasPages() bool {
+	var count int64
+	db.Model(&Page{}).Where("user_id = ?", u.Id).Count(&count)
+	return count > 0
+}
+
 // DecryptApiKey decrypts encrypted ApiKey field and puts the result into PlainApiKey
 func (u *User) DecryptApiKey() {
 	defer func() {

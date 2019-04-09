@@ -1,5 +1,5 @@
 var templateTable;
-var filter = "own";
+var _filter = "own";
 
 function save(e) {
   var t = {
@@ -49,7 +49,7 @@ function save(e) {
           .post(t)
           .success(function(e) {
             successFlash("Template added successfully!"),
-              load($("input[type=radio][name=filter]:checked").val()),
+              load("own"),
               dismiss();
           })
           .error(function(e) {
@@ -296,6 +296,15 @@ function importEmail() {
 }
 
 function load(filter) {
+  _filter = filter;
+
+  if ($("input[type=radio][name=filter]:checked").val() !== filter) {
+    $("input[type=radio][name=filter][value=" + filter + "]").prop(
+      "checked",
+      true
+    );
+  }
+
   if (templateTable === undefined) {
     templateTable = $("#templateTable").DataTable({
       autoWidth: false,
@@ -430,7 +439,7 @@ $(document).ready(function() {
       $("body").data("fv_open_modals", $("body").data("fv_open_modals") - 1);
   }),
     $(".modal").on("shown.bs.modal", function(e) {
-      $("#filter-" + filter).prop("checked", true);
+      $("#filter-" + _filter).prop("checked", true);
 
       void 0 === $("body").data("fv_open_modals") &&
         $("body").data("fv_open_modals", 0),
@@ -471,8 +480,8 @@ $(document).ready(function() {
       $("#email_content").val("");
     }),
     $("input[type=radio][name=filter]").change(function(event) {
-      filter = event.target.value;
-      load(filter);
+      _filter = event.target.value;
+      load(_filter);
     });
 
   setTimeout(function() {
@@ -491,7 +500,7 @@ $(document).ready(function() {
     });
   }, 1000);
 
-  load("own");
+  load(hasTemplates ? "own" : "public");
 
   $.fn.select2.defaults.set("width", "100%"),
     $.fn.select2.defaults.set("dropdownParent", $("#modal_body")),

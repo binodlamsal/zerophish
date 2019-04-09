@@ -280,11 +280,12 @@ func CampaignID(w http.ResponseWriter, r *http.Request) {
 func Templates(w http.ResponseWriter, r *http.Request) {
 	// Example of using session - will be removed.
 	params := struct {
-		User    models.User
-		Role    string
-		Title   string
-		Flashes []interface{}
-		Token   string
+		User         models.User
+		Role         string
+		HasTemplates bool
+		Title        string
+		Flashes      []interface{}
+		Token        string
 	}{
 		Title: "Email Templates",
 		User:  ctx.Get(r, "user").(models.User),
@@ -299,6 +300,7 @@ func Templates(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params.Role = role.Name()
+	params.HasTemplates = params.User.HasTemplates()
 	getTemplate(r, w, "templates").ExecuteTemplate(w, "base", params)
 }
 
@@ -332,11 +334,12 @@ func Users(w http.ResponseWriter, r *http.Request) {
 func LandingPages(w http.ResponseWriter, r *http.Request) {
 	// Example of using session - will be removed.
 	params := struct {
-		User    models.User
-		Role    string
-		Title   string
-		Flashes []interface{}
-		Token   string
+		User     models.User
+		Role     string
+		HasPages bool
+		Title    string
+		Flashes  []interface{}
+		Token    string
 	}{
 		Title: "Landing Pages",
 		User:  ctx.Get(r, "user").(models.User),
@@ -351,6 +354,7 @@ func LandingPages(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params.Role = role.Name()
+	params.HasPages = params.User.HasPages()
 	getTemplate(r, w, "landing_pages").ExecuteTemplate(w, "base", params)
 }
 

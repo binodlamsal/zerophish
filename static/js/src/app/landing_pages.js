@@ -22,9 +22,7 @@ function save(e) {
       : api.pages
           .post(a)
           .success(function(e) {
-            successFlash("Page added successfully!"),
-              load($("input[type=radio][name=filter]:checked").val()),
-              dismiss();
+            successFlash("Page added successfully!"), load("own"), dismiss();
           })
           .error(function(e) {
             modalError(e.responseJSON.message), scrollToError();
@@ -105,6 +103,13 @@ function copy(e) {
 }
 
 function load(filter) {
+  if ($("input[type=radio][name=filter]:checked").val() !== filter) {
+    $("input[type=radio][name=filter][value=" + filter + "]").prop(
+      "checked",
+      true
+    );
+  }
+
   if (pagesTable === undefined) {
     pagesTable = $("#pagesTable").DataTable({
       autoWidth: false,
@@ -260,7 +265,7 @@ $(document).ready(function() {
     });
   }, 1000);
 
-  load("own");
+  load(hasPages ? "own" : "public");
 
   $.fn.select2.defaults.set("width", "100%"),
     $.fn.select2.defaults.set("dropdownParent", $("#modal_body")),
