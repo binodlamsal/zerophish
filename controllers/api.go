@@ -1268,15 +1268,23 @@ func API_Import_Site(w http.ResponseWriter, r *http.Request) {
 // API_Send_Test_Email sends a test email using the template name
 // and Target given.
 func API_Send_Test_Email(w http.ResponseWriter, r *http.Request) {
+	parsedURL, err := url.Parse("http://" + r.Host)
+
+	if err != nil {
+		JSONResponse(w, models.Response{Success: false, Message: "Could not determine hostname"}, http.StatusInternalServerError)
+		return
+	}
+
 	s := &models.EmailRequest{
 		ErrorChan: make(chan error),
 		UserId:    ctx.Get(r, "user_id").(int64),
+		URL:       "http://" + parsedURL.Hostname(),
 	}
 	if r.Method != "POST" {
 		JSONResponse(w, models.Response{Success: false, Message: "Method not allowed"}, http.StatusBadRequest)
 		return
 	}
-	err := json.NewDecoder(r.Body).Decode(s)
+	err = json.NewDecoder(r.Body).Decode(s)
 	if err != nil {
 		JSONResponse(w, models.Response{Success: false, Message: "Error decoding JSON Request"}, http.StatusBadRequest)
 		return
