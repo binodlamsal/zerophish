@@ -1,4 +1,9 @@
 $(document).ready(function() {
+  $("#time_zone.form-control").select2({
+    placeholder: "Select Timezone",
+    data: moment.tz.names()
+  });
+
   $("#apiResetForm").submit(function(e) {
     return (
       api

@@ -32,6 +32,7 @@ type User struct {
 	ApiKey          string    `json:"api_key" sql:"not null;unique"`
 	PlainApiKey     string    `json:"plain_api_key" gorm:"-"`
 	FullName        string    `json:"full_name" sql:"not null"`
+	TimeZone        string    `json:"time_zone"`
 	EmailVerifiedAt time.Time `json:"email_verified_at"`
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`

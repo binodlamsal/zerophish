@@ -163,6 +163,13 @@
  <script src="/js/dist/app/gophish.min.js"></script>
  <script src="/js/dist/app/moment-timezone.min.js"></script>
  <script src="/js/src/app/main.js"></script>
+ <script>
+  var _timezone = {{.User.TimeZone}};
+
+  if (_timezone) {
+    moment.tz.setDefault(_timezone);
+  }
+ </script>
 
  {{template "scripts" .}}
 

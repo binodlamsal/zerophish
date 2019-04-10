@@ -79,6 +79,15 @@
                 </div>
                 <br />
                 <div class="row">
+                    <label for="time_zone" class="col-sm-3 col-md-2 control-label form-label">Time Zone:</label>
+                    <div class="col-md-8 col-sm-7">
+                        <select type="text" class="form-control" name="time_zone" id="time_zone">
+                            <option value="{{.User.TimeZone}}">{{.User.TimeZone}}</option>
+                        </select>
+                    </div>
+                </div>
+                <br />
+                <div class="row">
                     <label for="current_password" class="col-sm-3 col-md-2 control-label form-label">Old Password:</label>
                     <div class="col-md-8 col-sm-7">
                         <input type="password" id="current_password" name="current_password" autocomplete="off" class="form-control" disabled />

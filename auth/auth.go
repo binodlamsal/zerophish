@@ -181,6 +181,7 @@ func ChangePassword(r *http.Request) error {
 	r.ParseForm() // Parses the request body
 	u.UpdatedAt = time.Now().UTC()
 	u.FullName = r.Form.Get("full_name")
+	u.TimeZone = r.Form.Get("time_zone")
 
 	if r.Form.Get("avatar") != "" {
 		a := u.GetAvatar()
