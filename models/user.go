@@ -591,10 +591,6 @@ func (u *User) BeforeSave() (err error) {
 		u.CreatedAt = time.Now().UTC()
 	}
 
-	if u.LastLoginAt.IsZero() {
-		u.LastLoginAt = time.Now().UTC()
-	}
-
 	return
 }
 

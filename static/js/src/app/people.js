@@ -503,7 +503,9 @@ function load() {
                   a.full_name,
                   a.email,
                   a.role,
-                  moment(a.last_login_at).fromNow(),
+                  moment(a.last_login_at).year() !== 1
+                    ? moment(a.last_login_at).fromNow()
+                    : "never",
                   a.subscription
                     ? a.subscription.plan +
                       (a.subscription.expired ? " (expired)" : " ✔")
