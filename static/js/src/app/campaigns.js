@@ -302,7 +302,7 @@ function setupOptions() {
   }
 
   if (!$("#page.form-control").hasClass("select2-hidden-accessible")) {
-    api.pages.get("all").success(function(e) {
+    api.pages.get("own-and-public").success(function(e) {
       if (0 == e.length) return modalError("No pages found!"), !1;
       var a = $.map(e, function(e) {
         return (e.text = e.name), e;

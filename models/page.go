@@ -234,7 +234,7 @@ func GetPages(uid int64, filter string) ([]Page, error) {
 		return ps, err
 	}
 
-	if filter != "own" && filter != "customers" && filter != "public" {
+	if filter != "own" && filter != "customers" && filter != "public" && filter != "own-and-public" {
 		if !role.Is(Administrator) {
 			filter = "own"
 		} else if filter != "all" {
@@ -246,6 +246,8 @@ func GetPages(uid int64, filter string) ([]Page, error) {
 
 	if filter == "own" {
 		query = query.Where("user_id = ?", uid)
+	} else if filter == "own-and-public" {
+		query = query.Where("user_id = ? OR public = ?", uid, 1)
 	} else if filter == "public" {
 		query = query.Where("public = ?", 1)
 	} else {
@@ -265,21 +267,6 @@ func GetPages(uid int64, filter string) ([]Page, error) {
 			return ps, nil
 		}
 	}
-
-	// if role.Is(Administrator) {
-	// 	// just grab all pages (see above)
-	// } else if role.IsOneOf([]int64{Partner, ChildUser}) {
-	// 	uids, err := GetUserIds(uid)
-
-	// 	if err != nil {
-	// 		return ps, err
-	// 	}
-
-	// 	uids = append(uids, uid)
-	// 	query = db.Table("pages").Where("user_id IN (?) OR public=?", uids, 1)
-	// } else {
-	// 	query = db.Table("pages").Where("user_id=? OR public=?", uid, 1)
-	// }
 
 	err = query.
 		Select("pages.*, pages.id AS id, users.username AS username").
