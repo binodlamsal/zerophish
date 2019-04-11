@@ -64,7 +64,9 @@ function create() {
 }
 
 function edit(index) {
+  $("#modal .modal-title").html("ADD USER");
   if (index != -1) {
+    $("#modal .modal-title").html("EDIT USER");
     var user = people[index];
     var exp_date =
       user.subscription != undefined

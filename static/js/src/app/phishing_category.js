@@ -5,13 +5,11 @@ function save(e) {
     tg.name = $("#name").val();
     tg.weight = parseInt($("#weight").val());
     
-
     -1 != e ? (tg.id = e, api.phishtags.put(tg).success(function(e) {
         successFlash("Template edited successfully!"), load(), dismiss()
     }).error(function(e) {
         modalError(e.responseJSON.message)
     })) : api.phishtags.post(tg).success(function(e) {
-
         successFlash("Category added successfully!"), load(), dismiss()
     }).error(function(e) {
         modalError(e.responseJSON.message)
@@ -30,10 +28,12 @@ function deleteTag(e) {
 }
 
 function edit(e) {
+    $("#modal .modal-title").html("NEW CATEGORY");
     $("#modalSubmit").unbind("click").click(function() {
         save(e)
     });
     -1 != e ? (api.phishtags.single(e).success(function(tg) { 
+        $("#modal .modal-title").html("EDIT CATEGORY");
         $("#name").val(tg.name), $("#weight").val(tg.weight)
      })) : ""
 }
