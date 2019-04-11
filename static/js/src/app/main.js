@@ -150,3 +150,16 @@ $(function () {
         $('.wrap-drop').removeClass('active');
     });
 });
+
+clearMessages();
+$('#modal').on('hidden.bs.modal', function () {
+   clearMessages();
+})
+
+function clearMessages(){
+    window.setTimeout(function() {
+        $("#flashes .alert").fadeTo(500, 0).slideUp(500, function(){
+            $(this).remove(); 
+        });
+    }, 5000);
+}
