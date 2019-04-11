@@ -24,7 +24,12 @@ $(document).ready(function() {
     e.preventDefault();
 
     return (
-      $.post("/settings", $(this).serialize())
+      $.post(
+        "/settings",
+        $(this)
+          .serialize()
+          .replace("domain=&", "domain=DELETE&")
+      )
         .done(function(e) {
           successFlash(e.message);
         })

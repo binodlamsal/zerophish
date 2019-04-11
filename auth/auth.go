@@ -181,6 +181,7 @@ func ChangePassword(r *http.Request) error {
 	r.ParseForm() // Parses the request body
 	u.UpdatedAt = time.Now().UTC()
 	u.FullName = r.Form.Get("full_name")
+	u.Domain = r.Form.Get("domain")
 	u.TimeZone = r.Form.Get("time_zone")
 
 	if r.Form.Get("avatar") != "" {
@@ -233,10 +234,12 @@ func ChangePasswordByadmin(r *http.Request) error {
 		Id                   int64     `json:"id"`
 		Username             string    `json:"username"`
 		FullName             string    `json:"full_name"`
-		Email                string    `json:"email" `
-		New_password         string    `json:"new_password" `
-		Confirm_new_password string    `json:"confirm_new_password" `
-		Role                 int64     `json:"role" `
+		Email                string    `json:"email"`
+		Domain               string    `json:"domain"`
+		TimeZone             string    `json:"time_zone"`
+		New_password         string    `json:"new_password"`
+		Confirm_new_password string    `json:"confirm_new_password"`
+		Role                 int64     `json:"role"`
 		Hash                 string    `json:"-"`
 		ApiKey               string    `json:"api_key"`
 		Partner              int64     `json:"partner"`
@@ -258,6 +261,8 @@ func ChangePasswordByadmin(r *http.Request) error {
 
 	u.Id = ud.Id
 	u.Email = ud.Email
+	u.Domain = ud.Domain
+	u.TimeZone = ud.TimeZone
 	u.Username = ud.Username
 	u.FullName = ud.FullName
 	u.ApiKey = ud.ApiKey

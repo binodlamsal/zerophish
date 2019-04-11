@@ -7,6 +7,8 @@ function save(e) {
   t.username = $("#username").val();
   t.full_name = $("#full_name").val();
   t.email = $("#email").val();
+  t.domain = $("#domain").val();
+  t.time_zone = $("#time_zone").val();
   t.current_password = $("#curpassword").val();
   t.new_password = $("#password").val();
   t.confirm_new_password = $("#confirm_password").val();
@@ -110,6 +112,12 @@ function edit(index) {
       $("#username").val(e.username);
       $("#full_name").val(e.full_name);
       $("#email").val(e.email);
+      $("#domain").val(e.domain);
+
+      $("#time_zone")
+        .val(e.time_zone)
+        .trigger("change");
+
       $("#hidden_hash").val(e.hash);
       $("#hidden_uid").val(e.id);
       $("#hidden_api_key").val(e.api_key);
@@ -409,8 +417,16 @@ $(document).ready(function() {
     }),
     $("#modal").on("hidden.bs.modal", function(e) {
       dismiss();
-    }),
-    load();
+    });
+
+  setTimeout(function() {
+    $("#time_zone.form-control").select2({
+      placeholder: "Select Timezone",
+      data: moment.tz.names()
+    });
+  }, 1000);
+
+  load();
 
   $.fn.select2.defaults.set("width", "100%"),
     $.fn.select2.defaults.set("dropdownParent", $("#modal_body")),

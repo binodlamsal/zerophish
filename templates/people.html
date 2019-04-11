@@ -82,22 +82,29 @@
                 <div class="row" id="modal.flashes"></div>
                 <div class="form-group">
                     <label for="name">Username:</label>
-                    <input type="text" id = 'username' name="username" class="form-control top-input" placeholder="Username" required autofocus/>
+                    <input type="text" id = 'username' name="username" class="form-control top-input" placeholder="Username" required/>
                     <label for="full_name">Full Name:</label>
-                    <input type="text" id="full_name" name="full_name" class="form-control top-input" placeholder="Full Name" required autofocus/>
-                    <label class="control-label" for="roles">Email</label>
-                    <input type="text" name="email" id = 'email' class="form-control top-input" placeholder="Email" required autofocus/>
+                    <input type="text" id="full_name" name="full_name" class="form-control top-input" placeholder="Full Name" required/>
+                    <label class="control-label" for="roles">Email:</label>
+                    <input type="text" name="email" id="email" class="form-control top-input" placeholder="Email" required/>
+                    <label class="control-label" for="domain">Domain:</label>
+                    <input type="text" name="domain" id="domain" class="form-control top-input" placeholder="Domain" />
+
+                    <label class="control-label" for="time_zone">Time Zone:</label>
+                    <select  name="time_zone" id="time_zone" class="form-control top-input" />
+                        <option value="">Select Time Zone</option>
+                    </select>
 
                     {{if (or (eq .Role "admin") (eq .Role "partner") (eq .Role "child_user"))}}
-                        <label class="control-label" for="template">Roles</label>
-                        <select  name="roles" id = "roles" class="form-control top-input" required autofocus/>
+                        <label class="control-label" for="template">Roles:</label>
+                        <select  name="roles" id = "roles" class="form-control top-input" required/>
                             <option value="">Select Roles</option>
                         </select>
 
                         {{if eq .Role "admin"}}
                             <div id="partner-container">
-                                <label class="control-label" for="template">Partner</label>
-                                <select  name="partner" id = "partner" class="form-control top-input" autofocus>
+                                <label class="control-label" for="template">Partner:</label>
+                                <select  name="partner" id = "partner" class="form-control top-input">
                                     <option value="">Select Partner</option>
                                 </select>
                             </div>
