@@ -13,7 +13,9 @@
                  <div id="flashes" class=""></div>
                 <div class="top-page-header d-flex justify-content-between">
                     <div class="tp-page-title">
-                        <h1 class="page-header">
+                        <h1 class="page-header" data-toggle="tooltip" data-placement="right" data-original-title="Build Phishing Simulator campaigns to send safe phishing
+                        emails to one or more groups and then monitor for opened emails, clicked links, or submitted
+                        credentials.">
                             Campaigns
                         </h1>
                     </div> <!-- .tp-page-title -->
@@ -24,7 +26,7 @@
                     </div> <!-- .tp-page-btn -->
                     {{if or (eq role "admin") (eq role "partner") (eq role "child_user")}}
                     <div style="display: inline-block; position: absolute; right: 0%; transform: translate(-15px, 100px)">
-                        <div class="filter-section">
+                        <div class="filter-section" data-toggle="tooltip" data-placement="right" data-original-title="Chose to filter just your own campaigns or those of your customers.">
                            <strong>Filter: &nbsp;</strong>
                             <label class="radiobx">
                                 <input type="radio" name="filter" value="own" id="filter-own" checked>
@@ -81,14 +83,16 @@
                             <div class="" id="modal.flashes"></div>
                             <div class="form-group">
                                 <label for="name">Name:</label>
-                                <input type="text" class="form-control" id="name" placeholder="Campaign name" autofocus>
+                                <input type="text" class="form-control" id="name" placeholder="Campaign name" data-toggle="tooltip" data-placement="right" data-original-title="Give your campaign a name so you can find it later" data-trigger="focus" autofocus>
                             </div> <!-- -->
 
 
-                            <label class="control-label" for="template">Email Template:</label>
+                            <label class="control-label" for="template">Email Template <i class="fa fa-question-circle"
+                                data-toggle="tooltip" data-placement="right" data-original-title="Choose from our pre-built templates or your own. Click the
+                                    preview button to check them. Add more from the Email Template section."></i> : </label>
                             <div class="form-row">
                                 <div class="col-11">
-                                    <select class="form-control" placeholder="Template Name" id="template" />
+                                    <select class="form-control" placeholder="Template Name"  id="template" />
                                         <option></option>
                                     </select>
                                 </div>
@@ -105,10 +109,13 @@
 
                             <div class="form-group">
                                 <label class="control-label" for="from_address">From:</label>
-                                <input type="text" class="form-control" placeholder="First Last <test@example.com>" id="from_address" />
+                                <input type="text" class="form-control" placeholder="First Last <test@example.com>" id="from_address" data-toggle="tooltip" data-placement="right" data-original-title="Choose your own from address or leave blank to use the template default" data-trigger="focus" />
                         </div> <!-- .form-group -->
                         <div class="form-group">
-                            <label class="control-label" for="page">Landing Page:</label>
+                            <label class="control-label" for="page">Landing Page <i class="fa fa-question-circle"
+                                data-toggle="tooltip" data-placement="right" data-original-title="Select the landing page that users will be directed to if they click
+                                on links. Add more from the Email Template section. Leave blank to use the template
+                                default"></i> :</label>
                             <select class="form-control" placeholder="Landing Page" id="page" />
                             <option></option>
                         </select>
@@ -117,15 +124,19 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="control-label" for="url">Launch Date </label>
-                                <input type="text" class="form-control" id="launch_date" />
+                                <input type="text" class="form-control" id="launch_date" data-toggle="tooltip" data-placement="right" data-original-title="Leave as it is to send the campaign now (we’ve defaulted it to 15
+                                mins from now so you can make changes if needed), or choose a date and time for future
+                                sending" data-trigger="focus"/>
                             </div> <!-- form -->
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="control-label" for="delay">Send Emails By (Optional)
-                                    <i class="fa fa-question-circle" data-toggle="tooltip" data-placement="right" title="If specified, Gophish will send emails evenly between the campaign launch and this date." ></i>
+                                    <i class="fa fa-question-circle" data-toggle="tooltip" data-placement="right" title="We’ll send the emails evenly between the campaign start time and this date / time if
+                                    included" ></i>
                                 </label>
-                                <input type="text" class="form-control" id="send_by_date" autocomplete="off" />
+                                <input type="text" class="form-control" id="send_by_date" autocomplete="off" data-toggle="tooltip" data-placement="right" data-trigger="focus" data-original-title="We’ll send the emails evenly between the campaign start time and this date / time if
+                                included" />
                             </div> <!-- .form-group -->
                         </div>
                     </div>
@@ -135,7 +146,9 @@
                             <div class="checkbox checkbox-primary" id="during_certain_hours">
                                 <label for="during_certain_hours_checkbox" class="checkbx">
                                     <input id="during_certain_hours_checkbox" type="checkbox">
-                                    <span class="checkbox-btn"><img src="images/tick.png" alt=""></span> Send during the following hours only
+                                    <span class="checkbox-btn"><img src="images/tick.png" alt=""></span> Send during the following hours only <i class="fa fa-question-circle"
+                                    data-toggle="tooltip" data-placement="right" data-original-title="Tick the box plus add your organisations
+                                    business hours and we’ll only send the emails during these times"></i>
                                 </label>
                             </div>
                         </div>
@@ -164,7 +177,8 @@
                         </div>
                     </div> <!-- .col -->
                     <div class="form-group">
-                        <label class="control-label" for="profile">Sending Domain:</label>
+                        <label class="control-label" for="profile">Sending Domain <i class="fa fa-question-circle"
+                            data-toggle="tooltip" data-placement="right" data-original-title="Choose from a list of our generic sending domains"></i> :</label>
                         <div class="input-group sending-wrap">
                             <select class="form-control" placeholder="Sending Profile" id="profile" />
                             <option></option>
@@ -176,8 +190,10 @@
                         </span>
                     </div>
                 </div>
-                <label class="control-label" for="users">Groups:</label>
-                <select class="form-control" id="users" multiple="multiple"></select>
+                <label class="control-label" for="users">Groups <i class="fa fa-question-circle"
+                    data-toggle="tooltip" data-placement="right" data-original-title="Select one or more groups to send your safe phishing emails to"></i> 
+                    :</label>
+                <select class="form-control" id="users" multiple="multiple" ></select>
             </div>
             <div class="modal-footer no-lr-paddding">
                 <button type="button" class="btn btn-default" data-dismiss="modal" onclick="dismiss()">Close</button>

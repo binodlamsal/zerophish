@@ -813,7 +813,7 @@ function load() {
     .success(function(c) {
       campaign = c;
       if (campaign) {
-        $("title").text(c.name + " - Gophish");
+        $("title").text(c.name + " - Security Awareness Training");
         $("#loading").hide();
         $("#campaignResults").show();
         // Set the title
