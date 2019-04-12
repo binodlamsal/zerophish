@@ -109,6 +109,17 @@ func (t *Template) IsWritableByUser(uid int64) bool {
 		return false
 	}
 
+	if role.Is(ChildUser) {
+		u, err := GetUser(uid)
+
+		if err != nil {
+			log.Error(err)
+			return false
+		}
+
+		uids = append(uids, u.Partner)
+	}
+
 	for _, u := range uids {
 		if u == t.UserId {
 			return true
@@ -159,6 +170,17 @@ func IsTemplateAccessibleByUser(tid, uid int64) bool {
 	if err != nil {
 		log.Error(err)
 		return false
+	}
+
+	u, err := GetUser(uid)
+
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
+	if u.IsChildUser() {
+		uids = append(uids, u.Partner)
 	}
 
 	for _, id := range uids {
@@ -231,12 +253,26 @@ func GetTemplates(uid int64, filter string) ([]Template, error) {
 		return ts, err
 	}
 
+	user, err := GetUser(uid)
+
+	if err != nil {
+		return ts, err
+	}
+
 	query := db.Table("templates")
 
 	if filter == "own" {
-		query = query.Where("user_id = ?", uid)
+		if role.Is(ChildUser) {
+			query = query.Where("user_id = ? OR user_id = ?", uid, user.Partner)
+		} else {
+			query = query.Where("user_id = ?", uid)
+		}
 	} else if filter == "own-and-public" {
-		query = query.Where("user_id = ? OR public = ?", uid, 1)
+		if role.Is(ChildUser) {
+			query = query.Where("user_id = ? OR user_id = ? OR public = ?", uid, user.Partner, 1)
+		} else {
+			query = query.Where("user_id = ? OR public = ?", uid, 1)
+		}
 	} else if filter == "public" {
 		query = query.Where("public = ?", 1)
 	} else {

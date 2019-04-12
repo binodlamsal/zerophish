@@ -356,6 +356,17 @@ func IsCampaignAccessibleByUser(cid, uid int64) bool {
 		return false
 	}
 
+	u, err := GetUser(uid)
+
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
+	if u.IsChildUser() {
+		uids = append(uids, u.Partner)
+	}
+
 	for _, id := range uids {
 		if oid == id {
 			return true
@@ -390,7 +401,17 @@ func GetCampaignSummaries(uid int64, filter string) (CampaignSummaries, error) {
 	var query *gorm.DB
 
 	if filter == "own" {
-		query = db.Table("campaigns").Where("user_id = ?", uid)
+		if role.Is(ChildUser) {
+			u, err := GetUser(uid)
+
+			if err != nil {
+				return overview, err
+			}
+
+			query = db.Table("campaigns").Where("user_id = ? OR user_id = ?", uid, u.Partner)
+		} else {
+			query = db.Table("campaigns").Where("user_id = ?", uid)
+		}
 	} else {
 		if role.Is(Administrator) {
 			query = db.Table("campaigns").Where("user_id <> ?", uid)

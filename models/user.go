@@ -493,14 +493,25 @@ func (u User) CanManageSubscriptions() bool {
 // HasTemplates tells if this user owns any email templates
 func (u User) HasTemplates() bool {
 	var count int64
-	db.Model(&Template{}).Where("user_id = ?", u.Id).Count(&count)
+	if u.IsChildUser() {
+		db.Model(&Template{}).Where("user_id = ? OR user_id = ?", u.Id, u.Partner).Count(&count)
+	} else {
+		db.Model(&Template{}).Where("user_id = ?", u.Id).Count(&count)
+	}
+
 	return count > 0
 }
 
 // HasPages tells if this user owns any landing pages
 func (u User) HasPages() bool {
 	var count int64
-	db.Model(&Page{}).Where("user_id = ?", u.Id).Count(&count)
+
+	if u.IsChildUser() {
+		db.Model(&Page{}).Where("user_id = ? OR user_id = ?", u.Id, u.Partner).Count(&count)
+	} else {
+		db.Model(&Page{}).Where("user_id = ?", u.Id).Count(&count)
+	}
+
 	return count > 0
 }
 

@@ -129,7 +129,18 @@ func (g *Group) HasTargets(tids []int64) bool {
 // GetGroups returns the groups owned by the given user.
 func GetGroups(uid int64) ([]Group, error) {
 	gs := []Group{}
-	err := db.Where("user_id=?", uid).Find(&gs).Error
+	user, err := GetUser(uid)
+
+	if err != nil {
+		return gs, err
+	}
+
+	if user.IsChildUser() {
+		err = db.Where("user_id=? OR user_id=?", uid, user.Partner).Find(&gs).Error
+	} else {
+		err = db.Where("user_id=?", uid).Find(&gs).Error
+	}
+
 	if err != nil {
 		log.Error(err)
 		return gs, err
@@ -165,7 +176,17 @@ func GetGroupSummaries(uid int64, filter string) (GroupSummaries, error) {
 	var query *gorm.DB
 
 	if filter == "own" {
-		query = db.Table("groups").Where("user_id = ?", uid)
+		if role.Is(ChildUser) {
+			u, err := GetUser(uid)
+
+			if err != nil {
+				return gs, err
+			}
+
+			query = db.Table("groups").Where("user_id = ? OR user_id = ?", uid, u.Partner)
+		} else {
+			query = db.Table("groups").Where("user_id = ?", uid)
+		}
 	} else {
 		if role.Is(Administrator) {
 			query = db.Table("groups").Where("user_id <> ?", uid)
@@ -491,6 +512,17 @@ func IsGroupAccessibleByUser(gid, uid int64) bool {
 	if err != nil {
 		log.Error(err)
 		return false
+	}
+
+	u, err := GetUser(uid)
+
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
+	if u.IsChildUser() {
+		uids = append(uids, u.Partner)
 	}
 
 	for _, id := range uids {

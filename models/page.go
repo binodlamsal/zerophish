@@ -127,6 +127,17 @@ func (p *Page) IsWritableByUser(uid int64) bool {
 		return false
 	}
 
+	if role.Is(ChildUser) {
+		u, err := GetUser(uid)
+
+		if err != nil {
+			log.Error(err)
+			return false
+		}
+
+		uids = append(uids, u.Partner)
+	}
+
 	for _, u := range uids {
 		if u == p.UserId {
 			return true
@@ -168,6 +179,17 @@ func IsPageWritableByUser(pid, uid int64) bool {
 		return false
 	}
 
+	u, err := GetUser(uid)
+
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
+	if u.IsChildUser() {
+		uids = append(uids, u.Partner)
+	}
+
 	for _, u := range uids {
 		if u == oid {
 			return true
@@ -196,6 +218,17 @@ func IsPageAccessibleByUser(pid, uid int64) bool {
 	if err != nil {
 		log.Error(err)
 		return false
+	}
+
+	u, err := GetUser(uid)
+
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
+	if u.IsChildUser() {
+		uids = append(uids, u.Partner)
 	}
 
 	for _, id := range uids {
@@ -234,6 +267,12 @@ func GetPages(uid int64, filter string) ([]Page, error) {
 		return ps, err
 	}
 
+	user, err := GetUser(uid)
+
+	if err != nil {
+		return ps, err
+	}
+
 	if filter != "own" && filter != "customers" && filter != "public" && filter != "own-and-public" {
 		if !role.Is(Administrator) {
 			filter = "own"
@@ -245,9 +284,17 @@ func GetPages(uid int64, filter string) ([]Page, error) {
 	query := db.Table("pages")
 
 	if filter == "own" {
-		query = query.Where("user_id = ?", uid)
+		if role.Is(ChildUser) {
+			query = query.Where("user_id = ? OR user_id = ?", uid, user.Partner)
+		} else {
+			query = query.Where("user_id = ?", uid)
+		}
 	} else if filter == "own-and-public" {
-		query = query.Where("user_id = ? OR public = ?", uid, 1)
+		if role.Is(ChildUser) {
+			query = query.Where("user_id = ? OR user_id = ? OR public = ?", uid, user.Partner, 1)
+		} else {
+			query = query.Where("user_id = ? OR public = ?", uid, 1)
+		}
 	} else if filter == "public" {
 		query = query.Where("public = ?", 1)
 	} else {
