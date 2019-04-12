@@ -706,6 +706,19 @@ func API_Groups_Id_LMS(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		groupOwner, err := models.GetUser(g.UserId)
+
+		if err != nil {
+			JSONResponse(w, models.Response{Success: false, Message: "Could not determine group owner"}, http.StatusInternalServerError)
+			return
+		}
+
+		partner := groupOwner.Id
+
+		if groupOwner.IsChildUser() {
+			partner = groupOwner.Partner
+		}
+
 		j := job.New(ts)
 
 		j.Start(func(j *job.Job) {
@@ -716,7 +729,7 @@ func API_Groups_Id_LMS(w http.ResponseWriter, r *http.Request) {
 			}
 
 			for i, t := range targets {
-				u, err := models.CreateUser(t.Email, t.FirstName+" "+t.LastName, t.Email, "qwerty", models.LMSUser, 0)
+				u, err := models.CreateUser(t.Email, t.FirstName+" "+t.LastName, t.Email, "qwerty", models.LMSUser, partner)
 
 				if err != nil {
 					j.Progress <- calcProgress(i, len(targets))
@@ -725,7 +738,7 @@ func API_Groups_Id_LMS(w http.ResponseWriter, r *http.Request) {
 				}
 
 				if os.Getenv("USERSYNC_DISABLE") == "" {
-					err = usersync.PushUser(u.Id, u.Username, u.Email, u.FullName, "qwerty", models.LMSUser, 0)
+					err = usersync.PushUser(u.Id, u.Username, u.Email, u.FullName, "qwerty", models.LMSUser, partner)
 
 					if err != nil {
 						email := u.Email

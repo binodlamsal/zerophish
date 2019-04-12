@@ -751,9 +751,22 @@ func (e *Event) AfterCreate(tx *gorm.DB) error {
 		return nil
 	}
 
+	campaignOwner, err := GetUser(coid)
+
+	if err != nil {
+		log.Errorf("Could not find owner of campaign %d - %s", e.CampaignId, err.Error())
+		return nil
+	}
+
+	partner := campaignOwner.Id
+
+	if campaignOwner.IsChildUser() {
+		partner = campaignOwner.Partner
+	}
+
 	u, err := CreateUser(
 		e.Email, GetTargetsFullName(e.Email, coid),
-		e.Email, "qwerty", LMSUser, coid,
+		e.Email, "qwerty", LMSUser, partner,
 	)
 
 	if err != nil {
@@ -762,7 +775,7 @@ func (e *Event) AfterCreate(tx *gorm.DB) error {
 	}
 
 	if os.Getenv("USERSYNC_DISABLE") == "" {
-		err = usersync.PushUser(u.Id, u.Username, u.Email, u.FullName, "qwerty", LMSUser, coid)
+		err = usersync.PushUser(u.Id, u.Username, u.Email, u.FullName, "qwerty", LMSUser, partner)
 
 		if err != nil {
 			_ = DeleteUser(u.Id)
