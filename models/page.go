@@ -348,10 +348,35 @@ func GetPage(id int64) (Page, error) {
 // GetPageByName returns the page, if it exists, specified by the given name and user_id.
 func GetPageByName(n string, uid int64) (Page, error) {
 	p := Page{}
-	err := db.Where("user_id=? and name=?", uid, n).Or("public = ? and name=?", 1, n).Find(&p).Error
+	role, err := GetUserRole(uid)
+
+	if err != nil {
+		return p, err
+	}
+
+	if role.Is(ChildUser) {
+		u, err := GetUser(uid)
+
+		if err != nil {
+			return p, err
+		}
+
+		err = db.
+			Where("user_id=? and name=?", uid, n).
+			Or("user_id=? and name=?", u.Partner, n).
+			Or("public = ? and name=?", 1, n).
+			Find(&p).Error
+	} else {
+		err = db.
+			Where("user_id=? and name=?", uid, n).
+			Or("public = ? and name=?", 1, n).
+			Find(&p).Error
+	}
+
 	if err != nil {
 		log.Error(err)
 	}
+
 	return p, err
 }
 

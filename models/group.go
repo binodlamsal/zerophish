@@ -262,15 +262,35 @@ func GetGroupSummary(id int64, uid int64) (GroupSummary, error) {
 // GetGroupByName returns the group, if it exists, specified by the given name and user_id.
 func GetGroupByName(n string, uid int64) (Group, error) {
 	g := Group{}
-	err := db.Where("user_id=? and name=?", uid, n).Find(&g).Error
+	role, err := GetUserRole(uid)
+
+	if err != nil {
+		return g, err
+	}
+
+	if role.Is(ChildUser) {
+		u, err := GetUser(uid)
+
+		if err != nil {
+			return g, err
+		}
+
+		err = db.Where("(user_id=? or user_id=?) and name=?", uid, u.Partner, n).Find(&g).Error
+	} else {
+		err = db.Where("user_id=? and name=?", uid, n).Find(&g).Error
+	}
+
 	if err != nil {
 		log.Error(err)
 		return g, err
 	}
+
 	g.Targets, err = GetTargets(g.Id)
+
 	if err != nil {
 		log.Error(err)
 	}
+
 	return g, err
 }
 
