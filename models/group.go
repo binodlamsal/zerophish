@@ -135,9 +135,23 @@ func GetGroups(uid int64) ([]Group, error) {
 		return gs, err
 	}
 
-	if user.IsChildUser() {
-		err = db.Where("user_id=? OR user_id=?", uid, user.Partner).Find(&gs).Error
-	} else {
+	if user.IsAdministrator() {
+		err = db.Find(&gs).Error
+	} else if user.IsChildUser() || user.IsPartner() {
+		partner := user.Partner
+
+		if user.IsPartner() {
+			partner = user.Id
+		}
+
+		cuids, err := GetChildUserIds(partner)
+
+		if err != nil {
+			return gs, err
+		}
+
+		err = db.Where("user_id=? OR user_id=? OR user_id IN (?)", uid, user.Partner, cuids).Find(&gs).Error
+	} else { // customers
 		err = db.Where("user_id=?", uid).Find(&gs).Error
 	}
 
@@ -176,31 +190,37 @@ func GetGroupSummaries(uid int64, filter string) (GroupSummaries, error) {
 	var query *gorm.DB
 
 	if filter == "own" {
-		if role.Is(ChildUser) {
+		if role.IsOneOf([]int64{Partner, ChildUser}) {
 			u, err := GetUser(uid)
 
 			if err != nil {
 				return gs, err
 			}
 
-			query = db.Table("groups").Where("user_id = ? OR user_id = ?", uid, u.Partner)
-		} else {
-			query = db.Table("groups").Where("user_id = ?", uid)
-		}
-	} else {
-		if role.Is(Administrator) {
-			query = db.Table("groups").Where("user_id <> ?", uid)
-		} else if role.IsOneOf([]int64{Partner, ChildUser}) {
-			uids, err := GetUserIds(uid)
+			partner := u.Partner
+
+			if role.Is(Partner) {
+				partner = u.Id
+			}
+
+			cuids, err := GetChildUserIds(partner)
 
 			if err != nil {
 				return gs, err
 			}
 
-			query = db.Table("groups").Where("user_id IN (?)", uids)
+			query = db.Table("groups").Where("user_id = ? OR user_id = ? OR user_id IN (?)", uid, u.Partner, cuids)
 		} else {
-			return gs, nil
+			query = db.Table("groups").Where("user_id = ?", uid)
 		}
+	} else { // customers
+		cuids, err := GetCustomerIds(uid)
+
+		if err != nil {
+			return gs, err
+		}
+
+		query = db.Table("groups").Where("user_id IN (?)", cuids)
 	}
 
 	err = query.
@@ -275,14 +295,13 @@ func GetGroupByName(n string, uid int64) (Group, error) {
 			return g, err
 		}
 
-		err = db.Where("(user_id=? or user_id=?) and name=?", uid, u.Partner, n).Find(&g).Error
+		if db.Where("(user_id=? or user_id=?) and name=?", uid, u.Partner, n).First(&g).RecordNotFound() {
+			return g, gorm.ErrRecordNotFound
+		}
 	} else {
-		err = db.Where("user_id=? and name=?", uid, n).Find(&g).Error
-	}
-
-	if err != nil {
-		log.Error(err)
-		return g, err
+		if db.Where("user_id=? and name=?", uid, n).First(&g).RecordNotFound() {
+			return g, gorm.ErrRecordNotFound
+		}
 	}
 
 	g.Targets, err = GetTargets(g.Id)

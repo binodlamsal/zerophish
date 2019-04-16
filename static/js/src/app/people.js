@@ -530,14 +530,20 @@ function load() {
                     : "✖",
                   moment(a.last_login_at).format("X"),
                   "<div class='pull-right'>" +
-                    (role == "admin" || a.role !== "LMS User"
+                    (role == "admin" ||
+                    (role == "partner" && a.role !== "LMS User") ||
+                    (role == "child_user" &&
+                      a.role !== "Partner" &&
+                      a.role !== "Child User" &&
+                      a.role !== "LMS User")
                       ? "<span data-toggle='modal' data-backdrop='static' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='' onclick='edit(" +
                         i +
-                        ")' data-original-title='Edit Member'>  <i class='fa fa-pencil'></i> </button> </span> "
+                        ")' data-original-title='Edit Member'>  <i class='fa fa-pencil'></i> </button> </span> " +
+                        " <span data-backdrop='static' data-target='#modal'><button class='btn btn-danger' onclick='deleteUser(" +
+                        a.id +
+                        ")' data-toggle='tooltip' data-placement='left' title='Delete User'> <i class='fa fa-trash-o'></i></button></span>"
                       : "") +
-                    " <span data-backdrop='static' data-target='#modal'><button class='btn btn-danger' onclick='deleteUser(" +
-                    a.id +
-                    ")' data-toggle='tooltip' data-placement='left' title='Delete User'> <i class='fa fa-trash-o'></i></button></span></div>"
+                    "</div>"
                 ])
                 .draw();
             }))

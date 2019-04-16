@@ -261,34 +261,48 @@ func GetTemplates(uid int64, filter string) ([]Template, error) {
 
 	query := db.Table("templates")
 
-	if filter == "own" {
-		if role.Is(ChildUser) {
-			query = query.Where("user_id = ? OR user_id = ?", uid, user.Partner)
-		} else {
-			query = query.Where("user_id = ?", uid)
-		}
-	} else if filter == "own-and-public" {
-		if role.Is(ChildUser) {
-			query = query.Where("user_id = ? OR user_id = ? OR public = ?", uid, user.Partner, 1)
-		} else {
-			query = query.Where("user_id = ? OR public = ?", uid, 1)
-		}
-	} else if filter == "public" {
-		query = query.Where("public = ?", 1)
-	} else {
-		if role.Is(Administrator) {
-			query = query.Where("user_id <> ?", uid)
-		} else if role.IsOneOf([]int64{Partner, ChildUser}) {
-			uids, err := GetUserIds(uid)
+	if filter == "own" || filter == "own-and-public" {
+		if role.IsOneOf([]int64{Partner, ChildUser}) {
+			u, err := GetUser(uid)
 
 			if err != nil {
 				return ts, err
 			}
 
-			query = query.Where("user_id IN (?)", uids)
-		} else {
-			return ts, nil
+			partner := u.Partner
+
+			if role.Is(Partner) {
+				partner = u.Id
+			}
+
+			cuids, err := GetChildUserIds(partner)
+
+			if err != nil {
+				return ts, err
+			}
+
+			if filter == "own" {
+				query = query.Where("user_id = ? OR user_id = ? OR user_id IN (?)", uid, user.Partner, cuids)
+			} else { // own-and-public
+				query = query.Where("user_id = ? OR user_id = ? OR user_id IN (?) OR public = ?", uid, user.Partner, cuids, 1)
+			}
+		} else { // admins and customers
+			if filter == "own" {
+				query = query.Where("user_id = ?", uid)
+			} else { // own-and-public
+				query = query.Where("user_id = ? OR public = ?", uid, 1)
+			}
 		}
+	} else if filter == "public" {
+		query = query.Where("public = ?", 1)
+	} else { // customers
+		cuids, err := GetCustomerIds(uid)
+
+		if err != nil {
+			return ts, err
+		}
+
+		query = query.Where("user_id IN (?)", cuids)
 	}
 
 	err = query.
@@ -385,21 +399,20 @@ func GetTemplateByName(n string, uid int64) (Template, error) {
 			return t, err
 		}
 
-		err = db.
+		if db.
 			Where("user_id=? and name=?", uid, n).
 			Or("user_id=? and name=?", u.Partner, n).
 			Or("public = ? and name=?", 1, n).
-			Find(&t).Error
+			First(&t).RecordNotFound() {
+			return t, gorm.ErrRecordNotFound
+		}
 	} else {
-		err = db.
+		if db.
 			Where("user_id=? and name=?", uid, n).
 			Or("public = ? and name=?", 1, n).
-			Find(&t).Error
-	}
-
-	if err != nil {
-		log.Error(err)
-		return t, err
+			First(&t).RecordNotFound() {
+			return t, gorm.ErrRecordNotFound
+		}
 	}
 
 	// Get Attachments

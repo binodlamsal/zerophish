@@ -314,8 +314,8 @@ func GetUsers(uid int64) ([]User, error) {
 			Joins("LEFT JOIN group_targets ON group_targets.target_id=targets.id").
 			Joins("LEFT JOIN groups ON groups.id=group_targets.group_id").
 			Where(
-				"(users.partner = ? OR groups.user_id = ?) AND users.id <> ? AND users_role.rid IN (?)",
-				user.Partner, user.Partner, uid, []int{Customer, LMSUser},
+				"(users.id = ? OR users.partner = ? OR groups.user_id = ?) AND users.id <> ? AND users_role.rid IN (?)",
+				user.Partner, user.Partner, user.Partner, uid, []int{Partner, ChildUser, Customer, LMSUser},
 			).
 			Group("users.id").Order("users.id asc").Find(&users).Error
 	}
@@ -339,6 +339,66 @@ func GetUserIds(uid int64) ([]int64, error) {
 	return uids, err
 }
 
+// GetChildUserIds returns user ids of all child users bound to the given uid
+func GetChildUserIds(uid int64) ([]int64, error) {
+	var ids []int64
+
+	if uid == 0 {
+		return ids, nil
+	}
+
+	// err := db.Raw(
+	// 	`SELECT users.id FROM users LEFT JOIN users_role ON users_role.uid=users.id
+	// 	WHERE users_role.rid=? AND users.partner=?`,
+	// 	ChildUser, uid).Scan(&ids).Error
+
+	err := db.
+		Model(&User{}).
+		Joins("LEFT JOIN users_role ON users_role.uid=users.id").
+		Where("users_role.rid=? AND users.partner=?", ChildUser, uid).
+		Pluck("id", &ids).Error
+
+	return ids, err
+}
+
+// GetCustomerIds returns user ids of customers directly or indirectly related to the given uid
+func GetCustomerIds(uid int64) ([]int64, error) {
+	var ids []int64
+	role, err := GetUserRole(uid)
+
+	if err != nil {
+		return ids, err
+	}
+
+	if role.Is(Administrator) {
+		err = db.
+			Model(&User{}).
+			Joins("LEFT JOIN users_role ON users_role.uid=users.id").
+			Where("users_role.rid = ?", Customer).
+			Pluck("id", &ids).Error
+	} else if role.Is(Partner) {
+		err = db.
+			Model(&User{}).
+			Joins("LEFT JOIN users_role ON users_role.uid=users.id").
+			Where("users_role.rid = ? AND users.partner = ?", Customer, uid).
+			Pluck("id", &ids).Error
+	} else if role.Is(ChildUser) {
+		u, err := GetUser(uid)
+
+		if err != nil {
+			return ids, err
+		}
+
+		err = db.
+			Model(&User{}).
+			Joins("LEFT JOIN users_role ON users_role.uid=users.id").
+			Where("users_role.rid = ? AND users.partner = ?", Customer, u.Partner).
+			Pluck("id", &ids).Error
+	}
+
+	return ids, err
+}
+
 // IsAdministrator tells if this user is administrator
 func (u User) IsAdministrator() bool {
 	role, err := GetUserRole(u.Id)
@@ -350,8 +410,8 @@ func (u User) IsAdministrator() bool {
 	return role.Is(Administrator)
 }
 
-// IsParnter tells if this user is partner
-func (u User) IsParnter() bool {
+// IsPartner tells if this user is partner
+func (u User) IsPartner() bool {
 	role, err := GetUserRole(u.Id)
 
 	if err != nil {
@@ -398,7 +458,7 @@ func (u User) IsLMSUser() bool {
 func (u User) GetLogo() *Logo {
 	l := Logo{}
 
-	if u.IsParnter() {
+	if u.IsPartner() {
 		if db.Where("user_id = ?", u.Id).First(&l).Error == nil {
 			return &l
 		}
@@ -483,7 +543,7 @@ func (u User) CanHaveXTargetsInAGroup(targets int) bool {
 // CanManageSubscriptions tells if this user is allowed to manage customers' subscriptions,
 // the decision is made based on user's subscription status and plan
 func (u User) CanManageSubscriptions() bool {
-	if u.IsAdministrator() || (u.IsParnter() && u.IsSubscribed()) {
+	if u.IsAdministrator() || (u.IsPartner() && u.IsSubscribed()) {
 		return true
 	}
 

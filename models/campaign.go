@@ -401,31 +401,37 @@ func GetCampaignSummaries(uid int64, filter string) (CampaignSummaries, error) {
 	var query *gorm.DB
 
 	if filter == "own" {
-		if role.Is(ChildUser) {
+		if role.IsOneOf([]int64{Partner, ChildUser}) {
 			u, err := GetUser(uid)
 
 			if err != nil {
 				return overview, err
 			}
 
-			query = db.Table("campaigns").Where("user_id = ? OR user_id = ?", uid, u.Partner)
-		} else {
-			query = db.Table("campaigns").Where("user_id = ?", uid)
-		}
-	} else {
-		if role.Is(Administrator) {
-			query = db.Table("campaigns").Where("user_id <> ?", uid)
-		} else if role.IsOneOf([]int64{Partner, ChildUser}) {
-			uids, err := GetUserIds(uid)
+			partner := u.Partner
+
+			if role.Is(Partner) {
+				partner = u.Id
+			}
+
+			cuids, err := GetChildUserIds(partner)
 
 			if err != nil {
 				return overview, err
 			}
 
-			query = db.Table("campaigns").Where("user_id IN (?)", uids)
+			query = db.Table("campaigns").Where("user_id = ? OR user_id = ? OR user_id IN (?)", uid, u.Partner, cuids)
 		} else {
-			return overview, nil
+			query = db.Table("campaigns").Where("user_id = ?", uid)
 		}
+	} else { // customers
+		cuids, err := GetCustomerIds(uid)
+
+		if err != nil {
+			return overview, err
+		}
+
+		query = db.Table("campaigns").Where("user_id IN (?)", cuids)
 	}
 
 	err = query.

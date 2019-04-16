@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jinzhu/gorm"
+
 	"github.com/PuerkitoBio/goquery"
 	log "github.com/everycloud-technologies/phishing-simulation/logger"
 )
@@ -283,35 +285,51 @@ func GetPages(uid int64, filter string) ([]Page, error) {
 
 	query := db.Table("pages")
 
-	if filter == "own" {
-		if role.Is(ChildUser) {
-			query = query.Where("user_id = ? OR user_id = ?", uid, user.Partner)
-		} else {
-			query = query.Where("user_id = ?", uid)
-		}
-	} else if filter == "own-and-public" {
-		if role.Is(ChildUser) {
-			query = query.Where("user_id = ? OR user_id = ? OR public = ?", uid, user.Partner, 1)
-		} else {
-			query = query.Where("user_id = ? OR public = ?", uid, 1)
-		}
-	} else if filter == "public" {
-		query = query.Where("public = ?", 1)
-	} else {
-		if role.Is(Administrator) {
-			if filter != "all" {
-				query = query.Where("user_id <> ?", uid)
-			}
-		} else if role.IsOneOf([]int64{Partner, ChildUser}) {
-			uids, err := GetUserIds(uid)
+	if filter == "own" || filter == "own-and-public" {
+		if role.IsOneOf([]int64{Partner, ChildUser}) {
+			u, err := GetUser(uid)
 
 			if err != nil {
 				return ps, err
 			}
 
-			query = query.Where("user_id IN (?)", uids)
-		} else {
-			return ps, nil
+			partner := u.Partner
+
+			if role.Is(Partner) {
+				partner = u.Id
+			}
+
+			cuids, err := GetChildUserIds(partner)
+
+			if err != nil {
+				return ps, err
+			}
+
+			if filter == "own" {
+				query = query.Where("user_id = ? OR user_id = ? OR user_id IN (?)", uid, user.Partner, cuids)
+			} else { // own-and-public
+				query = query.Where("user_id = ? OR user_id = ? OR user_id IN (?) OR public = ?", uid, user.Partner, cuids, 1)
+			}
+		} else { // admins and customers
+			if filter == "own" {
+				query = query.Where("user_id = ?", uid)
+			} else { // own-and-public
+				query = query.Where("user_id = ? OR public = ?", uid, 1)
+			}
+		}
+	} else if filter == "public" {
+		query = query.Where("public = ?", 1)
+	} else if filter == "customers" {
+		cuids, err := GetCustomerIds(uid)
+
+		if err != nil {
+			return ps, err
+		}
+
+		query = query.Where("user_id IN (?)", cuids)
+	} else { // all
+		if !role.Is(Administrator) {
+			return ps, err
 		}
 	}
 
@@ -361,20 +379,20 @@ func GetPageByName(n string, uid int64) (Page, error) {
 			return p, err
 		}
 
-		err = db.
+		if db.
 			Where("user_id=? and name=?", uid, n).
 			Or("user_id=? and name=?", u.Partner, n).
 			Or("public = ? and name=?", 1, n).
-			Find(&p).Error
+			First(&p).RecordNotFound() {
+			return p, gorm.ErrRecordNotFound
+		}
 	} else {
-		err = db.
+		if db.
 			Where("user_id=? and name=?", uid, n).
 			Or("public = ? and name=?", 1, n).
-			Find(&p).Error
-	}
-
-	if err != nil {
-		log.Error(err)
+			First(&p).RecordNotFound() {
+			return p, gorm.ErrRecordNotFound
+		}
 	}
 
 	return p, err
