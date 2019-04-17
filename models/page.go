@@ -372,8 +372,24 @@ func GetPageByName(n string, uid int64) (Page, error) {
 		return p, err
 	}
 
-	if role.Is(ChildUser) {
+	if role.Is(Administrator) {
+		if db.Where("name=?", n).First(&p).RecordNotFound() {
+			return p, gorm.ErrRecordNotFound
+		}
+	} else if role.IsOneOf([]int64{Partner, ChildUser}) {
 		u, err := GetUser(uid)
+
+		if err != nil {
+			return p, err
+		}
+
+		partner := u.Partner
+
+		if role.Is(Partner) {
+			partner = u.Id
+		}
+
+		cuids, err := GetChildUserIds(partner)
 
 		if err != nil {
 			return p, err
@@ -382,11 +398,12 @@ func GetPageByName(n string, uid int64) (Page, error) {
 		if db.
 			Where("user_id=? and name=?", uid, n).
 			Or("user_id=? and name=?", u.Partner, n).
+			Or("user_id IN (?) and name=?", cuids, n).
 			Or("public = ? and name=?", 1, n).
 			First(&p).RecordNotFound() {
 			return p, gorm.ErrRecordNotFound
 		}
-	} else {
+	} else { // customer
 		if db.
 			Where("user_id=? and name=?", uid, n).
 			Or("public = ? and name=?", 1, n).

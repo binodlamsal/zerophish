@@ -288,17 +288,35 @@ func GetGroupByName(n string, uid int64) (Group, error) {
 		return g, err
 	}
 
-	if role.Is(ChildUser) {
+	if role.Is(Administrator) {
+		if db.Where("name=?", n).First(&g).RecordNotFound() {
+			return g, gorm.ErrRecordNotFound
+		}
+	} else if role.IsOneOf([]int64{Partner, ChildUser}) {
 		u, err := GetUser(uid)
 
 		if err != nil {
 			return g, err
 		}
 
-		if db.Where("(user_id=? or user_id=?) and name=?", uid, u.Partner, n).First(&g).RecordNotFound() {
+		partner := u.Partner
+
+		if role.Is(Partner) {
+			partner = u.Id
+		}
+
+		cuids, err := GetChildUserIds(partner)
+
+		if err != nil {
+			return g, err
+		}
+
+		if db.
+			Where("(user_id=? OR user_id=? OR user_id IN (?)) and name=?", uid, u.Partner, cuids, n).
+			First(&g).RecordNotFound() {
 			return g, gorm.ErrRecordNotFound
 		}
-	} else {
+	} else { // customer
 		if db.Where("user_id=? and name=?", uid, n).First(&g).RecordNotFound() {
 			return g, gorm.ErrRecordNotFound
 		}
