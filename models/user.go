@@ -373,8 +373,7 @@ func GetCustomerIds(uid int64) ([]int64, error) {
 	if role.Is(Administrator) {
 		err = db.
 			Model(&User{}).
-			Joins("LEFT JOIN users_role ON users_role.uid=users.id").
-			Where("users_role.rid = ?", Customer).
+			Where("id <> ?", uid).
 			Pluck("id", &ids).Error
 	} else if role.Is(Partner) {
 		err = db.
