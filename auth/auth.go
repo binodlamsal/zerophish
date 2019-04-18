@@ -345,8 +345,14 @@ func ChangePasswordByadmin(r *http.Request) error {
 			}
 		} else {
 			if ud.PlanId != 0 {
+				uid := u.Id
+
+				if u.IsChildUser() {
+					uid = u.Partner
+				}
+
 				subscription := &models.Subscription{
-					UserId:         u.Id,
+					UserId:         uid,
 					PlanId:         ud.PlanId,
 					ExpirationDate: ud.ExpirationDate,
 				}

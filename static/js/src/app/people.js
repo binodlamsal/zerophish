@@ -96,7 +96,10 @@ function edit(index) {
       }, 500);
     }
 
-    if (user.role == "LMS User") {
+    if (
+      user.role == "LMS User" ||
+      (role == "partner" && user.role == "Child User")
+    ) {
       $(".subscription").hide();
     } else {
       $(".subscription").show();

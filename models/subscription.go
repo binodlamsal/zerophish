@@ -55,6 +55,11 @@ func GetSubscriptions() ([]Subscription, error) {
 	return subscriptions, err
 }
 
+// IsActive tells if this subscription if active (not expired)
+func (s *Subscription) IsActive() bool {
+	return s.ExpirationDate.After(time.Now().UTC())
+}
+
 // ChangePlan changes this subscription's plan
 func (s *Subscription) ChangePlan(planId int64) error {
 	s.PlanId = planId
@@ -90,12 +95,19 @@ func (s Subscription) MarshalJSON() ([]byte, error) {
 		Expired        bool      `json:"expired"`
 	}
 
+	expired := true
+	u, err := GetUser(s.UserId)
+
+	if err == nil {
+		expired = !u.IsSubscribed()
+	}
+
 	return json.Marshal(jsonSubscription{
 		Id:             s.Id,
 		UserId:         s.UserId,
 		PlanId:         s.PlanId,
 		Plan:           GetPlanNameById(s.PlanId),
 		ExpirationDate: s.ExpirationDate,
-		Expired:        s.ExpirationDate.Before(time.Now().UTC()),
+		Expired:        expired,
 	})
 }

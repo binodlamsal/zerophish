@@ -501,8 +501,27 @@ func (u User) GetSubscription() *Subscription {
 func (u User) IsSubscribed() bool {
 	s := u.GetSubscription()
 
-	if s != nil && s.ExpirationDate.After(time.Now().UTC()) {
-		return true
+	if s != nil {
+		if u.IsCustomer() {
+			partner, err := GetUser(u.Partner)
+
+			if err != nil {
+				log.Errorf("Could not determine partner account of customer with id %d", u.Id)
+				return false
+			}
+
+			if partner.IsAdministrator() {
+				return s.IsActive()
+			}
+
+			if ps := partner.GetSubscription(); ps != nil {
+				return ps.IsActive() && s.IsActive()
+			}
+
+			return false
+		}
+
+		return s.IsActive()
 	}
 
 	return false
@@ -547,7 +566,7 @@ func (u User) CanHaveXTargetsInAGroup(targets int) bool {
 // CanManageSubscriptions tells if this user is allowed to manage customers' subscriptions,
 // the decision is made based on user's subscription status and plan
 func (u User) CanManageSubscriptions() bool {
-	if u.IsAdministrator() {
+	if u.IsAdministrator() || ((u.IsPartner() || u.IsChildUser()) && u.IsSubscribed()) {
 		return true
 	}
 
