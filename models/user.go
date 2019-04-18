@@ -484,8 +484,13 @@ func (u User) GetAvatar() *Avatar {
 // GetSubscription returns user subscription or nil if there is none
 func (u User) GetSubscription() *Subscription {
 	s := Subscription{}
+	uid := u.Id
 
-	if db.Where("user_id = ?", u.Id).First(&s).Error == nil {
+	if u.IsChildUser() {
+		uid = u.Partner
+	}
+
+	if db.Where("user_id = ?", uid).First(&s).Error == nil {
 		return &s
 	}
 
@@ -542,7 +547,7 @@ func (u User) CanHaveXTargetsInAGroup(targets int) bool {
 // CanManageSubscriptions tells if this user is allowed to manage customers' subscriptions,
 // the decision is made based on user's subscription status and plan
 func (u User) CanManageSubscriptions() bool {
-	if u.IsAdministrator() || (u.IsPartner() && u.IsSubscribed()) {
+	if u.IsAdministrator() {
 		return true
 	}
 
