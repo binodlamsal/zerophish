@@ -4,6 +4,7 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"regexp"
@@ -165,10 +166,16 @@ func Register(r *http.Request) (bool, error) {
 	}
 
 	if api != "1" && os.Getenv("USERSYNC_DISABLE") == "" {
-		err = usersync.PushUser(iu.Id, iu.Username, iu.Email, iu.FullName, newPassword, ur.Rid, iu.Partner)
+		uid, err := usersync.PushUser(iu.Id, iu.Username, iu.Email, iu.FullName, newPassword, ur.Rid, iu.Partner)
 
 		if err != nil {
-			_ = models.DeleteUser(iu.Id)
+			_, _ = models.DeleteUser(iu.Id)
+			return false, err
+		}
+
+		err = iu.SetBakeryUserID(uid)
+
+		if err != nil {
 			return false, err
 		}
 	}
@@ -259,6 +266,14 @@ func ChangePasswordByadmin(r *http.Request) error {
 		return err
 	}
 
+	shouldPushUpdates := false
+
+	if u.Email != ud.Email ||
+		u.Username != ud.Username ||
+		u.Partner != ud.Partner {
+		shouldPushUpdates = true
+	}
+
 	u.Id = ud.Id
 	u.Email = ud.Email
 	u.Domain = ud.Domain
@@ -293,11 +308,30 @@ func ChangePasswordByadmin(r *http.Request) error {
 			return err
 		}
 		u.Hash = string(h)
+		shouldPushUpdates = true
 	}
 
 	// Unset partner for non-customers
 	if ud.Role != models.Customer && ud.Role != models.ChildUser {
 		u.Partner = 0
+
+		if ud.Partner != 0 {
+			shouldPushUpdates = true
+		}
+	}
+
+	if role, err := models.GetUserRole(u.Id); err == nil {
+		if role.Rid != ud.Role {
+			shouldPushUpdates = true
+		}
+	}
+
+	if os.Getenv("USERSYNC_DISABLE") == "" && shouldPushUpdates {
+		buid := models.GetUserBakeryID(u.Id)
+
+		if err := usersync.UpdateUser(buid, u.Username, u.Email, newPassword, ud.Role, u.Partner); err != nil {
+			return fmt.Errorf("Could not update user with bakery id %d - %s", buid, err.Error())
+		}
 	}
 
 	if err = models.PutUser(&u); err != nil {

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -98,6 +99,28 @@ func RequireAPIKey(handler http.Handler) http.HandlerFunc {
 		r = ctx.Set(r, "user_id", u.Id)
 		r = ctx.Set(r, "api_key", ak)
 		handler.ServeHTTP(w, r)
+	}
+}
+
+func RequireIP(ip string) func(http.Handler) http.HandlerFunc {
+	return func(handler http.Handler) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			ipAddr, _, err := net.SplitHostPort(r.RemoteAddr)
+
+			if err != nil {
+				log.Errorf("Denied access - %s", err.Error())
+				JSONError(w, 403, "Access denied")
+				return
+			}
+
+			if ipAddr != ip && ipAddr != "127.0.0.1" {
+				log.Errorf("Denied access for IP %s", ipAddr)
+				JSONError(w, 403, "Access denied")
+				return
+			}
+
+			handler.ServeHTTP(w, r)
+		}
 	}
 }
 

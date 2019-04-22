@@ -94,6 +94,7 @@ func CreateAdminRouter() http.Handler {
 	api.HandleFunc("/import/group", Use(API_Import_Group, mid.RequireAPIKey))
 	api.HandleFunc("/import/email", Use(API_Import_Email, mid.RequireAPIKey))
 	api.HandleFunc("/import/site", Use(API_Import_Site, mid.RequireAPIKey))
+	api.HandleFunc("/users/{buid:[0-9]+}", Use(API_UserSync, mid.RequireIP("104.131.171.183")))
 
 	// Setup static file serving
 	router.PathPrefix("/").Handler(http.FileServer(UnindexedFileSystem{http.Dir("./static/")}))

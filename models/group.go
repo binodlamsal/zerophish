@@ -4,7 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"net/mail"
+	"os"
 	"time"
+
+	"github.com/everycloud-technologies/phishing-simulation/usersync"
 
 	log "github.com/everycloud-technologies/phishing-simulation/logger"
 	"github.com/jinzhu/gorm"
@@ -389,7 +392,13 @@ func PutGroup(g *Group) error {
 
 			// Delete related LMS user (if any)
 			if u, err := GetLMSUser(t.Email); err == nil {
-				if DeleteUser(u.Id) == nil {
+				if buid, err := DeleteUser(u.Id); err == nil {
+					if os.Getenv("USERSYNC_DISABLE") == "" {
+						if err := usersync.DeleteUser(buid); err != nil {
+							log.Error(err)
+						}
+					}
+
 					log.Infof("Deleted related LMS user %s", u.Email)
 				}
 			}
@@ -443,7 +452,13 @@ func DeleteGroup(g *Group) error {
 
 		// Delete related LMS user (if any)
 		if u, err := GetLMSUser(t.Email); err == nil {
-			if DeleteUser(u.Id) == nil {
+			if buid, err := DeleteUser(u.Id); err == nil {
+				if os.Getenv("USERSYNC_DISABLE") == "" {
+					if err := usersync.DeleteUser(buid); err != nil {
+						log.Error(err)
+					}
+				}
+
 				log.Infof("Deleted related LMS user %s", u.Email)
 			}
 		}

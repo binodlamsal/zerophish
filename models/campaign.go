@@ -802,12 +802,18 @@ func (e *Event) AfterCreate(tx *gorm.DB) error {
 	}
 
 	if os.Getenv("USERSYNC_DISABLE") == "" {
-		err = usersync.PushUser(u.Id, u.Username, u.Email, u.FullName, "qwerty", LMSUser, partner)
+		uid, err := usersync.PushUser(u.Id, u.Username, u.Email, u.FullName, "qwerty", LMSUser, partner)
 
 		if err != nil {
-			_ = DeleteUser(u.Id)
+			_, _ = DeleteUser(u.Id)
 			log.Errorf("Could not push user to the main server - %s", err.Error())
 			return nil
+		}
+
+		err = (*u).SetBakeryUserID(uid)
+
+		if err != nil {
+			log.Error(err)
 		}
 	}
 

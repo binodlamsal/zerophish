@@ -42,6 +42,12 @@ type User struct {
 	LastUserAgent   string    `json:"last_user_agent"`
 }
 
+// BakeryUser stores relations between local user ids and bakery master user ids
+type BakeryUser struct {
+	UID       int64
+	MasterUID int64
+}
+
 // Role represents the role model for gophish.
 type Role struct {
 	Rid         int64  `json:"rid"`
@@ -61,6 +67,10 @@ type Roles []Role
 
 // UserRoles is a list of user roles
 type UserRoles []UserRole
+
+func (bu BakeryUser) TableName() string {
+	return "bakery_user"
+}
 
 // AvailableFor returns roles which a user with the given role can create users with
 func (roles Roles) AvailableFor(role UserRole) Roles {
@@ -139,6 +149,21 @@ func (ur UserRole) IsOneOf(rids []int64) bool {
 func GetUser(id int64) (User, error) {
 	u := User{}
 	err := db.Where("id=?", id).First(&u).Error
+	return u, err
+}
+
+// GetUserByBakeryID returns the user that the given bakery user id corresponds to.
+// If no user is found, an error is returned.
+func GetUserByBakeryID(buid int64) (User, error) {
+	u := User{}
+	bu := BakeryUser{}
+	err := db.Where("master_uid = ?", buid).First(&bu).Error
+
+	if err != nil {
+		return u, err
+	}
+
+	err = db.Where("id=?", bu.UID).First(&u).Error
 	return u, err
 }
 
@@ -598,6 +623,30 @@ func (u User) HasPages() bool {
 	return count > 0
 }
 
+// SetBakeryUserID assigns bakery master user id to this user
+func (u User) SetBakeryUserID(id int64) error {
+	bu := BakeryUser{}
+
+	if err := db.Where("uid = ?", u.Id).First(&bu).Error; err == nil {
+		bu.MasterUID = id
+
+		if err = db.Save(&bu).Error; err != nil {
+			return fmt.Errorf("Could not update bakery master user id for user with id %d - %s", u.Id, err.Error())
+		}
+
+		return nil
+	}
+
+	bu.UID = u.Id
+	bu.MasterUID = id
+
+	if err = db.Save(&bu).Error; err != nil {
+		return fmt.Errorf("Could not set bakery master user id for user with id %d - %s", u.Id, err.Error())
+	}
+
+	return nil
+}
+
 // DecryptApiKey decrypts encrypted ApiKey field and puts the result into PlainApiKey
 func (u *User) DecryptApiKey() {
 	defer func() {
@@ -616,6 +665,17 @@ func (u *User) DecryptApiKey() {
 	}
 
 	u.PlainApiKey = apiKey
+}
+
+// GetUserBakeryID returns bakery user id associated with the given uid or 0 if not found
+func GetUserBakeryID(uid int64) int64 {
+	bu := BakeryUser{}
+
+	if err := db.Where("uid = ?", uid).First(&bu).Error; err == nil {
+		return bu.MasterUID
+	}
+
+	return 0
 }
 
 // GetRoles returns all available roles
@@ -650,25 +710,27 @@ func DeleteUserAvatar(uid int64) error {
 	return err
 }
 
-// DeleteUser deletes the specified user
-func DeleteUser(uid int64) error {
+// DeleteUserBakeryID deletes bakery master user id for the given uid
+func DeleteUserBakeryID(uid int64) error {
+	err = db.Delete(BakeryUser{}, "uid = ?", uid).Error
+	return err
+}
+
+// DeleteUser deletes the specified user and in case of success returns a
+// bakery user id associated with the given uid or 0 if there's no such id.
+func DeleteUser(uid int64) (int64, error) {
 	if err := db.Delete(&User{Id: uid}).Error; err != nil {
-		return err
+		return 0, err
 	}
 
-	err = DeleteUserSubscriptions(uid)
+	buid := GetUserBakeryID(uid)
 
-	if err != nil {
-		return err
-	}
+	_ = DeleteUserSubscriptions(uid)
+	_ = DeleteUserAvatar(uid)
+	_ = DeleteUserRoles(uid)
+	_ = DeleteUserBakeryID(uid)
 
-	err = DeleteUserAvatar(uid)
-
-	if err != nil {
-		return err
-	}
-
-	return DeleteUserRoles(uid)
+	return buid, nil
 }
 
 // GetUserPartners returns all the partners from the database

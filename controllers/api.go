@@ -200,10 +200,18 @@ func API_Users(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if os.Getenv("USERSYNC_DISABLE") == "" {
-			err = usersync.PushUser(iu.Id, iu.Username, iu.Email, "", ud.Password, ud.Role, ud.Partner)
+			uid, err := usersync.PushUser(iu.Id, iu.Username, iu.Email, "", ud.Password, ud.Role, ud.Partner)
 
 			if err != nil {
-				_ = models.DeleteUser(iu.Id)
+				_, _ = models.DeleteUser(iu.Id)
+				log.Error(err)
+				JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
+				return
+			}
+
+			err = (*iu).SetBakeryUserID(uid)
+
+			if err != nil {
 				log.Error(err)
 				JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
 				return
@@ -264,11 +272,21 @@ func API_Users_Id(w http.ResponseWriter, r *http.Request) {
 		JSONResponse(w, c, http.StatusOK)
 
 	case r.Method == "DELETE":
-		err = models.DeleteUser(id)
+		buid, err := models.DeleteUser(id)
+
 		if err != nil {
 			JSONResponse(w, models.Response{Success: false, Message: "Error deleting user"}, http.StatusInternalServerError)
 			return
 		}
+
+		if os.Getenv("USERSYNC_DISABLE") == "" {
+			if err := usersync.DeleteUser(buid); err != nil {
+				log.Error(err)
+				JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
+				return
+			}
+		}
+
 		JSONResponse(w, models.Response{Success: true, Message: "User deleted successfully!"}, http.StatusOK)
 
 	case r.Method == "POST":
@@ -738,14 +756,20 @@ func API_Groups_Id_LMS(w http.ResponseWriter, r *http.Request) {
 				}
 
 				if os.Getenv("USERSYNC_DISABLE") == "" {
-					err = usersync.PushUser(u.Id, u.Username, u.Email, u.FullName, "qwerty", models.LMSUser, partner)
+					buid, err := usersync.PushUser(u.Id, u.Username, u.Email, u.FullName, "qwerty", models.LMSUser, partner)
 
 					if err != nil {
 						email := u.Email
-						_ = models.DeleteUser(u.Id)
+						_, _ = models.DeleteUser(u.Id)
 						j.Progress <- calcProgress(i, len(targets))
 						j.Errors <- fmt.Errorf("Could not push user (%s) to the main server - %s", email, err.Error())
 						continue
+					}
+
+					err = (*u).SetBakeryUserID(buid)
+
+					if err != nil {
+						log.Error(err)
 					}
 				}
 
@@ -790,7 +814,7 @@ func API_Groups_Id_LMS(w http.ResponseWriter, r *http.Request) {
 					continue
 				}
 
-				err = models.DeleteUser(u.Id)
+				buid, err := models.DeleteUser(u.Id)
 
 				if err != nil {
 					j.Progress <- calcProgress(i, len(targets))
@@ -799,7 +823,9 @@ func API_Groups_Id_LMS(w http.ResponseWriter, r *http.Request) {
 				}
 
 				if os.Getenv("USERSYNC_DISABLE") == "" {
-					// Delete user on the main server?
+					if err := usersync.DeleteUser(buid); err != nil {
+						j.Errors <- err
+					}
 				}
 
 				j.Progress <- calcProgress(i, len(targets))
@@ -1474,6 +1500,56 @@ func API_Subscriptions(w http.ResponseWriter, r *http.Request) {
 		}
 
 		JSONResponse(w, subscription, http.StatusCreated)
+	}
+}
+
+// API_UserSync handles updates and deletions of users
+func API_UserSync(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	buid, _ := strconv.ParseInt(vars["buid"], 0, 64)
+	u, err := models.GetUserByBakeryID(buid)
+
+	if err != nil {
+		log.Error(err)
+		JSONResponse(w, models.Response{Success: false, Message: "User not found"}, http.StatusNotFound)
+		return
+	}
+
+	switch {
+	case r.Method == "DELETE":
+		_, err := models.DeleteUser(u.Id)
+
+		if err != nil {
+			JSONResponse(w, models.Response{Success: false, Message: "Error deleting user"}, http.StatusInternalServerError)
+			return
+		}
+
+		JSONResponse(w, models.Response{Success: true, Message: "User deleted"}, http.StatusOK)
+
+	case r.Method == "PUT":
+		props := struct {
+			Username string `json:"username"`
+			Email    string `json:"email"`
+		}{}
+
+		if err := json.NewDecoder(r.Body).Decode(&props); err != nil {
+			JSONResponse(w, models.Response{Success: false, Message: "Invalid request"}, http.StatusBadRequest)
+			return
+		}
+
+		if err := models.UpdateUser(&models.User{Id: u.Id, Username: props.Username, Email: props.Email}); err != nil {
+			log.Error(err)
+
+			JSONResponse(w,
+				models.Response{
+					Success: false,
+					Message: fmt.Sprintf("Could not update user with id %d - %s", u.Id, err.Error())},
+				http.StatusBadRequest)
+
+			return
+		}
+
+		JSONResponse(w, models.Response{Success: true, Message: "User updated"}, http.StatusOK)
 	}
 }
 
