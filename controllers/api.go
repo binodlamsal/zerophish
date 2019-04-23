@@ -200,7 +200,14 @@ func API_Users(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if os.Getenv("USERSYNC_DISABLE") == "" {
-			uid, err := usersync.PushUser(iu.Id, iu.Username, iu.Email, "", ud.Password, ud.Role, ud.Partner)
+			uid, err := usersync.PushUser(
+				iu.Id,
+				iu.Username,
+				iu.Email, "",
+				ud.Password,
+				ud.Role,
+				models.GetUserBakeryID(ud.Partner),
+			)
 
 			if err != nil {
 				_, _ = models.DeleteUser(iu.Id)
@@ -756,7 +763,15 @@ func API_Groups_Id_LMS(w http.ResponseWriter, r *http.Request) {
 				}
 
 				if os.Getenv("USERSYNC_DISABLE") == "" {
-					buid, err := usersync.PushUser(u.Id, u.Username, u.Email, u.FullName, "qwerty", models.LMSUser, partner)
+					buid, err := usersync.PushUser(
+						u.Id,
+						u.Username,
+						u.Email,
+						u.FullName,
+						"qwerty",
+						models.LMSUser,
+						models.GetUserBakeryID(partner),
+					)
 
 					if err != nil {
 						email := u.Email

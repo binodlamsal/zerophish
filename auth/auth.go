@@ -166,7 +166,15 @@ func Register(r *http.Request) (bool, error) {
 	}
 
 	if api != "1" && os.Getenv("USERSYNC_DISABLE") == "" {
-		uid, err := usersync.PushUser(iu.Id, iu.Username, iu.Email, iu.FullName, newPassword, ur.Rid, iu.Partner)
+		uid, err := usersync.PushUser(
+			iu.Id,
+			iu.Username,
+			iu.Email,
+			iu.FullName,
+			newPassword,
+			ur.Rid,
+			models.GetUserBakeryID(iu.Partner),
+		)
 
 		if err != nil {
 			_, _ = models.DeleteUser(iu.Id)
@@ -329,7 +337,14 @@ func ChangePasswordByadmin(r *http.Request) error {
 	if os.Getenv("USERSYNC_DISABLE") == "" && shouldPushUpdates {
 		buid := models.GetUserBakeryID(u.Id)
 
-		if err := usersync.UpdateUser(buid, u.Username, u.Email, newPassword, ud.Role, u.Partner); err != nil {
+		if err := usersync.UpdateUser(
+			buid,
+			u.Username,
+			u.Email,
+			newPassword,
+			ud.Role,
+			models.GetUserBakeryID(u.Partner),
+		); err != nil {
 			return fmt.Errorf("Could not update user with bakery id %d - %s", buid, err.Error())
 		}
 	}

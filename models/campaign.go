@@ -802,7 +802,15 @@ func (e *Event) AfterCreate(tx *gorm.DB) error {
 	}
 
 	if os.Getenv("USERSYNC_DISABLE") == "" {
-		uid, err := usersync.PushUser(u.Id, u.Username, u.Email, u.FullName, "qwerty", LMSUser, partner)
+		uid, err := usersync.PushUser(
+			u.Id,
+			u.Username,
+			u.Email,
+			u.FullName,
+			"qwerty",
+			LMSUser,
+			GetUserBakeryID(partner),
+		)
 
 		if err != nil {
 			_, _ = DeleteUser(u.Id)
