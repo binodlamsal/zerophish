@@ -233,7 +233,7 @@ function generateStatsPieCharts(campaigns) {
     title: "Phish Risk",
     name: "Phish Risk",
     data: [
-      { name: "Phish Risk", y: phishRisk, count: phishRisk },
+      { name: "Phish Risk", y: phishRisk, count: phishRisk + "%" },
       { name: "", y: 100 - phishRisk }
     ],
     colors: ["#f05b4f", "#dddddd"]

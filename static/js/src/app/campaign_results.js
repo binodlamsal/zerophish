@@ -593,7 +593,10 @@ var renderPieChart = function(chartopts) {
         },
         render: function() {
           this.innerText.attr({
-            text: chartopts["data"][0].y
+            text:
+              chartopts["data"][0]["name"] == "Phish Risk"
+                ? chartopts["data"][0].count
+                : chartopts["data"][0].y
           });
         }
       }
@@ -1004,7 +1007,7 @@ function load() {
           title: "Phish Risk",
           name: "Phish Risk",
           data: [
-            { name: "Phish Risk", y: phishRisk },
+            { name: "Phish Risk", y: phishRisk, count: phishRisk + "%" },
             { name: "", y: 100 - phishRisk }
           ],
           colors: ["#f05b4f", "#dddddd"]
