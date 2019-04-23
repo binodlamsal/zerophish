@@ -984,6 +984,32 @@ function load() {
           });
         });
 
+        var phishRisk = 0;
+
+        if (
+          email_series_data["Clicked Link"] !== undefined &&
+          email_series_data["Email Sent"] !== undefined &&
+          email_series_data["Email Sent"] != 0
+        ) {
+          phishRisk = Math.round(
+            (email_series_data["Clicked Link"] /
+              email_series_data["Email Sent"]) *
+              100
+          );
+        }
+
+        // Phish Risk Chart
+        renderPieChart({
+          elemId: "phish_risk_chart",
+          title: "Phish Risk",
+          name: "Phish Risk",
+          data: [
+            { name: "Phish Risk", y: phishRisk },
+            { name: "", y: 100 - phishRisk }
+          ],
+          colors: ["#f05b4f", "#dddddd"]
+        });
+
         if (use_map) {
           $("#resultsMapContainer").show();
           map = new Datamap({

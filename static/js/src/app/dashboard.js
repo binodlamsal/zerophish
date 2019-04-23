@@ -214,6 +214,30 @@ function generateStatsPieCharts(campaigns) {
 
     stats_data = [];
   });
+
+  var phishRisk = 0;
+
+  if (
+    stats_series_data["clicked"] !== undefined &&
+    stats_series_data["sent"] !== undefined &&
+    stats_series_data["sent"] != 0
+  ) {
+    phishRisk = Math.round(
+      (stats_series_data["clicked"] / stats_series_data["sent"]) * 100
+    );
+  }
+
+  // Phish Risk Chart
+  renderPieChart({
+    elemId: "phish_risk_chart",
+    title: "Phish Risk",
+    name: "Phish Risk",
+    data: [
+      { name: "Phish Risk", y: phishRisk, count: phishRisk },
+      { name: "", y: 100 - phishRisk }
+    ],
+    colors: ["#f05b4f", "#dddddd"]
+  });
 }
 
 function generateTimelineChart(campaigns) {
