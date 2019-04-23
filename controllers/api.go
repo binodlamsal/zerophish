@@ -1530,6 +1530,10 @@ func API_UserSync(w http.ResponseWriter, r *http.Request) {
 		props := struct {
 			Username string `json:"username"`
 			Email    string `json:"email"`
+			FullName string `json:"fullname"`
+			Domain   string `json:"domain"`
+			Role     int64  `json:"role"`
+			Partner  int64  `json:"partner"` // bakery user id
 		}{}
 
 		if err := json.NewDecoder(r.Body).Decode(&props); err != nil {
@@ -1537,7 +1541,28 @@ func API_UserSync(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if err := models.UpdateUser(&models.User{Id: u.Id, Username: props.Username, Email: props.Email}); err != nil {
+		if props.Partner != 0 {
+			partner, err := models.GetUserByBakeryID(props.Partner)
+
+			if err != nil {
+				err = fmt.Errorf("Could not find partner user with bakery user id %d - %s", props.Partner, err.Error())
+				log.Error(err)
+				JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
+				return
+			}
+
+			props.Partner = partner.Id
+		}
+
+		if err := models.UpdateUser(
+			&models.User{
+				Id:       u.Id,
+				Username: props.Username,
+				Email:    props.Email,
+				FullName: props.FullName,
+				Domain:   props.Domain,
+				Partner:  props.Partner,
+			}); err != nil {
 			log.Error(err)
 
 			JSONResponse(w,
@@ -1547,6 +1572,18 @@ func API_UserSync(w http.ResponseWriter, r *http.Request) {
 				http.StatusBadRequest)
 
 			return
+		}
+
+		if props.Role > 0 && props.Role < 6 {
+			if err = models.SetUserRole(u.Id, props.Role); err != nil {
+				JSONResponse(w,
+					models.Response{
+						Success: false,
+						Message: fmt.Sprintf("Could not update role of user with id %d - %s", u.Id, err.Error())},
+					http.StatusInternalServerError)
+
+				return
+			}
 		}
 
 		JSONResponse(w, models.Response{Success: true, Message: "User updated"}, http.StatusOK)

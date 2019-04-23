@@ -233,6 +233,11 @@ func PutUserRole(ur *UserRole) error {
 	return err
 }
 
+// SetUserRole sets role of the given uid to the given rid
+func SetUserRole(uid, rid int64) error {
+	return db.Model(UserRole{}).Where("uid = ?", uid).Update("rid", rid).Error
+}
+
 // CreateUser creates a new user with the given props and returns it
 func CreateUser(username, fullName, email, password string, rid int64, partner int64) (*User, error) {
 	if username == "" {
