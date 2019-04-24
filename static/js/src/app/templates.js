@@ -1,4 +1,5 @@
 var templateTable;
+var categories = [];
 var _filter = "own";
 
 function save(e) {
@@ -19,20 +20,25 @@ function save(e) {
         -1 == t.html.indexOf("{{.TrackingUrl}}") &&
         (t.html = t.html.replace("</body>", "{{.Tracker}}</body>"))
       : (t.html = t.html.replace("{{.Tracker}}</body>", "</body>")),
-    (t.text = $("#text_editor").val()),
-    $.each(
-      $("#attachmentsTable")
-        .DataTable()
-        .rows()
-        .data(),
-      function(e, a) {
-        t.attachments.push({
-          name: unescapeHtml(a[1]),
-          content: a[3],
-          type: a[4]
-        });
-      }
-    ),
+    (t.text = $("#text_editor").val());
+  t.default_page_id =
+    $("#page").select2("data")[0] !== undefined
+      ? parseInt($("#page").select2("data")[0].id)
+      : 0;
+
+  $.each(
+    $("#attachmentsTable")
+      .DataTable()
+      .rows()
+      .data(),
+    function(e, a) {
+      t.attachments.push({
+        name: unescapeHtml(a[1]),
+        content: a[3],
+        type: a[4]
+      });
+    }
+  ),
     -1 != e
       ? ((t.id = templates[e].id),
         api.templateId
@@ -70,6 +76,9 @@ function dismiss() {
     $("#text_editor").val(""),
     $("#html_editor").val(""),
     $("#category")
+      .val("")
+      .change(),
+    $("#page")
       .val("")
       .change(),
     $("#modal").modal("hide");
@@ -190,6 +199,8 @@ function edit(e) {
 
   $("#category.form-control").val(t.tag);
   $("#category.form-control").trigger("change.select2");
+  $("#page.form-control").val(t.default_page_id);
+  $("#page.form-control").trigger("change.select2");
 }
 
 function copy(e) {
@@ -486,6 +497,8 @@ $(document).ready(function() {
 
   setTimeout(function() {
     api.phishtags.get().success(function(s) {
+      categories = s;
+
       var data = s.map(function(c) {
         return {
           id: c.id,
@@ -497,6 +510,56 @@ $(document).ready(function() {
         placeholder: "Select Category",
         data: data
       });
+    });
+
+    api.pages.get("own-and-public").success(function(e) {
+      if (0 == e.length) return modalError("No pages found!"), !1;
+      var a = $.map(e, function(e) {
+        return (e.text = e.name), e;
+      });
+
+      var data = a
+        .map(function(p) {
+          return {
+            id: p.id,
+            text: p.name,
+            category: categories.find(function(c) {
+              return c.id === p.tag;
+            })
+          };
+        })
+        .reduce(function(groups, p) {
+          if (p.category !== undefined) {
+            if (groups[p.category.name] !== undefined) {
+              groups[p.category.name].push(p);
+            } else {
+              groups[p.category.name] = [p];
+            }
+          } else {
+            groups["Misc"] !== undefined
+              ? groups["Misc"].push(p)
+              : (groups["Misc"] = [p]);
+          }
+
+          return groups;
+        }, {});
+
+      data = Object.keys(data).map(function(group) {
+        return {
+          text: group,
+          children: data[group]
+        };
+      });
+
+      $("#page.form-control").select2({
+        placeholder: "Select the Default Landing Page",
+        data: data,
+        allowClear: true
+      });
+
+      1 === e.length &&
+        ($("#page.form-control").val(a[0].id),
+        $("#page.form-control").trigger("change.select2"));
     });
   }, 1000);
 

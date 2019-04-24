@@ -228,6 +228,7 @@ function deleteCampaign(e) {
 
 function setupOptions() {
   var addresses = {};
+  var pages = {};
 
   api.groups.get().success(function(e) {
     if (0 == e.length) return (document.location = "/users?ref=campaigns"), !1;
@@ -245,6 +246,7 @@ function setupOptions() {
       if (0 == e.length) return modalError("No templates found!"), !1;
       var a = $.map(e, function(e) {
         addresses[e.id] = e.from_address;
+        pages[e.id] = e.default_page_id;
         return (e.text = e.name), e;
       });
 
@@ -283,6 +285,16 @@ function setupOptions() {
 
       $("#template.form-control").change(function(event) {
         $("#from_address").val(addresses[event.target.value]);
+        if (
+          $("#page.form-control")
+            .find(":selected")
+            .val() == "" &&
+          pages[event.target.value] !== 0
+        ) {
+          $("#page.form-control").val(pages[event.target.value]);
+          $("#page.form-control").trigger("change.select2");
+        }
+
         if ($(this).val() !== "") {
           $("#preview-btn").prop("disabled", "");
         } else {

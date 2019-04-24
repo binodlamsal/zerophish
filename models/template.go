@@ -11,21 +11,22 @@ import (
 
 // Template models hold the attributes for an email template to be sent to targets
 type Template struct {
-	Id           int64        `json:"id" gorm:"column:id; primary_key:yes"`
-	UserId       int64        `json:"user_id" gorm:"column:user_id"`
-	Username     string       `json:"username" gorm:"-"`
-	Name         string       `json:"name"`
-	Subject      string       `json:"subject"`
-	Text         string       `json:"text"`
-	HTML         string       `json:"html" gorm:"column:html"`
-	FromAddress  string       `json:"from_address"`
-	RATING       int64        `json:"rating" gorm:"column:rating"`
-	TagsId       int64        `json:"tag" gorm:"column:tag"`
-	Tags         Tags         `json:"tags"`
-	Public       bool         `json:"public" gorm:"column:public"`
-	ModifiedDate time.Time    `json:"modified_date"`
-	Attachments  []Attachment `json:"attachments"`
-	Writable     bool         `json:"writable" gorm:"-"`
+	Id            int64        `json:"id" gorm:"column:id; primary_key:yes"`
+	UserId        int64        `json:"user_id" gorm:"column:user_id"`
+	Username      string       `json:"username" gorm:"-"`
+	Name          string       `json:"name"`
+	Subject       string       `json:"subject"`
+	Text          string       `json:"text"`
+	HTML          string       `json:"html" gorm:"column:html"`
+	FromAddress   string       `json:"from_address"`
+	RATING        int64        `json:"rating" gorm:"column:rating"`
+	TagsId        int64        `json:"tag" gorm:"column:tag"`
+	Tags          Tags         `json:"tags"`
+	DefaultPageId int64        `json:"default_page_id" gorm:"column:default_page_id"`
+	Public        bool         `json:"public" gorm:"column:public"`
+	ModifiedDate  time.Time    `json:"modified_date"`
+	Attachments   []Attachment `json:"attachments"`
+	Writable      bool         `json:"writable" gorm:"-"`
 }
 
 // Tags models hold the attributes for the categories of templates and landing pages
@@ -565,5 +566,13 @@ func DeleteTags(id int64) error {
 		log.Error(err)
 		return err
 	}
+	return nil
+}
+
+func (t *Template) BeforeUpdate(scope *gorm.Scope) error {
+	if t.DefaultPageId == 0 {
+		return scope.SetColumn("DefaultPageId", 0)
+	}
+
 	return nil
 }
