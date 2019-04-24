@@ -154,6 +154,16 @@ func GetTemplateOwnerId(id int64) (int64, error) {
 // IsTemplateAccessibleByUser tells if a template (identified by tid)
 // is accessible by a user (identified by uid)
 func IsTemplateAccessibleByUser(tid, uid int64) bool {
+	t, err := GetTemplate(tid)
+
+	if err != nil {
+		return false
+	}
+
+	if t.Public {
+		return true
+	}
+
 	oid, err := GetTemplateOwnerId(tid)
 
 	if err != nil {
