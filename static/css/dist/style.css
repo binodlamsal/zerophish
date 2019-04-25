@@ -16649,12 +16649,17 @@ form#targetForm.user-form-section .row {
       transform: none !important;
       margin-bottom: 30px; } }
 
-#flashes,
-#emptyMessage {
+#flashes {
   position: fixed;
   top: 40px;
   right: 40px;
-  z-index: 111; }
+  z-index: 111 !important;
+  width: 400px;
+  max-width: calc(100% - 50px); }
+
+#emptyMessage {
+  margin-top: 20px;
+  border-radius: 0; }
 
 .btn-headers.btn-custom {
   padding: 8px 25px; }
@@ -17297,6 +17302,10 @@ select.form-control {
   @media (max-width: 767px) {
     .modal .modal-header {
       padding: 15px 25px; } }
+  .modal .modal-header.flex-column {
+    flex-direction: column; }
+    .modal .modal-header.flex-column div {
+      margin-bottom: 10px; }
   .modal .modal-header button {
     opacity: 1; }
     .modal .modal-header button:hover {
@@ -18322,7 +18331,12 @@ span.for-des {
 #loading {
   margin-top: 40px; }
   #loading i {
-    color: #144197; }
+    color: #144197;
+    background: url(../../images/spinner.png);
+    width: 75px;
+    height: 75px;
+    background-size: 100% 100%;
+    font-size: 0; }
 
 .dataTables_wrapper {
   width: 100%; }
