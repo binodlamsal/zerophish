@@ -207,6 +207,7 @@ func API_Users(w http.ResponseWriter, r *http.Request) {
 				ud.Password,
 				ud.Role,
 				models.GetUserBakeryID(ud.Partner),
+				false,
 			)
 
 			if err != nil {
@@ -771,6 +772,7 @@ func API_Groups_Id_LMS(w http.ResponseWriter, r *http.Request) {
 						"qwerty",
 						models.LMSUser,
 						models.GetUserBakeryID(partner),
+						false,
 					)
 
 					if err != nil {

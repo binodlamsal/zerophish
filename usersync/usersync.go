@@ -26,7 +26,8 @@ const SlaveURL = "https://awareness.everycloudtech.com/"
 
 // PushUser sends user details to the main server and returns error if something is wrong and
 // in case of success it returns a master user id assigned to the newly created user.
-func PushUser(id int64, username, email, fullName, password string, rid, pid int64) (int64, error) {
+// sso flag - when set to true means this sync op should not create new user record but only update user id.
+func PushUser(id int64, username, email, fullName, password string, rid, pid int64, sso bool) (int64, error) {
 	params := url.Values{
 		"userid":   {strconv.FormatInt(id, 10)},
 		"username": {username},
@@ -35,6 +36,7 @@ func PushUser(id int64, username, email, fullName, password string, rid, pid int
 		"password": {password},
 		"partner":  {strconv.FormatInt(pid, 10)},
 		"roles":    {strconv.FormatInt(rid, 10)},
+		"sso":      {strconv.FormatBool(sso)},
 	}
 
 	client := &http.Client{}

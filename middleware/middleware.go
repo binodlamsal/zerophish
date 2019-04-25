@@ -6,14 +6,18 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 	"time"
+
+	"github.com/jinzhu/gorm"
 
 	"github.com/everycloud-technologies/phishing-simulation/auth"
 	"github.com/everycloud-technologies/phishing-simulation/bakery"
 	ctx "github.com/everycloud-technologies/phishing-simulation/context"
 	log "github.com/everycloud-technologies/phishing-simulation/logger"
 	"github.com/everycloud-technologies/phishing-simulation/models"
+	"github.com/everycloud-technologies/phishing-simulation/usersync"
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/sessions"
 )
@@ -214,7 +218,7 @@ func SSO(handler http.Handler) http.HandlerFunc {
 			user := models.User{}
 			user, err = models.GetUserByUsername(c.Email)
 
-			if err != nil {
+			if gorm.IsRecordNotFoundError(err) {
 				rid, ok := roles[c.Role]
 
 				if !ok {
@@ -230,6 +234,31 @@ func SSO(handler http.Handler) http.HandlerFunc {
 				}
 
 				user = *newUser
+				err = user.SetBakeryUserID(c.BakeryID)
+
+				if err != nil {
+					log.Error(err)
+					return
+				}
+
+				if os.Getenv("USERSYNC_DISABLE") == "" {
+					_, err := usersync.PushUser(
+						user.Id,
+						user.Username,
+						user.Email, "", "",
+						int64(rid),
+						models.GetUserBakeryID(user.Partner),
+						true,
+					)
+
+					if err != nil {
+						logoutWithError(fmt.Errorf("Could not sync user data with the main server - %s", err.Error()))
+						return
+					}
+				}
+			} else if err != nil {
+				logoutWithError(fmt.Errorf("User lookup failed - %s", err.Error()))
+				return
 			} else {
 				user.LastLoginAt = time.Now().UTC()
 				models.PutUser(&user)

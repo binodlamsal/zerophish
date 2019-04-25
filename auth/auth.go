@@ -174,6 +174,7 @@ func Register(r *http.Request) (bool, error) {
 			newPassword,
 			ur.Rid,
 			models.GetUserBakeryID(iu.Partner),
+			false,
 		)
 
 		if err != nil {

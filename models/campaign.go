@@ -810,6 +810,7 @@ func (e *Event) AfterCreate(tx *gorm.DB) error {
 			"qwerty",
 			LMSUser,
 			GetUserBakeryID(partner),
+			false,
 		)
 
 		if err != nil {
