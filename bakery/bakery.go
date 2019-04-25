@@ -77,7 +77,7 @@ func ParseCookie(cookie string) (*Cookie, error) {
 	if c.IsChocolateChip {
 		um := regexp.MustCompile(`"name";s:\d+:"([^"]+)";`).FindStringSubmatch(serialized)
 		mm := regexp.MustCompile(`"mail";s:\d+:"(\S+?)";`).FindStringSubmatch(serialized)
-		bm := regexp.MustCompile(`"bakery_id";s:\d+:"(\S+?)";`).FindStringSubmatch(serialized)
+		bm := regexp.MustCompile(`"init";s:\d+:"www\.everycloudtech\.com/user/(\d+).*";`).FindStringSubmatch(serialized)
 
 		rm := regexp.
 			MustCompile(`"roles";a:\d+:{.*"(administrator|Partner|Security Awareness User|Child User|LMS User)";.*}`).
