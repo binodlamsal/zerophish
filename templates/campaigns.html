@@ -91,13 +91,13 @@
                                 data-toggle="tooltip" data-placement="right" data-original-title="Choose from our pre-built templates or your own. Click the
                                     preview button to check them. Add more from the Email Template section."></i> : </label>
                             <div class="form-row">
-                                <div class="col-11">
+                                <div class="col-md-11 col-10">
                                     <select class="form-control" placeholder="Template Name"  id="template" />
                                         <option></option>
                                     </select>
                                 </div>
 
-                                <div class="col-1">
+                                <div class="col-md-1 col-2">
 
                                     <button class="btn btn-primary" id="preview-btn" data-toggle="tooltip" data-placement="left" title="Preview Template" onclick="preview()" disabled>
                                         <i class="fa fa-eye"></i>
@@ -195,7 +195,7 @@
                     :</label>
                 <select class="form-control" id="users" multiple="multiple" ></select>
             </div>
-            <div class="modal-footer no-lr-paddding">
+            <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal" onclick="dismiss()">Close</button>
                 <button type="button" id="launchButton" class="btn btn-primary" onclick="launch()">
                     <i class="fa fa-rocket"></i> Launch Campaign</button>
@@ -261,7 +261,7 @@
                 aria-hidden="true"><img src="images/close.png" alt=""></span></button>
         <h4 class="modal-title" id="templateModalLabel">Preview Template - <span class="tempname"> </span></h4>
         </div>
-        <div class="modal-header">
+        <div class="modal-header  flex-column">
             <div><strong>From:</strong>&nbsp;<span class="from_address"></span></div>
             <div><strong>Reply-To:</strong>&nbsp;<span class="from_address"></span></div>
             <div><strong>Subject:</strong>&nbsp;<span class="subject"></span></div>
