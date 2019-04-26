@@ -218,7 +218,7 @@ func PutUser(u *User) error {
 
 // UpdateUser update the given user (only non-empty fields will be updated)
 func UpdateUser(u *User) error {
-	return db.Model(u).Updates(u).Error
+	return db.Model(u).UpdateColumns(u).Error
 }
 
 // PutRole updates role

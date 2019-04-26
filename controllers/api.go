@@ -1583,8 +1583,10 @@ func API_UserSync(w http.ResponseWriter, r *http.Request) {
 		}{}
 
 		if err := json.NewDecoder(r.Body).Decode(&props); err != nil {
+			log.Error(err)
+
 			LoggableJSONResponse(w,
-				models.Response{Success: false, Message: "Invalid request"},
+				models.Response{Success: false, Message: fmt.Sprintf("Invalid request - %s", err.Error())},
 				http.StatusBadRequest, "usersync.PUT ->")
 
 			return
