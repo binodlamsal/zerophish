@@ -1,31 +1,35 @@
 package usersync
 
 import (
+	"crypto/tls"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
+func init() {
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+}
+
 func TestPushUser(t *testing.T) {
-	APIURL = "https://www.everycloudtech.com/api/bakery"
-	APIUser = ""
-	APIPassword = ""
+	APIURL = "https://localhost:3333/api/bakery"
 	uid, err := PushUser(1001, "test1001", "test1001@test.com", "Test 1001", "qwerty", 3, 0, false)
-	t.Log(err)
+	assert.NoError(t, err)
 	assert.NotEqual(t, 0, uid)
-	assert.NoError(t, err)
+	assert.FailNow(t, "Stop")
 }
 
-func TestPushUserMockFailed(t *testing.T) {
-	APIURL = "https://d7a855bb-2a45-4954-a53e-e680831db088.mock.pstmn.io/failed"
-	_, err := PushUser(1, "woody", "woody@forest.net", "Woody Woodpecker", "w00d", 1, 0, false)
-	t.Log(err)
-	assert.Error(t, err)
+func TestUpdateUser(t *testing.T) {
+	APIURL = "https://localhost:3333/api/bakery"
+	err := UpdateUser(1001, "test1001", "test1001@test.com", "qwerty", 3, 0)
+	assert.NoError(t, err)
+	assert.FailNow(t, "Stop")
 }
 
-func TestPushUserMockSuccessful(t *testing.T) {
-	APIURL = "https://d7a855bb-2a45-4954-a53e-e680831db088.mock.pstmn.io/successful"
-	_, err := PushUser(1, "woody", "woody@forest.net", "Woody Woodpecker", "w00d", 1, 0, false)
-	t.Log(err)
+func TestDeleteUser(t *testing.T) {
+	APIURL = "https://localhost:3333/api/bakery"
+	err := DeleteUser(1001)
 	assert.NoError(t, err)
+	assert.FailNow(t, "Stop")
 }

@@ -6,10 +6,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"strconv"
 	"strings"
+
+	log "github.com/everycloud-technologies/phishing-simulation/logger"
 )
 
 // APIURL is a URL of the user sync API
@@ -43,10 +46,19 @@ func PushUser(id int64, username, email, fullName, password string, rid, pid int
 	req, err := http.NewRequest("POST", APIURL+"/create", strings.NewReader(params.Encode()))
 	req.SetBasicAuth(APIUser, APIPassword)
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	if dump, err := httputil.DumpRequestOut(req, true); err == nil {
+		log.WithFields(map[string]interface{}{"tag": "usersync.PushUser ->"}).Infof("%q", dump)
+	}
+
 	resp, err := client.Do(req)
 
 	if err != nil {
 		return 0, err
+	}
+
+	if dump, err := httputil.DumpResponse(resp, true); err == nil {
+		log.WithFields(map[string]interface{}{"tag": "usersync.PushUser <-"}).Infof("%q", dump)
 	}
 
 	if resp.StatusCode != 200 {
@@ -113,10 +125,19 @@ func UpdateUser(buid int64, username, email, password string, role, partner int6
 	req, err := http.NewRequest("POST", APIURL+"/update", strings.NewReader(params.Encode()))
 	req.SetBasicAuth(APIUser, APIPassword)
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	if dump, err := httputil.DumpRequestOut(req, true); err == nil {
+		log.WithFields(map[string]interface{}{"tag": "usersync.UpdateUser ->"}).Infof("%q", dump)
+	}
+
 	resp, err := client.Do(req)
 
 	if err != nil {
 		return err
+	}
+
+	if dump, err := httputil.DumpResponse(resp, true); err == nil {
+		log.WithFields(map[string]interface{}{"tag": "usersync.UpdateUser <-"}).Infof("%q", dump)
 	}
 
 	if resp.StatusCode != 200 {
@@ -169,10 +190,19 @@ func DeleteUser(buid int64) error {
 	req, err := http.NewRequest("POST", APIURL+"/delete", strings.NewReader(params.Encode()))
 	req.SetBasicAuth(APIUser, APIPassword)
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	if dump, err := httputil.DumpRequestOut(req, true); err == nil {
+		log.WithFields(map[string]interface{}{"tag": "usersync.DeleteUser ->"}).Infof("%q", dump)
+	}
+
 	resp, err := client.Do(req)
 
 	if err != nil {
 		return err
+	}
+
+	if dump, err := httputil.DumpResponse(resp, true); err == nil {
+		log.WithFields(map[string]interface{}{"tag": "usersync.DeleteUser <-"}).Infof("%q", dump)
 	}
 
 	if resp.StatusCode != 200 {
