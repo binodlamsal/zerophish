@@ -7,20 +7,24 @@ function save(e) {
     attachments: []
   };
 
-  (t.name = $("#name").val()),
-    (t.tag = parseInt($("#category").val())),
-    (t.public = $("#publicly_available").prop("checked")),
-    (t.subject = $("#subject").val()),
-    (t.rating = parseInt($("input[name=stars]:checked").val())),
-    (t.html = CKEDITOR.instances.html_editor.getData()),
-    (t.html = t.html.replace(/https?:\/\/{{\.URL}}/gi, "{{.URL}}")),
-    (t.from_address = $("#from_address").val()),
-    $("#use_tracker_checkbox").prop("checked")
-      ? -1 == t.html.indexOf("{{.Tracker}}") &&
-        -1 == t.html.indexOf("{{.TrackingUrl}}") &&
-        (t.html = t.html.replace("</body>", "{{.Tracker}}</body>"))
-      : (t.html = t.html.replace("{{.Tracker}}</body>", "</body>")),
-    (t.text = $("#text_editor").val());
+  t.name = $("#name").val();
+  t.tag = parseInt($("#category").val());
+  t.public = $("#publicly_available").prop("checked");
+  t.subject = $("#subject").val();
+  t.rating = parseInt($("input[name=stars]:checked").val());
+  t.html = CKEDITOR.instances.html_editor.getData();
+  t.html = t.html.replace(/https?:\/\/{{\.URL}}/gi, "{{.URL}}");
+  t.from_address = $("#from_address").val();
+
+  if (
+    -1 == t.html.indexOf("{{.Tracker}}") &&
+    -1 == t.html.indexOf("{{.TrackingUrl}}")
+  ) {
+    t.html = t.html.replace("</body>", "<p>{{.Tracker}}</p></body>");
+  }
+
+  t.text = $("#text_editor").val();
+
   t.default_page_id =
     $("#page").select2("data")[0] !== undefined
       ? parseInt($("#page").select2("data")[0].id)
@@ -181,10 +185,7 @@ function edit(e) {
           t.type || "application/octet-stream"
         ])
         .draw();
-    }),
-    -1 != t.html.indexOf("{{.Tracker}}")
-      ? $("#use_tracker_checkbox").prop("checked", !0)
-      : $("#use_tracker_checkbox").prop("checked", !1)),
+    })),
     $(":radio").prop("checked", false);
   $(":radio[value=" + t.rating + "]").prop("checked", true);
 
@@ -263,10 +264,7 @@ function copy(e) {
           .row($(this).parents("tr"))
           .remove()
           .draw();
-      }),
-    -1 != t.html.indexOf("{{.Tracker}}")
-      ? $("#use_tracker_checkbox").prop("checked", !0)
-      : $("#use_tracker_checkbox").prop("checked", !1);
+      });
 }
 
 function preview(e) {
