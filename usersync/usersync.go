@@ -6,10 +6,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"strconv"
 	"strings"
+
+	log "github.com/everycloud-technologies/phishing-simulation/logger"
 )
 
 // APIURL is a URL of the user sync API
@@ -26,7 +29,8 @@ const SlaveURL = "https://awareness.everycloudtech.com/"
 
 // PushUser sends user details to the main server and returns error if something is wrong and
 // in case of success it returns a master user id assigned to the newly created user.
-func PushUser(id int64, username, email, fullName, password string, rid, pid int64) (int64, error) {
+// sso flag - when set to true means this sync op should not create new user record but only update user id.
+func PushUser(id int64, username, email, fullName, password string, rid, pid int64, sso bool) (int64, error) {
 	params := url.Values{
 		"userid":   {strconv.FormatInt(id, 10)},
 		"username": {username},
@@ -35,16 +39,26 @@ func PushUser(id int64, username, email, fullName, password string, rid, pid int
 		"password": {password},
 		"partner":  {strconv.FormatInt(pid, 10)},
 		"roles":    {strconv.FormatInt(rid, 10)},
+		"sso":      {strconv.FormatBool(sso)},
 	}
 
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", APIURL+"/create", strings.NewReader(params.Encode()))
 	req.SetBasicAuth(APIUser, APIPassword)
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	if dump, err := httputil.DumpRequestOut(req, true); err == nil {
+		log.WithFields(map[string]interface{}{"tag": "usersync.PushUser ->"}).Infof("%q", dump)
+	}
+
 	resp, err := client.Do(req)
 
 	if err != nil {
 		return 0, err
+	}
+
+	if dump, err := httputil.DumpResponse(resp, true); err == nil {
+		log.WithFields(map[string]interface{}{"tag": "usersync.PushUser <-"}).Infof("%q", dump)
 	}
 
 	if resp.StatusCode != 200 {
@@ -111,10 +125,19 @@ func UpdateUser(buid int64, username, email, password string, role, partner int6
 	req, err := http.NewRequest("POST", APIURL+"/update", strings.NewReader(params.Encode()))
 	req.SetBasicAuth(APIUser, APIPassword)
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	if dump, err := httputil.DumpRequestOut(req, true); err == nil {
+		log.WithFields(map[string]interface{}{"tag": "usersync.UpdateUser ->"}).Infof("%q", dump)
+	}
+
 	resp, err := client.Do(req)
 
 	if err != nil {
 		return err
+	}
+
+	if dump, err := httputil.DumpResponse(resp, true); err == nil {
+		log.WithFields(map[string]interface{}{"tag": "usersync.UpdateUser <-"}).Infof("%q", dump)
 	}
 
 	if resp.StatusCode != 200 {
@@ -167,10 +190,19 @@ func DeleteUser(buid int64) error {
 	req, err := http.NewRequest("POST", APIURL+"/delete", strings.NewReader(params.Encode()))
 	req.SetBasicAuth(APIUser, APIPassword)
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	if dump, err := httputil.DumpRequestOut(req, true); err == nil {
+		log.WithFields(map[string]interface{}{"tag": "usersync.DeleteUser ->"}).Infof("%q", dump)
+	}
+
 	resp, err := client.Do(req)
 
 	if err != nil {
 		return err
+	}
+
+	if dump, err := httputil.DumpResponse(resp, true); err == nil {
+		log.WithFields(map[string]interface{}{"tag": "usersync.DeleteUser <-"}).Infof("%q", dump)
 	}
 
 	if resp.StatusCode != 200 {

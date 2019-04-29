@@ -11,15 +11,21 @@ func init() {
 }
 
 func TestParseChocolatechipCookie(t *testing.T) {
-	cookie, err := CreateChocolatechipCookie("Graham O'Reilly", "graham.oreilly@everycloudtech.eu", "administrator")
-	assert.NoError(t, err)
+	username := "eugene"
+	email := "eugene.mastervip@gmail.com"
+	role := "administrator"
+	buid := int64(39133)
+	cookie, err := CreateChocolatechipCookie(username, email, role, buid)
+
+	// assert.NoError(t, err)
 	c, err := ParseCookie(cookie)
 	assert.NoError(t, err)
 	assert.True(t, c.IsChocolateChip)
 	assert.False(t, c.IsOatmeal)
-	assert.Equal(t, "Graham O'Reilly", c.User)
-	assert.Equal(t, "graham.oreilly@everycloudtech.eu", c.Email)
-	assert.Equal(t, "administrator", c.Role)
+	assert.Equal(t, username, c.User)
+	assert.Equal(t, email, c.Email)
+	assert.Equal(t, role, c.Role)
+	assert.Equal(t, buid, c.BakeryID)
 	assert.Empty(t, c.Error)
 }
 

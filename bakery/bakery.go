@@ -11,6 +11,7 @@ import (
 	"errors"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -21,6 +22,7 @@ var ErrUnknownCookieType = errors.New("bakery: unknown cookie type")
 var ErrUnknownUserRole = errors.New("bakery: could not determine user role")
 var ErrUnknownUserEmail = errors.New(`bakery: could not determine user email`)
 var ErrUnknownUsername = errors.New(`bakery: could not determine username`)
+var ErrUnknownBakeryID = errors.New(`bakery: could not determine bakery user id`)
 
 // Cookie contains props of a Bakery SSO cookie
 type Cookie struct {
@@ -30,6 +32,7 @@ type Cookie struct {
 	User            string
 	Email           string
 	Role            string
+	BakeryID        int64
 	Error           string
 }
 
@@ -74,6 +77,7 @@ func ParseCookie(cookie string) (*Cookie, error) {
 	if c.IsChocolateChip {
 		um := regexp.MustCompile(`"name";s:\d+:"([^"]+)";`).FindStringSubmatch(serialized)
 		mm := regexp.MustCompile(`"mail";s:\d+:"(\S+?)";`).FindStringSubmatch(serialized)
+		bm := regexp.MustCompile(`"init";s:\d+:"www\.everycloudtech\.com/user/(\d+).*";`).FindStringSubmatch(serialized)
 
 		rm := regexp.
 			MustCompile(`"roles";a:\d+:{.*"(administrator|Partner|Security Awareness User|Child User|LMS User)";.*}`).
@@ -91,7 +95,17 @@ func ParseCookie(cookie string) (*Cookie, error) {
 			return nil, ErrUnknownUserRole
 		}
 
-		c.User, c.Email, c.Role = um[1], mm[1], rm[1]
+		if len(bm) < 2 {
+			return nil, ErrUnknownBakeryID
+		}
+
+		buid, err := strconv.ParseInt(bm[1], 10, 64)
+
+		if err != nil {
+			return nil, err
+		}
+
+		c.User, c.Email, c.Role, c.BakeryID = um[1], mm[1], rm[1], buid
 	}
 
 	if c.IsOatmeal {
@@ -140,13 +154,14 @@ func CreateOatmealCookie(username, password, destination, slave string) (string,
 // CreateChocolatechipCookie generates an HMAC-signed cookie encrypted with AES-128 (ECB mode).
 // Such cookie is to be used with Drupal Bakery SSO module for transferring user credentials.
 // (in gophish app we do not issue CHOCOLATECHIPSSL cookies so this func is used for testing only)
-func CreateChocolatechipCookie(username, email string, role string) (string, error) {
+func CreateChocolatechipCookie(username, email string, role string, buid int64) (string, error) {
 	props := map[interface{}]interface{}{
 		"name":      username,
 		"mail":      email,
 		"calories":  320,
 		"timestamp": time.Now().UTC().Unix(),
 		"master":    1,
+		"bakery_id": strconv.FormatInt(buid, 10),
 		"roles": map[int]string{
 			2: "authenticated user",
 			6: role,

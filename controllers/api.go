@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/http/httputil"
 	"net/mail"
 	"net/url"
 	"os"
@@ -207,6 +208,7 @@ func API_Users(w http.ResponseWriter, r *http.Request) {
 				ud.Password,
 				ud.Role,
 				models.GetUserBakeryID(ud.Partner),
+				false,
 			)
 
 			if err != nil {
@@ -771,6 +773,7 @@ func API_Groups_Id_LMS(w http.ResponseWriter, r *http.Request) {
 						"qwerty",
 						models.LMSUser,
 						models.GetUserBakeryID(partner),
+						false,
 					)
 
 					if err != nil {
@@ -1522,26 +1525,54 @@ func API_Subscriptions(w http.ResponseWriter, r *http.Request) {
 func API_UserSync(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	buid, _ := strconv.ParseInt(vars["buid"], 0, 64)
-	u, err := models.GetUserByBakeryID(buid)
-
-	if err != nil {
-		log.Error(err)
-		JSONResponse(w, models.Response{Success: false, Message: "User not found"}, http.StatusNotFound)
-		return
-	}
 
 	switch {
 	case r.Method == "DELETE":
-		_, err := models.DeleteUser(u.Id)
+		if dump, err := httputil.DumpRequest(r, true); err == nil {
+			log.WithFields(map[string]interface{}{"tag": "usersync.DELETE <-"}).Infof("%q", dump)
+		}
+
+		u, err := models.GetUserByBakeryID(buid)
 
 		if err != nil {
-			JSONResponse(w, models.Response{Success: false, Message: "Error deleting user"}, http.StatusInternalServerError)
+			log.Error(err)
+			LoggableJSONResponse(w,
+				models.Response{Success: false, Message: "User not found"},
+				http.StatusNotFound, "usersync.DELETE ->")
+
 			return
 		}
 
-		JSONResponse(w, models.Response{Success: true, Message: "User deleted"}, http.StatusOK)
+		_, err = models.DeleteUser(u.Id)
+
+		if err != nil {
+			LoggableJSONResponse(w,
+				models.Response{Success: false, Message: "Error deleting user"},
+				http.StatusInternalServerError, "usersync.DELETE ->")
+
+			return
+		}
+
+		LoggableJSONResponse(w,
+			models.Response{Success: true, Message: "User deleted"},
+			http.StatusOK, "usersync.DELETE ->")
 
 	case r.Method == "PUT":
+		if dump, err := httputil.DumpRequest(r, true); err == nil {
+			log.WithFields(map[string]interface{}{"tag": "usersync.PUT <-"}).Infof("%q", dump)
+		}
+
+		u, err := models.GetUserByBakeryID(buid)
+
+		if err != nil {
+			log.Error(err)
+			LoggableJSONResponse(w,
+				models.Response{Success: false, Message: "User not found"},
+				http.StatusNotFound, "usersync.PUT ->")
+
+			return
+		}
+
 		props := struct {
 			Username string `json:"username"`
 			Email    string `json:"email"`
@@ -1552,7 +1583,12 @@ func API_UserSync(w http.ResponseWriter, r *http.Request) {
 		}{}
 
 		if err := json.NewDecoder(r.Body).Decode(&props); err != nil {
-			JSONResponse(w, models.Response{Success: false, Message: "Invalid request"}, http.StatusBadRequest)
+			log.Error(err)
+
+			LoggableJSONResponse(w,
+				models.Response{Success: false, Message: fmt.Sprintf("Invalid request - %s", err.Error())},
+				http.StatusBadRequest, "usersync.PUT ->")
+
 			return
 		}
 
@@ -1562,7 +1598,11 @@ func API_UserSync(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				err = fmt.Errorf("Could not find partner user with bakery user id %d - %s", props.Partner, err.Error())
 				log.Error(err)
-				JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
+
+				LoggableJSONResponse(w,
+					models.Response{Success: false, Message: err.Error()},
+					http.StatusInternalServerError, "usersync.PUT ->")
+
 				return
 			}
 
@@ -1580,28 +1620,30 @@ func API_UserSync(w http.ResponseWriter, r *http.Request) {
 			}); err != nil {
 			log.Error(err)
 
-			JSONResponse(w,
+			LoggableJSONResponse(w,
 				models.Response{
 					Success: false,
 					Message: fmt.Sprintf("Could not update user with id %d - %s", u.Id, err.Error())},
-				http.StatusBadRequest)
+				http.StatusBadRequest, "usersync.PUT ->")
 
 			return
 		}
 
 		if props.Role > 0 && props.Role < 6 {
 			if err = models.SetUserRole(u.Id, props.Role); err != nil {
-				JSONResponse(w,
+				LoggableJSONResponse(w,
 					models.Response{
 						Success: false,
 						Message: fmt.Sprintf("Could not update role of user with id %d - %s", u.Id, err.Error())},
-					http.StatusInternalServerError)
+					http.StatusInternalServerError, "usersync.PUT ->")
 
 				return
 			}
 		}
 
-		JSONResponse(w, models.Response{Success: true, Message: "User updated"}, http.StatusOK)
+		LoggableJSONResponse(w,
+			models.Response{Success: true, Message: "User updated"},
+			http.StatusOK, "usersync.PUT ->")
 	}
 }
 
@@ -1616,6 +1658,19 @@ func JSONResponse(w http.ResponseWriter, d interface{}, c int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(c)
 	fmt.Fprintf(w, "%s", dj)
+}
+
+// LoggableJSONResponse does the same as JSONResponse and logs the response with the given tag
+func LoggableJSONResponse(w http.ResponseWriter, d interface{}, c int, tag string) {
+	dj, err := json.MarshalIndent(d, "", "  ")
+	if err != nil {
+		http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
+		log.Error(err)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(c)
+	fmt.Fprintf(w, "%s", dj)
+	log.WithFields(map[string]interface{}{"tag": tag}).Infof("%q", dj)
 }
 
 // prepare filters out sensitive fields based on user role
