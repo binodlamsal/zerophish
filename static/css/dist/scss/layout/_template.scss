@@ -201,21 +201,32 @@ tspan,
 div#modalforpreview {
     .modal-body{
         overflow-x: auto !important;
+        div,
+        p,
+        span{
+            
+        }
+        *{
+             font-family: 'Gotham HTF' !important;  
+             font-size: 500 !important;
+            color: #989898 !important;
+        }
     }
     table{
-     td{
-       border: none !important;
-       div{
-        background: none !important;
+        td{
+            border: none !important;
+            div{
+                background: none !important;
+            }
+            hr{
+                width: 100%;
+                margin: 0;
+                border: 0;
+            }
+        }
     }
-    hr{
-        width: 100%;
-        margin: 0;
-        border: 0;
+    img {
+        height: auto  !important;
     }
-}
-}
-img {
-    height: auto  !important;
-}
+
 }

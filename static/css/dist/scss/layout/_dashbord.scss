@@ -1049,6 +1049,11 @@ pointer-events:auto;
 	margin-top: 40px;
 	i{
 		color: #144197;
+			background: url(../../images/spinner.png);
+    width: 75px;
+    height: 75px;
+    background-size: 100% 100%;
+    font-size: 0;
 	}
 }
 .dataTables_wrapper {

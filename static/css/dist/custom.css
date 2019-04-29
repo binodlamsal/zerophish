@@ -57,7 +57,7 @@
 
   .rating:not(:hover) label input:checked ~ .icon,
   .rating:hover label:hover input ~ .icon {
-    color: #09f;
+    color: #09f !important;
   }
 
   .rating label input:focus:not(:checked) ~ .icon:last-child {

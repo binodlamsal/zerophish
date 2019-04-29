@@ -9,7 +9,7 @@ html{
  overflow-x: hidden;
 }
 body{
- font-family: 'Gotham HTF'; 
+ font-family: 'Gotham HTF' !important; 
  font-size: 16px;
  font-weight: 500;
  background: #f8faf9;
@@ -18,6 +18,16 @@ body{
  width: 100%;
 
 }
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p{
+   font-family: 'Gotham HTF' !important; 
+   font-style: normal;
+}
 a:hover,
 a:focus{
   text-decoration: none;
@@ -25,6 +35,9 @@ a:focus{
 a:hover,
 a:focus{
   outline: 0;
+}
+a{
+  text-decoration: none !important; 
 }
 .flate-button:focus,
 .flate-button:hover{
@@ -47,6 +60,9 @@ button {
   -moz-transition: all ease-in-out 0.4s;
   -ms-transition: all ease-in-out 0.4s;
   -o-transition: all ease-in-out 0.4s;
+}
+#sendTestEmailModal{
+  word-break: break-all;
 }
 .btm-space{
   margin-bottom: 15px;
@@ -909,12 +925,17 @@ form#targetForm.user-form-section .row{
     margin-bottom: 30px;
   }
 }
-#flashes,
-#emptyMessage{
+#flashes{
   position: fixed;
   top: 40px;
   right: 40px;
-  z-index: 111;
+  z-index: 111 !important;
+   width: 400px;
+    max-width: calc(100% - 50px);
+}
+#emptyMessage{
+  margin-top: 20px;
+ border-radius: 0;
 }
 .btn-headers.btn-custom{
   padding: 8px 25px;
