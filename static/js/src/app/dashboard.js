@@ -465,7 +465,7 @@ function load(filter) {
         generateStatsPieCharts(campaigns);
         generateTimelineChart(campaigns);
       } else {
-        $("#emptyMessage").hide();
+        $("#emptyMessage").show();
       }
     })
     .error(function() {
