@@ -72,7 +72,7 @@
     </div>
 </div>
 <!-- Modal -->
-<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel">
+<div class="modal fade" id="modal"  role="dialog" aria-labelledby="modalLabel">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <!-- New Template Modal -->
@@ -127,7 +127,7 @@
                 </div>
                 <!-- Nav tabs -->
                 <ul class="nav nav-tabs text-nav" role="tablist">
-                    <li class="active" role="text"><a href="#text" aria-controls="text" role="tab" data-toggle="tab">Text</a></li>
+                    <li class="active" role="text"><a href="#text" aria-controls="text" class="show active" role="tab" data-toggle="tab">Text</a></li>
                     <li role="html"><a href="#html" aria-controls="html" role="tab" data-toggle="tab">HTML</a></li>
                 </ul>
                 <!-- Tab panes -->
@@ -140,6 +140,14 @@
                     </div>
                 </div>
 
+                <div class="checkbox checkbox-primary btm-space">
+                    <label class="checkbx">
+                        <input class="checkAll" type="checkbox" for="use_tracker_checkbox" name="rembember" value="rembember"  checked="">
+                        <span class="checkbox-btn"><img src="images/tick.png" alt=""></span>
+                        <!--  Add Tracking Image -->
+                    </label>
+                    <label for="use_tracker_checkbox">Add Tracking Image</label>
+                </div>
                 {{if (eq .Role "admin") }}
 
                 <div class="checkbox checkbox-primary btm-space">
