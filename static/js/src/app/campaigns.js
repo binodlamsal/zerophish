@@ -465,14 +465,17 @@ $(document).ready(function() {
       vertical: "bottom"
     },
     showTodayButton: !0,
-    defaultDate: moment()
+    defaultDate: moment(),
+    collapse: false,
+
   }),
     $("#send_by_date").datetimepicker({
       widgetPositioning: {
         vertical: "bottom"
       },
       showTodayButton: !0,
-      useCurrent: !1
+      useCurrent: !1,
+      collapse: false,
     }),
     $("#start_time").datetimepicker({
       format: "LT"
