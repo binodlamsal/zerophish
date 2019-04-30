@@ -180,3 +180,10 @@ div.dataTables_wrapper div.dataTables_length select {
 #refresh_message {
   display: none !important;
 }
+
+/*remove table border for campaign page*/
+body .table > thead > tr > th, .table > tbody > tr > th,
+body .table > tfoot > tr > th, .table > thead > tr > td, 
+body .table > tbody > tr > td, .table > tfoot > tr > td{
+  border-top: transparent;
+}
