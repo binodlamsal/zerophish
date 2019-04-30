@@ -307,9 +307,11 @@ function setupOptions() {
         data: data
       });
 
-      1 === e.length &&
-        ($("#template.form-control").val(a[0].id),
-        $("#template.form-control").trigger("change.select2"));
+      if (e.length === 1) {
+        $("#template.form-control").val(a[0].id);
+        $("#template.form-control").trigger("change.select2");
+        $("#preview-btn").prop("disabled", "");
+      }
     });
   }
 

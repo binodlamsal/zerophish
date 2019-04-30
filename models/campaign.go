@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/mail"
 	"net/url"
 	"os"
@@ -708,6 +709,42 @@ func DeleteCampaign(id int64) error {
 		log.Error(err)
 	}
 	return err
+}
+
+// DeleteUserCampaigns deletes campaigns created by user with the given uid
+func DeleteUserCampaigns(uid int64) error {
+	var ids []int64
+
+	err := db.
+		Model(&Campaign{}).
+		Where("user_id=?", uid).
+		Pluck("id", &ids).Error
+
+	if err != nil {
+		return fmt.Errorf(
+			"Couldn't find ids of campaigns owned by user with id %d - %s",
+			uid, err.Error(),
+		)
+	}
+
+	var errs []error
+
+	for _, id := range ids {
+		err = DeleteCampaign(id)
+
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	if len(errs) > 0 {
+		return fmt.Errorf(
+			"Couldn't delete %d campaign(s) owned by user with id %d",
+			len(errs), uid,
+		)
+	}
+
+	return nil
 }
 
 // CompleteCampaign effectively "ends" a campaign.

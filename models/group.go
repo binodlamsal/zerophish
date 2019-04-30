@@ -467,6 +467,39 @@ func DeleteGroup(g *Group) error {
 	return nil
 }
 
+// DeleteUserGroups deletes groups created by user with the given uid
+func DeleteUserGroups(uid int64) error {
+	var groups []*Group
+	err := db.Table("groups").Where("user_id=?", uid).Scan(&groups).Error
+
+	if err != nil {
+		return fmt.Errorf(
+			"Couldn't find groups owned by user with id %d - %s",
+			uid, err.Error(),
+		)
+	}
+
+	var errs []error
+
+	for _, g := range groups {
+		g.Targets, _ = GetTargets(g.Id)
+		err = DeleteGroup(g)
+
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	if len(errs) > 0 {
+		return fmt.Errorf(
+			"Couldn't delete %d group(s) owned by user with id %d",
+			len(errs), uid,
+		)
+	}
+
+	return nil
+}
+
 func insertTargetIntoGroup(t Target, gid int64) error {
 	if _, err = mail.ParseAddress(t.Email); err != nil {
 		log.WithFields(logrus.Fields{

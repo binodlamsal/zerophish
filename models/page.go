@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -469,4 +470,18 @@ func DeletePage(id int64) error {
 	}
 
 	return err
+}
+
+// DeleteUserPages deletes pages created by user with the given uid
+func DeleteUserPages(uid int64) error {
+	err := db.Where("user_id=?", uid).Delete(&Page{}).Error
+
+	if err != nil {
+		return fmt.Errorf(
+			"Couldn't delete pages created by user with id %d - %s",
+			uid, err.Error(),
+		)
+	}
+
+	return nil
 }

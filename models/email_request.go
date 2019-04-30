@@ -190,3 +190,17 @@ func (s *EmailRequest) Generate(msg *gomail.Message) error {
 func (s *EmailRequest) GetDialer() (mailer.Dialer, error) {
 	return s.SMTP.GetDialer()
 }
+
+// DeleteUserEmailRequests deletes email requests created by user with the given uid
+func DeleteUserEmailRequests(uid int64) error {
+	err := db.Where("user_id=?", uid).Delete(&EmailRequest{}).Error
+
+	if err != nil {
+		return fmt.Errorf(
+			"Couldn't delete one or more email requests related to user with id %d - %s",
+			uid, err.Error(),
+		)
+	}
+
+	return nil
+}

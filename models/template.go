@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"net/mail"
 	"time"
 
@@ -552,6 +553,42 @@ func DeleteTemplate(id int64) error {
 	if err != nil {
 		log.Error(err)
 		return err
+	}
+
+	return nil
+}
+
+// DeleteUserTemplates deletes templates created by user with the given uid
+func DeleteUserTemplates(uid int64) error {
+	var ids []int64
+
+	err := db.
+		Model(&Template{}).
+		Where("user_id=?", uid).
+		Pluck("id", &ids).Error
+
+	if err != nil {
+		return fmt.Errorf(
+			"Couldn't find ids of templates owned by user with id %d - %s",
+			uid, err.Error(),
+		)
+	}
+
+	var errs []error
+
+	for _, id := range ids {
+		err = DeleteTemplate(id)
+
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	if len(errs) > 0 {
+		return fmt.Errorf(
+			"Couldn't delete %d template(s) owned by user with id %d",
+			len(errs), uid,
+		)
 	}
 
 	return nil

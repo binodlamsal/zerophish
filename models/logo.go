@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -29,6 +30,20 @@ func DeleteLogo(id int64) error {
 	}
 
 	return err
+}
+
+// DeleteUserLogo deletes logo created by user with the given uid
+func DeleteUserLogo(uid int64) error {
+	err := db.Where("user_id=?", uid).Delete(&Logo{}).Error
+
+	if err != nil {
+		return fmt.Errorf(
+			"Couldn't delete logo created by user with id %d - %s",
+			uid, err.Error(),
+		)
+	}
+
+	return nil
 }
 
 // Serve writes proper headers and content of this logo image to the given ResponseWriter

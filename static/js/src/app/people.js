@@ -23,6 +23,11 @@ function save(e) {
   if ($("#expiration_date").length) {
     if ($("#expiration_date").val() != "") {
       t.expiration_date = $("#expiration_date").val() + "T23:59:59.000Z";
+    } else {
+      if (t.plan_id) {
+        modalError("Expiration date cannot be empty");
+        return;
+      }
     }
   }
 
@@ -445,12 +450,6 @@ $(document).ready(function() {
           : 0;
       });
     });
-
-  $("#expiration_date").change(function() {
-    if ($(this).val() == "") {
-      $("#plan_id").val("");
-    }
-  });
 });
 
 function isValidPassword(password) {

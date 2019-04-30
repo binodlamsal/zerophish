@@ -377,15 +377,27 @@ func GetChildUserIds(uid int64) ([]int64, error) {
 		return ids, nil
 	}
 
-	// err := db.Raw(
-	// 	`SELECT users.id FROM users LEFT JOIN users_role ON users_role.uid=users.id
-	// 	WHERE users_role.rid=? AND users.partner=?`,
-	// 	ChildUser, uid).Scan(&ids).Error
-
 	err := db.
 		Model(&User{}).
 		Joins("LEFT JOIN users_role ON users_role.uid=users.id").
 		Where("users_role.rid=? AND users.partner=?", ChildUser, uid).
+		Pluck("id", &ids).Error
+
+	return ids, err
+}
+
+// GetDirectCustomerIds returns user ids of all customers directly bound to the given uid
+func GetDirectCustomerIds(uid int64) ([]int64, error) {
+	var ids []int64
+
+	if uid == 0 {
+		return ids, nil
+	}
+
+	err = db.
+		Model(&User{}).
+		Joins("LEFT JOIN users_role ON users_role.uid=users.id").
+		Where("users_role.rid = ? AND users.partner = ?", Customer, uid).
 		Pluck("id", &ids).Error
 
 	return ids, err
@@ -536,7 +548,7 @@ func (u User) IsSubscribed() bool {
 			partner, err := GetUser(u.Partner)
 
 			if err != nil {
-				log.Errorf("Could not determine partner account of customer with id %d", u.Id)
+				log.Errorf("Could not determine partner account of customer with id %d - %s", u.Id, err.Error())
 				return false
 			}
 
@@ -735,7 +747,95 @@ func DeleteUser(uid int64) (int64, error) {
 	_ = DeleteUserRoles(uid)
 	_ = DeleteUserBakeryID(uid)
 
+	if err = DeleteUserCampaigns(uid); err != nil {
+		log.Error(err)
+	}
+
+	if err = DeleteUserEmailRequests(uid); err != nil {
+		log.Error(err)
+	}
+
+	if err = DeleteUserGroups(uid); err != nil {
+		log.Error(err)
+	}
+
+	if err = DeleteUserLogo(uid); err != nil {
+		log.Error(err)
+	}
+
+	if err = DeleteUserPages(uid); err != nil {
+		log.Error(err)
+	}
+
+	if err = DeleteUserTemplates(uid); err != nil {
+		log.Error(err)
+	}
+
+	if err = DeleteChildUsers(uid); err != nil {
+		log.Error(err)
+	}
+
+	if err = DeleteCustomers(uid); err != nil {
+		log.Error(err)
+	}
+
 	return buid, nil
+}
+
+// DeleteChildUsers deletes all child users of a user with the given uid
+func DeleteChildUsers(uid int64) error {
+	cuids, err := GetChildUserIds(uid)
+
+	if err != nil {
+		return fmt.Errorf("Couldn't find ids of child users of user with id %d - %s", uid, err.Error())
+	}
+
+	var errs []error
+
+	for _, cuid := range cuids {
+		_, err = DeleteUser(cuid)
+
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	if len(errs) > 0 {
+		return fmt.Errorf(
+			"Couldn't delete %d child user(s) of user with id %d",
+			len(errs), uid,
+		)
+	}
+
+	return nil
+}
+
+// DeleteCustomers deletes all customers of a user with the given uid
+func DeleteCustomers(uid int64) error {
+	cids, err := GetDirectCustomerIds(uid)
+
+	if err != nil {
+		return fmt.Errorf("Couldn't find ids of customers of user with id %d - %s", uid, err.Error())
+	}
+
+	var errs []error
+
+	for _, cid := range cids {
+		_, err = DeleteUser(cid)
+
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	if len(errs) > 0 {
+		return fmt.Errorf(
+			"Couldn't delete %d customer(s) of user with id %d",
+			len(errs), uid,
+		)
+	}
+
+	return nil
 }
 
 // GetUserPartners returns all the partners from the database
