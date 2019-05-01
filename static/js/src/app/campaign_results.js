@@ -753,6 +753,7 @@ function poll() {
         email_series_data[progressListing[i]]++;
       }
     });
+
     $.each(email_series_data, function(status, count) {
       var email_data = [];
       if (!(status in statusMapping)) {
@@ -770,6 +771,29 @@ function poll() {
       chart.series[0].update({
         data: email_data
       });
+    });
+
+    // Update Phish Risk Chart
+    var phishRisk = 0;
+
+    if (
+      email_series_data["Clicked Link"] !== undefined &&
+      email_series_data["Email Sent"] !== undefined &&
+      email_series_data["Email Sent"] != 0
+    ) {
+      phishRisk = Math.round(
+        (email_series_data["Clicked Link"] / email_series_data["Email Sent"]) *
+          100
+      );
+    }
+
+    var chart = $("#phish_risk_chart").highcharts();
+
+    chart.series[0].update({
+      data: [
+        { name: "Phish Risk", y: phishRisk, count: phishRisk + "%" },
+        { name: "", y: 100 - phishRisk }
+      ]
     });
 
     /* Update the datatable */
