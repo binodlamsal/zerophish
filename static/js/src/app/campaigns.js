@@ -285,12 +285,7 @@ function setupOptions() {
 
       $("#template.form-control").change(function(event) {
         $("#from_address").val(addresses[event.target.value]);
-        if (
-          $("#page.form-control")
-            .find(":selected")
-            .val() == "" &&
-          pages[event.target.value] !== 0
-        ) {
+        if (pages[event.target.value] !== 0) {
           $("#page.form-control").val(pages[event.target.value]);
           $("#page.form-control").trigger("change.select2");
         }
