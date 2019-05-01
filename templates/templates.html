@@ -127,27 +127,19 @@
                 </div>
                 <!-- Nav tabs -->
                 <ul class="nav nav-tabs text-nav" role="tablist">
-                    <li class="active" role="text"><a href="#text" aria-controls="text" class="show active" role="tab" data-toggle="tab">Text</a></li>
-                    <li role="html"><a href="#html" aria-controls="html" role="tab" data-toggle="tab">HTML</a></li>
+                    <li class="active" role="html"><a href="#html" class="show active" aria-controls="html" role="tab" data-toggle="tab">HTML</a></li>
+                    <li role="text"><a href="#text" aria-controls="text" role="tab" data-toggle="tab">Text</a></li>
                 </ul>
                 <!-- Tab panes -->
                 <div class="tab-content btm-space">
-                    <div role="tabpanel" class="tab-pane active" id="text">
-                        <textarea rows="10" id="text_editor" class="gophish-editor form-control" placeholder="Plaintext"></textarea>
-                    </div>
-                    <div role="tabpanel" class="tab-pane" id="html">
+                    <div role="tabpanel" class="tab-pane active" id="html">
                         <textarea id="html_editor"></textarea>
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="text">
+                        <textarea rows="10" id="text_editor" class="gophish-editor form-control" placeholder="Plaintext"></textarea>
                     </div>
                 </div>
 
-                <div class="checkbox checkbox-primary btm-space">
-                    <label class="checkbx">
-                        <input class="checkAll" type="checkbox" for="use_tracker_checkbox" name="rembember" value="rembember"  checked="">
-                        <span class="checkbox-btn"><img src="images/tick.png" alt=""></span>
-                        <!--  Add Tracking Image -->
-                    </label>
-                    <label for="use_tracker_checkbox">Add Tracking Image</label>
-                </div>
                 {{if (eq .Role "admin") }}
 
                 <div class="checkbox checkbox-primary btm-space">

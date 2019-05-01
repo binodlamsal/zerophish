@@ -187,6 +187,15 @@ function edit(e) {
         .draw();
     })),
     $(":radio").prop("checked", false);
+
+  if (e === -1) {
+    $("#html_editor").val("<html><body></body></html>");
+
+    setTimeout(function() {
+      CKEDITOR.instances.html_editor.setMode("wysiwyg");
+    }, 100);
+  }
+
   $(":radio[value=" + t.rating + "]").prop("checked", true);
 
   $("#attachmentsTable")
