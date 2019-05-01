@@ -92,14 +92,14 @@ func API_Campaigns(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		parsedURL, err := url.Parse("http://" + r.Host)
+		parsedURL, err := url.Parse("https://" + r.Host)
 
 		if err != nil {
 			JSONResponse(w, models.Response{Success: false, Message: "Could not determine hostname"}, http.StatusInternalServerError)
 			return
 		}
 
-		c.URL = "http://" + parsedURL.Hostname()
+		c.URL = "https://" + parsedURL.Hostname()
 
 		err = models.PostCampaign(&c, ctx.Get(r, "user_id").(int64))
 		if err != nil {
@@ -1359,7 +1359,7 @@ func API_Import_Site(w http.ResponseWriter, r *http.Request) {
 // API_Send_Test_Email sends a test email using the template name
 // and Target given.
 func API_Send_Test_Email(w http.ResponseWriter, r *http.Request) {
-	parsedURL, err := url.Parse("http://" + r.Host)
+	parsedURL, err := url.Parse("https://" + r.Host)
 
 	if err != nil {
 		JSONResponse(w, models.Response{Success: false, Message: "Could not determine hostname"}, http.StatusInternalServerError)
@@ -1369,7 +1369,7 @@ func API_Send_Test_Email(w http.ResponseWriter, r *http.Request) {
 	s := &models.EmailRequest{
 		ErrorChan: make(chan error),
 		UserId:    ctx.Get(r, "user_id").(int64),
-		URL:       "http://" + parsedURL.Hostname(),
+		URL:       "https://" + parsedURL.Hostname(),
 	}
 	if r.Method != "POST" {
 		JSONResponse(w, models.Response{Success: false, Message: "Method not allowed"}, http.StatusBadRequest)
