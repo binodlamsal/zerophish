@@ -83,6 +83,7 @@ func CreateAdminRouter() http.Handler {
 	api.HandleFunc(`/groups/{id:[0-9]+}/lms_users/jobs/{jid:[a-f0-9\-]{36}}`, Use(API_Groups_Id_LMS_Jobs_Id, mid.RequireAPIKey))
 	api.HandleFunc("/templates/", Use(API_Templates, mid.RequireAPIKey))
 	api.HandleFunc("/templates/{id:[0-9]+}", Use(API_Templates_Id, mid.RequireAPIKey))
+	api.HandleFunc("/templates/{id:[0-9]+}/preview", Use(API_Templates_Id_Preview, mid.RequireAPIKey))
 	api.HandleFunc("/pages/", Use(API_Pages, mid.RequireAPIKey))
 	api.HandleFunc("/pages/{id:[0-9]+}", Use(API_Pages_Id, mid.RequireAPIKey))
 	api.HandleFunc("/plans/", Use(API_Plans, mid.RequireRoles([]int64{models.Administrator, models.Partner, models.ChildUser}), mid.RequireAPIKey))

@@ -466,8 +466,7 @@ $(document).ready(function() {
     },
     showTodayButton: !0,
     defaultDate: moment(),
-    collapse: false,
-
+    collapse: false
   }),
     $("#send_by_date").datetimepicker({
       widgetPositioning: {
@@ -475,7 +474,7 @@ $(document).ready(function() {
       },
       showTodayButton: !0,
       useCurrent: !1,
-      collapse: false,
+      collapse: false
     }),
     $("#start_time").datetimepicker({
       format: "LT"
@@ -624,10 +623,9 @@ function preview() {
     );
     $("#modalforpreview .subject").html(t.subject);
 
-    if (t.html != "") {
-      $("#modalforpreview .modal-body").html(t.html);
-    } else {
-      $("#modalforpreview .modal-body").html(t.text);
-    }
+    $("#modalforpreview .modal-body iframe").prop(
+      "src",
+      "/api/templates/" + t.id + "/preview?api_key=" + user.api_key
+    );
   });
 }

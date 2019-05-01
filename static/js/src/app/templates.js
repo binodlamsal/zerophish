@@ -273,11 +273,11 @@ function preview(e) {
   $("#modalforpreview .tempname").html(t.name);
   $("#modalforpreview .from_address").text(t.from_address);
   $("#modalforpreview .subject").html(t.subject);
-  if (t.html != "") {
-    $("#modalforpreview .modal-body").html(t.html);
-  } else {
-    $("#modalforpreview .modal-body").html(t.text);
-  }
+
+  $("#modalforpreview .modal-body iframe").prop(
+    "src",
+    "/api/templates/" + t.id + "/preview?api_key=" + user.api_key
+  );
 }
 
 function importEmail() {
