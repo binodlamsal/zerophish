@@ -20,7 +20,7 @@ function save(e) {
     -1 == t.html.indexOf("{{.Tracker}}") &&
     -1 == t.html.indexOf("{{.TrackingUrl}}")
   ) {
-    t.html = t.html.replace("</body>", "<div id='satrackerImageEc'>{{.Tracker}}</div></body>");
+    t.html = t.html.replace("</body>", "<p>{{.Tracker}}</p></body>");
   }
 
   t.text = $("#text_editor").val();
