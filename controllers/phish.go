@@ -85,6 +85,7 @@ func PhishTracker(w http.ResponseWriter, r *http.Request) {
 
 // PhishReporter tracks emails as they are reported, updating the status for the given Result
 func PhishReporter(w http.ResponseWriter, r *http.Request) {
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
 	err, r := setupContext(r)
 	if err != nil {
 		// Log the error if it wasn't something we can safely ignore
