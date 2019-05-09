@@ -23,7 +23,7 @@
             <li  role="mainSettings"><a href="#mainSettings" aria-controls="mainSettings" role="tab"
                     data-toggle="tab" class="active">Account Settings</a></li>
             <li role="subscription"><a href="#subscription" aria-controls="subscription" role="tab" data-toggle="tab">Subscription</a></li>
-            <li role="uiSettings"><a href="#uiSettings" aria-controls="uiSettings" role="tab" data-toggle="tab">UI Settings</a></li>
+            
         </ul>
     </div>
     <!-- Tab Panes -->
@@ -146,25 +146,15 @@
             </form>
             <br />
         </div>
-        <div role="tabpanel" class="tab-pane" id="uiSettings">
-            <br />
-            <label class="checkbx">
-               <input id="use_map" type="checkbox">
-               <span class="checkbox-btn"><img src="images/tick.png" alt=""></span>
-               Show campaign results map
-           </label>
-           <!--  <div class="checkbox checkbox-primary">
-                <input id="use_map" type="checkbox">
-                <label for="use_map">Show campaign results map</label>
-            </div> -->
-        </div>
         <div role="tabpanel" class="tab-pane" id="subscription">
             <br />
-            <label class="checkbx">
-               <input id="use_map" type="checkbox">
-               <span class="checkbox-btn"><img src="images/tick.png" alt=""></span>
-               Show campaign results map
-           </label>
+            <!--<div class ="subscriptioDetails hide">   Your subscription details </div> -->
+                    <ul class="list-group list-group-flush">
+                            <li class="list-group-item plan">Plan : Basic</li>
+                            <li class="list-group-item date">Expiry Date: <date>July 21 2019</date></li>
+                            <li class="list-group-item list-group-item-warning"><a href="#" class="canelSubscription">Cancel Subscription</a></li>
+                            <li class="list-group-item list-group-item-danger"><a href="#" class="deleteSubscription">Delete My Account</a></li>
+                    </ul>
            <!--  <div class="checkbox checkbox-primary">
                 <input id="use_map" type="checkbox">
                 <label for="use_map">Show campaign results map</label>
