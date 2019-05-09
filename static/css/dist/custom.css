@@ -136,6 +136,14 @@ div.dataTables_wrapper div.dataTables_info {
     border-bottom-color: transparent;
     cursor: pointer;
 }
+
+#mainSettings .icon-refresh{
+    display: inline-block;
+     max-width: 13px;
+}
+#mainSettings .icon-refresh img{
+  max-width: 100%;
+}
 .nav-tabs li a {
     margin-bottom: -1px;
 }
@@ -160,7 +168,25 @@ div.dataTables_wrapper div.dataTables_length select {
 .select2-container--bootstrap .select2-selection--multiple .select2-search--inline .select2-search__field{
   width: auto !important;
 }
-
+#enable_qa_resubmit .modal-body {
+    padding: 20px 25px;
+}
+#enable_qa_resubmit .switch-status {
+    padding-top: 15px;
+    position: relative;
+    top: 5px;
+}
+#enable_qa_resubmit .instant-wrapper .instant-content{
+  margin-top: 0;
+}
+ @media (min-width: 1200px){
+  #emptyMessage{
+  margin-top: 50px;
+ }
+}
+.header-inner .logo img{
+  width: auto;
+}
 @media (max-width: 767px){
   #mainSettings #reset-logo,
     #mainSettings #reset-avatar{

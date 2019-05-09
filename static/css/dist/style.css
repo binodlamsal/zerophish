@@ -16688,6 +16688,12 @@ form#targetForm.user-form-section .row {
 #emptyMessage {
   margin-top: 20px;
   border-radius: 0; }
+  @media (min-width: 1200px) {
+    #emptyMessage {
+      margin-top: 50px; } }
+
+.srijanatest {
+  margin-top: 0; }
 
 .btn-headers.btn-custom {
   padding: 8px 25px; }
