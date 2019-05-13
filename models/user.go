@@ -548,8 +548,7 @@ func (u User) IsSubscribed() bool {
 			partner, err := GetUser(u.Partner)
 
 			if err != nil {
-				log.Errorf("Could not determine partner account of customer with id %d - %s", u.Id, err.Error())
-				return false
+				return s.IsActive()
 			}
 
 			if partner.IsAdministrator() {
