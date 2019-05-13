@@ -523,7 +523,7 @@ function load() {
                   a.full_name,
                   a.email,
                   a.role,
-                  moment(a.last_login_at).year() !== 1
+                  a.last_login_at !== "0001-01-01T00:00:00Z"
                     ? moment(a.last_login_at).fromNow()
                     : "never",
                   a.subscription
