@@ -1441,7 +1441,13 @@ func API_Send_Test_Email(w http.ResponseWriter, r *http.Request) {
 		// of caution and assume that the validation failure was more important.
 		if lookupErr != nil {
 			log.Error(err)
-			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusBadRequest)
+			msg := err.Error()
+
+			if err == models.ErrFromAddressNotSpecified {
+				msg = "Please select a sending domain before sending a test email"
+			}
+
+			JSONResponse(w, models.Response{Success: false, Message: msg}, http.StatusBadRequest)
 			return
 		}
 		s.SMTP = smtp
