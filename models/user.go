@@ -867,6 +867,14 @@ func (u *User) BeforeCreate(scope *gorm.Scope) error {
 }
 
 func (u *User) BeforeUpdate(scope *gorm.Scope) error {
+	if u.Domain == "DELETE" {
+		err := scope.SetColumn("Domain", "")
+
+		if err != nil {
+			return err
+		}
+	}
+
 	if len(u.ApiKey) > 64 {
 		return nil
 	}
@@ -878,14 +886,6 @@ func (u *User) BeforeUpdate(scope *gorm.Scope) error {
 	}
 
 	return scope.SetColumn("ApiKey", encKey)
-}
-
-func (u *User) AfterUpdate(tx *gorm.DB) error {
-	if u.Domain == "DELETE" {
-		tx.Model(u).UpdateColumn("Domain", "")
-	}
-
-	return nil
 }
 
 func EncryptApiKeys() {

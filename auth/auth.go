@@ -216,7 +216,7 @@ func ChangePassword(r *http.Request) error {
 		return models.PutAvatar(a)
 	}
 
-	return models.UpdateUser(&u)
+	return models.PutUser(&u)
 }
 
 func ChangeLogo(r *http.Request) error {
