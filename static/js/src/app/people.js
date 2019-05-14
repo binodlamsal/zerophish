@@ -465,11 +465,7 @@ function isValidPassword(password) {
   var numMatches = password.match(/([0-9])/);
   var specialMatches = password.match(/([^a-zA-Z0-9\s])/);
 
-  if (
-    alphaMatches.length < 2 ||
-    numMatches.length < 2 ||
-    specialMatches.length < 2
-  ) {
+  if (alphaMatches === null || numMatches === null || specialMatches === null) {
     return false;
   }
 
