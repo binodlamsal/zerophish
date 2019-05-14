@@ -248,6 +248,10 @@ func CreateUser(username, fullName, email, password string, rid int64, partner i
 		return nil, errors.New("E-mail must not be empty")
 	}
 
+	if !util.IsEmail(email) {
+		return nil, errors.New("E-mail must be valid")
+	}
+
 	if password == "" {
 		return nil, errors.New("Password must not be empty")
 	}

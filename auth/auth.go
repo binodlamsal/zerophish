@@ -58,6 +58,9 @@ var ErrUsernameTaken = errors.New("Username already taken")
 // ErrSyncUserData is thrown when something is wrong with synchronization of user data
 var ErrSyncUserData = errors.New("Could not sync user details with the main server")
 
+// ErrBadEmail is thrown when a user provides a malformed email address
+var ErrBadEmail = errors.New("Incorrect e-mail address")
+
 // Login attempts to login the user given a request.
 func Login(r *http.Request) (bool, models.User, error) {
 	username, password := r.FormValue("username"), r.FormValue("password")
@@ -281,6 +284,10 @@ func ChangePasswordByadmin(r *http.Request) error {
 		u.Username != ud.Username ||
 		u.Partner != ud.Partner {
 		shouldPushUpdates = true
+	}
+
+	if !util.IsEmail(ud.Email) {
+		return ErrBadEmail
 	}
 
 	u.Id = ud.Id
