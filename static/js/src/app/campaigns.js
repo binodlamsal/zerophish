@@ -230,9 +230,9 @@ function setupOptions() {
   var addresses = {};
   var pages = {};
 
-  api.groups.get().success(function(e) {
-    if (0 == e.length) return (document.location = "/users?ref=campaigns"), !1;
-    var a = $.map(e, function(e) {
+  api.groups.summary("own").success(function(e) {
+    if (0 == e.total) return (document.location = "/users?ref=campaigns"), !1;
+    var a = $.map(e.groups, function(e) {
       return (e.text = e.name), e;
     });
     $("#users.form-control").select2({
