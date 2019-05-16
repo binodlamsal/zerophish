@@ -196,14 +196,58 @@ func Register(r *http.Request) (bool, error) {
 }
 
 func UpdateSettings(r *http.Request) error {
+	shouldPushUpdates := false
 	u := ctx.Get(r, "user").(models.User)
 	r.ParseForm() // Parses the request body
+
+	if u.Email != r.Form.Get("email") ||
+		u.Username != r.Form.Get("username") {
+		shouldPushUpdates = true
+	}
+
 	u.UpdatedAt = time.Now().UTC()
+	u.Username = r.Form.Get("username")
+	u.Email = r.Form.Get("email")
 	u.FullName = r.Form.Get("full_name")
 	u.Domain = r.Form.Get("domain")
 	u.TimeZone = r.Form.Get("time_zone")
 	u.NumOfUsers, _ = strconv.ParseInt(r.Form.Get("num_of_users"), 10, 0)
 	u.AdminEmail = r.Form.Get("admin_email")
+	newPassword := r.Form.Get("new_password")
+	confirmPassword := r.Form.Get("confirm_password")
+
+	role, err := models.GetUserRole(u.Id)
+
+	if err != nil {
+		return err
+	}
+
+	if !util.IsEmail(u.Email) {
+		return ErrBadEmail
+	}
+
+	if newPassword != "" && confirmPassword != "" {
+		if newPassword == "" {
+			return ErrEmptyPassword
+		}
+
+		if newPassword != confirmPassword {
+			return ErrPasswordMismatch
+		}
+
+		if !IsValidPassword(newPassword) {
+			return ErrBadPassword
+		}
+
+		h, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+
+		if err != nil {
+			return err
+		}
+
+		u.Hash = string(h)
+		shouldPushUpdates = true
+	}
 
 	if r.Form.Get("avatar") != "" {
 		a := u.GetAvatar()
@@ -219,6 +263,21 @@ func UpdateSettings(r *http.Request) error {
 		}
 
 		return models.PutAvatar(a)
+	}
+
+	if os.Getenv("USERSYNC_DISABLE") == "" && shouldPushUpdates {
+		buid := models.GetUserBakeryID(u.Id)
+
+		if err := usersync.UpdateUser(
+			buid,
+			u.Username,
+			u.Email,
+			newPassword,
+			role.Rid,
+			models.GetUserBakeryID(u.Partner),
+		); err != nil {
+			return fmt.Errorf("Could not update user with bakery id %d - %s", buid, err.Error())
+		}
 	}
 
 	return models.PutUser(&u)
