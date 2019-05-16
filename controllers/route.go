@@ -421,7 +421,7 @@ func Settings(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = auth.ChangePassword(r)
+		err = auth.UpdateSettings(r)
 
 		if err == auth.ErrInvalidPassword {
 			msg.Message = "Invalid Password"

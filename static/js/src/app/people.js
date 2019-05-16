@@ -9,6 +9,8 @@ function save(e) {
   t.email = $("#email").val();
   t.domain = $("#domain").val();
   t.time_zone = $("#time_zone").val();
+  t.num_of_users = parseInt($("#num_of_users").val());
+  t.admin_email = $("#admin_email").val();
   t.current_password = $("#curpassword").val();
   t.new_password = $("#password").val();
   t.confirm_new_password = $("#confirm_password").val();
@@ -47,6 +49,10 @@ function create() {
   t.username = $("#username").val();
   t.full_name = $("#full_name").val();
   t.email = $("#email").val();
+  t.domain = $("#domain").val();
+  t.time_zone = $("#time_zone").val();
+  t.num_of_users = parseInt($("#num_of_users").val());
+  t.admin_email = $("#admin_email").val();
   t.password = $("#password").val();
   t.role = parseInt($("#roles").val()) || null;
   t.partner = parseInt($("#partner").val()) || null;
@@ -72,8 +78,18 @@ function create() {
 
 function edit(index) {
   $("#modal .modal-title").html("ADD USER");
+
+  $(
+    "label[for=time_zone], #time_zone + .select2-container, label[for=domain], #domain, label[for=num_of_users], #num_of_users, label[for=admin_email], #admin_email"
+  ).hide();
+
   if (index != -1) {
     $("#modal .modal-title").html("EDIT USER");
+
+    $(
+      "label[for=time_zone], #time_zone + .select2-container, label[for=domain], #domain, label[for=num_of_users], #num_of_users, label[for=admin_email], #admin_email"
+    ).show();
+
     var user = people[index];
     var exp_date =
       user.subscription != undefined
@@ -127,6 +143,9 @@ function edit(index) {
       $("#time_zone")
         .val(e.time_zone)
         .trigger("change");
+
+      $("#num_of_users").val(e.num_of_users);
+      $("#admin_email").val(e.admin_email);
 
       $("#hidden_hash").val(e.hash);
       $("#hidden_uid").val(e.id);
@@ -378,6 +397,8 @@ function dismiss() {
   $("#username").val("");
   $("#full_name").val("");
   $("#email").val("");
+  $("#num_of_users").val(0);
+  $("#admin_email").val("");
   $("#curpassword").val("");
   $("#password").val("");
   $("#confirm_password").val("");

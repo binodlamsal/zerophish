@@ -34,6 +34,8 @@ type User struct {
 	FullName        string    `json:"full_name" sql:"not null"`
 	Domain          string    `json:"domain"`
 	TimeZone        string    `json:"time_zone"`
+	NumOfUsers      int64     `json:"num_of_users"`
+	AdminEmail      string    `json:"admin_email" sql:"not null"`
 	EmailVerifiedAt time.Time `json:"email_verified_at"`
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`

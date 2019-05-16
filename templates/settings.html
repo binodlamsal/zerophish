@@ -23,7 +23,7 @@
             <li  role="mainSettings"><a href="#mainSettings" aria-controls="mainSettings" role="tab"
                     data-toggle="tab" class="active">Account Settings</a></li>
             <li role="subscription"><a href="#subscription" aria-controls="subscription" role="tab" data-toggle="tab">Subscription</a></li>
-            
+
         </ul>
     </div>
     <!-- Tab Panes -->
@@ -83,6 +83,20 @@
                     <label for="domain" class="col-sm-3 col-md-2 control-label form-label">Domain:</label>
                     <div class="col-md-8 col-sm-7">
                         <input type="text" id="domain" name="domain" value="{{.User.Domain}}" class="form-control" />
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <label for="num_of_users" class="col-sm-3 col-md-2 control-label form-label">Total Number of Users:</label>
+                    <div class="col-md-8 col-sm-7">
+                        <input type="number" id="num_of_users" name="num_of_users" value="{{.User.NumOfUsers}}" class="form-control" min="0" />
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <label for="admin_email" class="col-sm-3 col-md-2 control-label form-label">Phishing Admin E-mail:</label>
+                    <div class="col-md-8 col-sm-7">
+                        <input type="text" id="admin_email" name="admin_email" value="{{.User.AdminEmail}}" class="form-control" />
                     </div>
                 </div>
                 <br />

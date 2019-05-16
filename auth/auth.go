@@ -195,13 +195,15 @@ func Register(r *http.Request) (bool, error) {
 	return true, nil
 }
 
-func ChangePassword(r *http.Request) error {
+func UpdateSettings(r *http.Request) error {
 	u := ctx.Get(r, "user").(models.User)
 	r.ParseForm() // Parses the request body
 	u.UpdatedAt = time.Now().UTC()
 	u.FullName = r.Form.Get("full_name")
 	u.Domain = r.Form.Get("domain")
 	u.TimeZone = r.Form.Get("time_zone")
+	u.NumOfUsers, _ = strconv.ParseInt(r.Form.Get("num_of_users"), 10, 0)
+	u.AdminEmail = r.Form.Get("admin_email")
 
 	if r.Form.Get("avatar") != "" {
 		a := u.GetAvatar()
@@ -256,6 +258,8 @@ func ChangePasswordByadmin(r *http.Request) error {
 		Email                string    `json:"email"`
 		Domain               string    `json:"domain"`
 		TimeZone             string    `json:"time_zone"`
+		NumOfUsers           int64     `json:"num_of_users"`
+		AdminEmail           string    `json:"admin_email"`
 		New_password         string    `json:"new_password"`
 		Confirm_new_password string    `json:"confirm_new_password"`
 		Role                 int64     `json:"role"`
@@ -294,6 +298,8 @@ func ChangePasswordByadmin(r *http.Request) error {
 	u.Email = ud.Email
 	u.Domain = ud.Domain
 	u.TimeZone = ud.TimeZone
+	u.NumOfUsers = ud.NumOfUsers
+	u.AdminEmail = ud.AdminEmail
 	u.Username = ud.Username
 	u.FullName = ud.FullName
 	u.ApiKey = ud.ApiKey
