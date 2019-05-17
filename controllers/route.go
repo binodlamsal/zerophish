@@ -720,6 +720,11 @@ func getTemplate(r *http.Request, w http.ResponseWriter, tmpl string) *template.
 			return tmpl
 		},
 
+		"year": func() string {
+			t := time.Now().UTC().Year()
+			return strconv.Itoa(t)
+		},
+
 		"role": func() string {
 			role, err := models.GetUserRole(ctx.Get(r, "user").(models.User).Id)
 

@@ -61,6 +61,9 @@ var ErrSyncUserData = errors.New("Could not sync user details with the main serv
 // ErrBadEmail is thrown when a user provides a malformed email address
 var ErrBadEmail = errors.New("Incorrect e-mail address")
 
+// ErrBadDomain is thrown when a user provides a malformed domain name
+var ErrBadDomain = errors.New("Incorrect domain name")
+
 // Login attempts to login the user given a request.
 func Login(r *http.Request) (bool, models.User, error) {
 	username, password := r.FormValue("username"), r.FormValue("password")
@@ -196,14 +199,62 @@ func Register(r *http.Request) (bool, error) {
 }
 
 func UpdateSettings(r *http.Request) error {
+	shouldPushUpdates := false
 	u := ctx.Get(r, "user").(models.User)
 	r.ParseForm() // Parses the request body
+
+	if u.Email != r.Form.Get("email") ||
+		u.Username != r.Form.Get("username") {
+		shouldPushUpdates = true
+	}
+
 	u.UpdatedAt = time.Now().UTC()
+	u.Username = r.Form.Get("username")
+	u.Email = r.Form.Get("email")
 	u.FullName = r.Form.Get("full_name")
 	u.Domain = r.Form.Get("domain")
 	u.TimeZone = r.Form.Get("time_zone")
 	u.NumOfUsers, _ = strconv.ParseInt(r.Form.Get("num_of_users"), 10, 0)
 	u.AdminEmail = r.Form.Get("admin_email")
+	newPassword := r.Form.Get("new_password")
+	confirmPassword := r.Form.Get("confirm_password")
+
+	role, err := models.GetUserRole(u.Id)
+
+	if err != nil {
+		return err
+	}
+
+	if !util.IsEmail(u.Email) {
+		return ErrBadEmail
+	}
+
+	if u.Domain != "" && u.Domain != "DELETE" && !util.IsValidDomain(u.Domain) {
+		return ErrBadDomain
+	}
+
+	if newPassword != "" && confirmPassword != "" {
+		if newPassword == "" {
+			return ErrEmptyPassword
+		}
+
+		if newPassword != confirmPassword {
+			return ErrPasswordMismatch
+		}
+
+		if !IsValidPassword(newPassword) {
+			return ErrBadPassword
+		}
+
+		h, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+
+		if err != nil {
+			return err
+		}
+
+		u.Hash = string(h)
+		shouldPushUpdates = true
+	}
 
 	if r.Form.Get("avatar") != "" {
 		a := u.GetAvatar()
@@ -219,6 +270,21 @@ func UpdateSettings(r *http.Request) error {
 		}
 
 		return models.PutAvatar(a)
+	}
+
+	if os.Getenv("USERSYNC_DISABLE") == "" && shouldPushUpdates {
+		buid := models.GetUserBakeryID(u.Id)
+
+		if err := usersync.UpdateUser(
+			buid,
+			u.Username,
+			u.Email,
+			newPassword,
+			role.Rid,
+			models.GetUserBakeryID(u.Partner),
+		); err != nil {
+			return fmt.Errorf("Could not update user with bakery id %d - %s", buid, err.Error())
+		}
 	}
 
 	return models.PutUser(&u)
@@ -248,7 +314,7 @@ func ChangeLogo(r *http.Request) error {
 	return models.PutLogo(l)
 }
 
-func ChangePasswordByadmin(r *http.Request) error {
+func UpdateSettingsByAdmin(r *http.Request) error {
 	currentUser := ctx.Get(r, "user").(models.User)
 
 	type Usersdata struct {
@@ -292,6 +358,10 @@ func ChangePasswordByadmin(r *http.Request) error {
 
 	if !util.IsEmail(ud.Email) {
 		return ErrBadEmail
+	}
+
+	if ud.Domain != "" && !util.IsValidDomain(ud.Domain) {
+		return ErrBadDomain
 	}
 
 	u.Id = ud.Id
