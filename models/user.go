@@ -259,7 +259,7 @@ func CreateUser(username, fullName, email, password string, rid int64, partner i
 	}
 
 	if rid < 1 || rid > 5 {
-		return nil, errors.New("Please select the role from the dropdown")
+		return nil, errors.New("Please slelect the role from the dropdown")
 	}
 
 	_, err1 := GetUserByUsername(username)
