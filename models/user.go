@@ -259,7 +259,7 @@ func CreateUser(username, fullName, email, password string, rid int64, partner i
 	}
 
 	if rid < 1 || rid > 5 {
-		return nil, errors.New("Role ID (rid) must be in range: 1-5")
+		return nil, errors.New("Role must be selected")
 	}
 
 	_, err1 := GetUserByUsername(username)
