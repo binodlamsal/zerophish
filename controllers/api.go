@@ -299,7 +299,7 @@ func API_Users_Id(w http.ResponseWriter, r *http.Request) {
 		JSONResponse(w, models.Response{Success: true, Message: "User deleted successfully!"}, http.StatusOK)
 
 	case r.Method == "POST":
-		err = auth.ChangePasswordByadmin(r)
+		err = auth.UpdateSettingsByAdmin(r)
 		msg := models.Response{Success: true, Message: "Settings Updated Successfully"}
 		if err == auth.ErrInvalidPassword {
 			msg.Message = "Invalid Password"

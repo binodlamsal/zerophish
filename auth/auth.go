@@ -61,6 +61,9 @@ var ErrSyncUserData = errors.New("Could not sync user details with the main serv
 // ErrBadEmail is thrown when a user provides a malformed email address
 var ErrBadEmail = errors.New("Incorrect e-mail address")
 
+// ErrBadDomain is thrown when a user provides a malformed domain name
+var ErrBadDomain = errors.New("Incorrect domain name")
+
 // Login attempts to login the user given a request.
 func Login(r *http.Request) (bool, models.User, error) {
 	username, password := r.FormValue("username"), r.FormValue("password")
@@ -226,6 +229,10 @@ func UpdateSettings(r *http.Request) error {
 		return ErrBadEmail
 	}
 
+	if u.Domain != "" && u.Domain != "DELETE" && !util.IsValidDomain(u.Domain) {
+		return ErrBadDomain
+	}
+
 	if newPassword != "" && confirmPassword != "" {
 		if newPassword == "" {
 			return ErrEmptyPassword
@@ -307,7 +314,7 @@ func ChangeLogo(r *http.Request) error {
 	return models.PutLogo(l)
 }
 
-func ChangePasswordByadmin(r *http.Request) error {
+func UpdateSettingsByAdmin(r *http.Request) error {
 	currentUser := ctx.Get(r, "user").(models.User)
 
 	type Usersdata struct {
@@ -351,6 +358,10 @@ func ChangePasswordByadmin(r *http.Request) error {
 
 	if !util.IsEmail(ud.Email) {
 		return ErrBadEmail
+	}
+
+	if ud.Domain != "" && !util.IsValidDomain(ud.Domain) {
+		return ErrBadDomain
 	}
 
 	u.Id = ud.Id
