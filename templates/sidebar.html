@@ -17,7 +17,8 @@
               </button>
               <ul class="dropdown-menu">
                 <li><a href="/settings"><i class="fa fa-user" aria-hidden="true"></i>  Update Profile </a></li>
-                <li><a href="https://support.everycloudtech.com/support/home" target="_blank"><i class="fa fa-info-circle" aria-hidden="true"></i> Help</a></li>
+                <li><a href="https://support.everycloudtech.com/support/home" target="_blank"><i class="fa fa-graduation-cap" aria-hidden="true"></i> Help</a></li>
+                <li><a href="https://awareness-stage.everycloudtech.com:4433/admin" target="_blank"><i class="fa fa-info-circle" aria-hidden="true"></i> Training Platform</a></li>
                 <li><a href="/logout"><i class="fa fa-sign-out" aria-hidden="true"></i> Logout</a></li>
               </ul>
             </div>
@@ -31,7 +32,7 @@
 
           <ul>
             <li {{if eq page "dashboard"}}class="active"{{end}}><a href="/"><span class="icon-left"><img src="/images/dashboard.svg" alt="" width="12" height="16"></span> Dashboard</a></li>
-            <li {{if eq page "campaigns"}}class="active"{{end}}><a class="dash-cam" href="/campaigns" ><span class="icon-left"><img src="/images/campaigns.svg" class="svg" alt="" ></span> Campaigns</a></li>
+            <li {{if (or (eq page "campaigns") (eq page "campaign_results"))}}class="active"{{end}}><a class="dash-cam" href="/campaigns" ><span class="icon-left"><img src="/images/campaigns.svg" class="svg" alt="" ></span> Campaigns</a></li>
             <li {{if eq page "users"}}class="active"{{end}}><a class="dash-users" href="/users" ><span class="icon-left"><img src="/images/userandgroup.svg" class="svg" alt="" ></span> Users & Groups</a></li>
             <li {{if eq page "templates"}}class="active"{{end}}><a class="dash-email" href="/templates" ><span class="icon-left"><img src="/images/email-template.svg" class="svg" alt="" ></span>Email Templates</a></li>
             <li {{if eq page "landing_pages"}}class="active"{{end}}><a class="dash-landing" href="/landing_pages" ><span class="icon-left"><img src="/images/landingpages.svg" class="svg" alt="" ></span>Landing Pages</a></li>
