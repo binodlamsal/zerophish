@@ -553,6 +553,9 @@ func PostCampaign(c *Campaign, uid int64) error {
 	} else {
 		c.LaunchDate = c.LaunchDate.UTC()
 	}
+
+	c.LaunchDate = c.LaunchDate.Add(15 * time.Minute)
+
 	if !c.SendByDate.IsZero() {
 		c.SendByDate = c.SendByDate.UTC()
 	}
