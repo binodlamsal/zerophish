@@ -91,6 +91,17 @@ function edit(index) {
     ).show();
 
     var user = people[index];
+
+    if (user.role == "LMS User") {
+      $(
+        "label[for=num_of_users], #num_of_users, label[for=admin_email], #admin_email, label[for=domain], #domain"
+      ).hide();
+    } else {
+      $(
+        "label[for=num_of_users], #num_of_users, label[for=admin_email], #admin_email, label[for=domain], #domain"
+      ).show();
+    }
+
     var exp_date =
       user.subscription != undefined
         ? moment(user.subscription.expiration_date)
@@ -171,11 +182,19 @@ function edit(index) {
 
       //populate the roles
       api.rolesByUserId.get(user.id).success(function(r) {
-        $("#roles option").prop("selected", false);
-        $("#roles option[value=" + r.rid + "]").prop("selected", true);
+        if ($("#roles").length) {
+          $("#roles option").prop("selected", false);
+          $("#roles option[value=" + r.rid + "]").prop("selected", true);
+        } else {
+          $("#time_zone").after(
+            '<input type="hidden" id="roles" name="roles" value="' +
+              r.rid +
+              '">'
+          );
+        }
 
         // hide partner field for non-customers and non-child-users
-        if (r.rid !== 3 && r.rid !== 4) {
+        if (r.rid !== 3 && r.rid !== 4 && r.rid !== 5) {
           $("#partner-container").css("display", "none");
         } else {
           $("#partner-container").css("display", "");
@@ -192,7 +211,7 @@ function edit(index) {
             }
           });
 
-        if (!$("#partner").length) {
+        if (!$("#partner").length || user.role == "LMS User") {
           $("#hidden_partner").val(partner);
         } else {
           $("#hidden_partner").val("");
@@ -261,11 +280,21 @@ function edit(index) {
 
       // conditionally show and hide partner field depending on the selected role
       $("#roles").change(function() {
-        if ($(this).val() == 3 || $(this).val() == 4) {
+        if ($(this).val() == 3 || $(this).val() == 4 || $(this).val() == 5) {
           $("#partner-container").css("display", "");
         } else {
           $("#partner-container").css("display", "none");
           $("#partner").val("");
+        }
+
+        if ($(this).val() == 5) {
+          $(
+            "label[for=num_of_users], #num_of_users, label[for=admin_email], #admin_email, label[for=domain], #domain"
+          ).hide();
+        } else {
+          $(
+            "label[for=num_of_users], #num_of_users, label[for=admin_email], #admin_email, label[for=domain], #domain"
+          ).show();
         }
       });
 
@@ -345,11 +374,21 @@ function edit(index) {
 
     // conditionally show and hide partner field depending on the selected role
     $("#roles").change(function() {
-      if ($(this).val() == 3 || $(this).val() == 4) {
+      if ($(this).val() == 3 || $(this).val() == 4 || $(this).val() == 5) {
         $("#partner-container").css("display", "");
       } else {
         $("#partner-container").css("display", "none");
         $("#partner").val("");
+      }
+
+      if ($(this).val() == 5) {
+        $(
+          "label[for=num_of_users], #num_of_users, label[for=admin_email], #admin_email, label[for=domain], #domain"
+        ).hide();
+      } else {
+        $(
+          "label[for=num_of_users], #num_of_users, label[for=admin_email], #admin_email, label[for=domain], #domain"
+        ).show();
       }
     });
 
@@ -405,6 +444,7 @@ function dismiss() {
   $("#partner").val("");
   $("#roles").val("");
   $("#modal").modal("hide");
+  $("#roles[type=hidden]").remove();
 
   $(
     ".row.subscription, label[for=current_password], #curpassword, label[for=confirm_password], #confirm_password"
@@ -549,19 +589,12 @@ function load() {
                     : "✖",
                   moment(a.last_login_at).format("X"),
                   "<div class='pull-right'>" +
-                    (role == "admin" ||
-                    (role == "partner" && a.role !== "LMS User") ||
-                    (role == "child_user" &&
-                      a.role !== "Partner" &&
-                      a.role !== "Child User" &&
-                      a.role !== "LMS User")
-                      ? "<span data-toggle='modal' data-backdrop='static' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='' onclick='edit(" +
-                        i +
-                        ")' data-original-title='Edit Member'>  <i class='fa fa-pencil'></i> </button> </span> " +
-                        " <span data-backdrop='static' data-target='#modal'><button class='btn btn-danger' onclick='deleteUser(" +
-                        a.id +
-                        ")' data-toggle='tooltip' data-placement='left' title='Delete User'> <i class='fa fa-trash-o'></i></button></span>"
-                      : "") +
+                    "<span data-toggle='modal' data-backdrop='static' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='' onclick='edit(" +
+                    i +
+                    ")' data-original-title='Edit Member'>  <i class='fa fa-pencil'></i> </button> </span> " +
+                    " <span data-backdrop='static' data-target='#modal'><button class='btn btn-danger' onclick='deleteUser(" +
+                    a.id +
+                    ")' data-toggle='tooltip' data-placement='left' title='Delete User'> <i class='fa fa-trash-o'></i></button></span>" +
                     "</div>"
                 ])
                 .draw();

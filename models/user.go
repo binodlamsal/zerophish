@@ -84,12 +84,14 @@ func (roles Roles) AvailableFor(role UserRole) Roles {
 		return Roles{
 			Role{Rid: 3, Name: "Customer", Weight: "2"},
 			Role{Rid: 4, Name: "Child User", Weight: "3"},
+			Role{Rid: 5, Name: "LMS User", Weight: "4"},
 		}
 	}
 
 	if role.Is(ChildUser) {
 		return Roles{
 			Role{Rid: 3, Name: "Customer", Weight: "2"},
+			Role{Rid: 5, Name: "LMS User", Weight: "4"},
 		}
 	}
 
@@ -322,12 +324,18 @@ func GetUsers(uid int64) ([]User, error) {
 	if role.Is(Administrator) {
 		err = db.Order("id asc").Find(&users).Error
 	} else if role.Is(Partner) {
+		cuids, err := GetDirectCustomerIds(uid)
+
+		if err != nil {
+			return users, err
+		}
+
 		err = db.
 			Joins("LEFT JOIN targets ON targets.email=users.email").
 			Joins("LEFT JOIN users_role ON users_role.uid=users.id").
 			Joins("LEFT JOIN group_targets ON group_targets.target_id=targets.id").
 			Joins("LEFT JOIN groups ON groups.id=group_targets.group_id").
-			Where("(partner = ? OR groups.user_id = ?) AND users_role.rid IN (?)", uid, uid, []int{ChildUser, Customer, LMSUser}).
+			Where("(partner = ? OR partner IN (?) OR groups.user_id = ?) AND users_role.rid IN (?)", uid, cuids, uid, []int{ChildUser, Customer, LMSUser}).
 			Group("users.id").Order("id asc").Find(&users).Error
 	} else if role.Is(Customer) {
 		err = db.
@@ -344,14 +352,20 @@ func GetUsers(uid int64) ([]User, error) {
 			return users, err
 		}
 
+		cuids, err := GetDirectCustomerIds(user.Partner)
+
+		if err != nil {
+			return users, err
+		}
+
 		err = db.
 			Joins("LEFT JOIN targets ON targets.email=users.email").
 			Joins("LEFT JOIN users_role ON users_role.uid=users.id").
 			Joins("LEFT JOIN group_targets ON group_targets.target_id=targets.id").
 			Joins("LEFT JOIN groups ON groups.id=group_targets.group_id").
 			Where(
-				"(users.id = ? OR users.partner = ? OR groups.user_id = ?) AND users.id <> ? AND users_role.rid IN (?)",
-				user.Partner, user.Partner, user.Partner, uid, []int{Partner, ChildUser, Customer, LMSUser},
+				"(users.id = ? OR users.partner = ? OR users.partner IN (?) OR groups.user_id = ?) AND users.id <> ? AND users_role.rid IN (?)",
+				user.Partner, user.Partner, cuids, user.Partner, uid, []int{Partner, ChildUser, Customer, LMSUser},
 			).
 			Group("users.id").Order("users.id asc").Find(&users).Error
 	}
@@ -846,7 +860,12 @@ func DeleteCustomers(uid int64) error {
 // GetUserPartners returns all the partners from the database
 func GetUserPartners() ([]User, error) {
 	u := []User{}
-	err = db.Raw("SELECT * FROM users u LEFT JOIN users_role ur ON (u.id = ur.uid) where ur.rid in (?, ?)", 1, 2).Scan(&u).Error
+
+	err = db.Raw(
+		"SELECT * FROM users u LEFT JOIN users_role ur ON (u.id = ur.uid) where ur.rid IN (?)",
+		[]int64{Administrator, Partner, Customer},
+	).Scan(&u).Error
+
 	return u, err
 }
 

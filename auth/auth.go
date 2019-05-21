@@ -404,7 +404,7 @@ func UpdateSettingsByAdmin(r *http.Request) error {
 	}
 
 	// Unset partner for non-customers
-	if ud.Role != models.Customer && ud.Role != models.ChildUser {
+	if ud.Role != models.Customer && ud.Role != models.ChildUser && ud.Role != models.LMSUser {
 		u.Partner = 0
 
 		if ud.Partner != 0 {

@@ -183,11 +183,11 @@ func API_Users(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if role.Is(models.Administrator) || role.Is(models.Partner) {
-			if ud.Role == models.Customer || ud.Role == models.ChildUser {
+			if ud.Role == models.Customer || ud.Role == models.ChildUser || ud.Role == models.LMSUser {
 				ud.Partner = user.Id
 			}
 		} else if role.Is(models.ChildUser) {
-			if ud.Role == models.Customer {
+			if ud.Role == models.Customer || ud.Role == models.LMSUser {
 				ud.Partner = user.Partner
 			}
 		}
