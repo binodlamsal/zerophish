@@ -1042,6 +1042,40 @@ func API_Templates_Id_Preview(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// API_Pages_Id_Preview handles the functions for the /api/pages/:id/preview endpoint
+func API_Pages_Id_Preview(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, _ := strconv.ParseInt(vars["id"], 0, 64)
+	uid := ctx.Get(r, "user_id").(int64)
+
+	if !models.IsPageAccessibleByUser(id, uid) {
+		JSONResponse(w, models.Response{Success: false, Message: "Access denied"}, http.StatusForbidden)
+		return
+	}
+
+	t, err := models.GetPage(id)
+
+	if err != nil {
+		JSONResponse(w, models.Response{Success: false, Message: "Page not found"}, http.StatusNotFound)
+		return
+	}
+
+	if r.Method != "GET" {
+		JSONResponse(w, models.Response{Success: false, Message: "Method not supported"}, http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+
+	if t.HTML != "" {
+		w.Header().Set("Content-Type", "text/html")
+		fmt.Fprint(w, t.HTML)
+	} else {
+		w.Header().Set("Content-Type", "text/plain")
+		fmt.Fprint(w, "Page not found")
+	}
+}
+
 // API_Pages handles requests for the /api/pages/ endpoint
 func API_Pages(w http.ResponseWriter, r *http.Request) {
 	switch {

@@ -87,6 +87,16 @@ function edit(e) {
   $("#category.form-control").trigger("change.select2");
 }
 
+function preview(e) {
+  p = pages[e];
+  console.log(p);
+  $("#modalforpreview .pagename").html(p.name);
+  $("#modalforpreview .modal-body iframe").prop(
+    "src",
+    "/api/pages/" + p.id + "/preview?api_key=" + user.api_key
+  );
+}
+
 function copy(e) {
   $("#modalSubmit")
     .unbind("click")
@@ -101,6 +111,8 @@ function copy(e) {
     .val(null)
     .trigger("change.select2");
 }
+
+
 
 function load(filter) {
   if ($("input[type=radio][name=filter]:checked").val() !== filter) {
@@ -149,7 +161,9 @@ function load(filter) {
                         : "") +
                       "  <span data-toggle='modal' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Copy Page' onclick='copy(" +
                       e +
-                      ")'><i class='fa fa-copy'></i></button></span>\t\t" +
+                      ")'><i class='fa fa-copy'></i></button></span>\t\t" +"<span data-toggle='modal' data-target='#modalforpreview'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Preview Landing Page' onclick='preview(" +
+                      e +
+                      ")'><i class='fa fa-eye'></i></button></span> \t\t    "+
                       (a.writable
                         ? "<button class='btn btn-danger' data-toggle='tooltip' data-placement='left' title='Delete Page' onclick='deletePage(" +
                           e +
