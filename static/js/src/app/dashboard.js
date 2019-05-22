@@ -432,7 +432,8 @@ function load(filter) {
           // Add it to the table
           campaignTable.row
             .add([
-              escapeHtml(campaign.name),
+              escapeHtml(campaign.name) +
+                (campaign.locked ? ' <i class="fa fa-lock"></i>' : ""),
               campaign.username,
               campaign_date,
               campaign.stats.sent,
@@ -447,14 +448,16 @@ function load(filter) {
                 '">' +
                 campaign.status +
                 "</span>",
-              "<div class='pull-right'><a class='btn btn-primary' href='/campaigns/" +
-                campaign.id +
-                "' data-toggle='tooltip' data-placement='left' title='View Results'>\
+              campaign.locked
+                ? ""
+                : "<div class='pull-right'><a class='btn btn-primary' href='/campaigns/" +
+                  campaign.id +
+                  "' data-toggle='tooltip' data-placement='left' title='View Results'>\
                     <i class='fa fa-bar-chart'></i>\
                     </a>\
                     <button class='btn btn-danger' onclick='deleteCampaign(" +
-                i +
-                ")' data-toggle='tooltip' data-placement='left' title='Delete Campaign'>\
+                  i +
+                  ")' data-toggle='tooltip' data-placement='left' title='Delete Campaign'>\
                     <i class='fa fa-trash-o'></i>\
                     </button></div>"
             ])
