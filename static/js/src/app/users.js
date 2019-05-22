@@ -77,14 +77,13 @@ function edit(e) {
         save(e);
       }),
     -1 == e)
-    
   );
   else
     api.groupId
       .get(e)
       .success(function(e) {
         $("#modal .modal-title").html("EDIT GROUP"),
-        $("#name").val(e.name),
+          $("#name").val(e.name),
           $.each(e.targets, function(e, a) {
             targets
               .DataTable()
@@ -244,23 +243,26 @@ function load(filter) {
             $.each(groups, function(e, t) {
               groupTable.row
                 .add([
-                  escapeHtml(t.name),
+                  escapeHtml(t.name) +
+                    (t.locked ? ' <i class="fa fa-lock"></i>' : ""),
                   t.username,
                   escapeHtml(t.num_targets),
                   moment(t.modified_date).format("MMMM Do YYYY, h:mm:ss a"),
-                  "<div class='pull-right'>" +
-                    "<span data-toggle='modal' data-backdrop='static' data-target='#lms-modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' data-original-title='Create Training Users' onclick='lms(" +
-                    t.id +
-                    ")'>LMS</button></span>" +
-                    "<span data-toggle='modal' data-backdrop='static' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' data-original-title='Edit Group'  onclick='edit(" +
-                    t.id +
-                    ")'>                    <i class='fa fa-pencil'></i>                    </button></span>                    <button class='btn btn-danger' data-toggle='tooltip' data-placement='left' data-original-title='Delete' onclick='deleteGroup(" +
-                    t.id +
-                    ")'>                    <i class='fa fa-trash-o'></i>                    </button></div>"
+                  t.locked
+                    ? ""
+                    : "<div class='pull-right'>" +
+                      "<span data-toggle='modal' data-backdrop='static' data-target='#lms-modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' data-original-title='Create Training Users' onclick='lms(" +
+                      t.id +
+                      ")'>LMS</button></span>" +
+                      "<span data-toggle='modal' data-backdrop='static' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' data-original-title='Edit Group'  onclick='edit(" +
+                      t.id +
+                      ")'>                    <i class='fa fa-pencil'></i>                    </button></span>                    <button class='btn btn-danger' data-toggle='tooltip' data-placement='left' data-original-title='Delete' onclick='deleteGroup(" +
+                      t.id +
+                      ")'>                    <i class='fa fa-trash-o'></i>                    </button></div>"
                 ])
                 .draw();
             });
-            $('[data-toggle="tooltip"]').tooltip()
+          $('[data-toggle="tooltip"]').tooltip();
         } else $("#emptyMessage").hide();
       })
       .error(function() {

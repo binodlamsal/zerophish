@@ -574,7 +574,8 @@ function load(filter) {
               }
               campaignTable.row
                 .add([
-                  escapeHtml(a.name),
+                  escapeHtml(a.name) +
+                    (a.locked ? ' <i class="fa fa-lock"></i>' : ""),
                   a.username,
                   moment(a.created_date).format("MMMM Do YYYY, h:mm:ss a"),
                   '<span class="label ' +
@@ -584,13 +585,15 @@ function load(filter) {
                     '">' +
                     a.status +
                     "</span>",
-                  "<div class='pull-right'><a class='btn btn-primary' href='/campaigns/" +
-                    a.id +
-                    "' data-toggle='tooltip' data-placement='left' title='View Results'>                    <i class='fa fa-bar-chart'></i>                    </a>            <span data-toggle='modal' data-backdrop='static' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Copy Campaign' onclick='copy(" +
-                    e +
-                    ")'>                    <i class='fa fa-copy'></i>                    </button></span>                    <button class='btn btn-danger' onclick='deleteCampaign(" +
-                    e +
-                    ")' data-toggle='tooltip' data-placement='left' title='Delete Campaign'>                    <i class='fa fa-trash-o'></i>                    </button></div>"
+                  a.locked
+                    ? ""
+                    : "<div class='pull-right'><a class='btn btn-primary' href='/campaigns/" +
+                      a.id +
+                      "' data-toggle='tooltip' data-placement='left' title='View Results'>                    <i class='fa fa-bar-chart'></i>                    </a>            <span data-toggle='modal' data-backdrop='static' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Copy Campaign' onclick='copy(" +
+                      e +
+                      ")'>                    <i class='fa fa-copy'></i>                    </button></span>                    <button class='btn btn-danger' onclick='deleteCampaign(" +
+                      e +
+                      ")' data-toggle='tooltip' data-placement='left' title='Delete Campaign'>                    <i class='fa fa-trash-o'></i>                    </button></div>"
                 ])
                 .draw(),
                 $('[data-toggle="tooltip"]').tooltip();

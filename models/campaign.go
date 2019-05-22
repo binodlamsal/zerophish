@@ -70,6 +70,7 @@ type CampaignSummary struct {
 	Status        string        `json:"status"`
 	Name          string        `json:"name"`
 	Stats         CampaignStats `json:"stats"`
+	Locked        bool          `json:"locked"`
 }
 
 // CampaignStats is a struct representing the statistics for a single campaign
@@ -377,6 +378,31 @@ func IsCampaignAccessibleByUser(cid, uid int64) bool {
 	return false
 }
 
+// IsCampaignLockedForUser tells if a campaign with the given cid is locked for user identified by uid
+func IsCampaignLockedForUser(cid, uid int64) bool {
+	u, err := GetUser(uid)
+
+	if err != nil {
+		log.Error(err)
+		return true
+	}
+
+	if u.IsSubscribed() || u.IsAdministrator() {
+		return false
+	}
+
+	result := struct {
+		ID int64
+	}{}
+
+	if db.Raw("SELECT id FROM campaigns WHERE user_id = ? ORDER BY id ASC LIMIT 1", uid).Scan(&result).Error != nil {
+		log.Error(err)
+		return true
+	}
+
+	return cid > result.ID
+}
+
 // GetCampaignSummaries gets the summary objects for all the campaigns
 // owned by the current user and optionally (depending on the user role)
 // campaigns of all other users (for admins) or the respective child users (for partners).
@@ -398,21 +424,23 @@ func GetCampaignSummaries(uid int64, filter string) (CampaignSummaries, error) {
 		return overview, err
 	}
 
+	user, err := GetUser(uid)
+
+	if err != nil {
+		return overview, err
+	}
+
+	subscribed := user.IsSubscribed() || user.IsAdministrator()
+
 	// Get the basic campaign information
 	var query *gorm.DB
 
 	if filter == "own" {
 		if role.IsOneOf([]int64{Partner, ChildUser}) {
-			u, err := GetUser(uid)
-
-			if err != nil {
-				return overview, err
-			}
-
-			partner := u.Partner
+			partner := user.Partner
 
 			if role.Is(Partner) {
-				partner = u.Id
+				partner = user.Id
 			}
 
 			cuids, err := GetChildUserIds(partner)
@@ -421,7 +449,7 @@ func GetCampaignSummaries(uid int64, filter string) (CampaignSummaries, error) {
 				return overview, err
 			}
 
-			query = db.Table("campaigns").Where("user_id = ? OR user_id = ? OR user_id IN (?)", uid, u.Partner, cuids)
+			query = db.Table("campaigns").Where("user_id = ? OR user_id = ? OR user_id IN (?)", uid, user.Partner, cuids)
 		} else {
 			query = db.Table("campaigns").Where("user_id = ?", uid)
 		}
@@ -452,6 +480,16 @@ func GetCampaignSummaries(uid int64, filter string) (CampaignSummaries, error) {
 		}
 
 		cs[i].Stats = s
+
+		if filter == "own" { // if no valid subscription then "lock" all except the first campaign
+			if !subscribed && i > 0 {
+				cs[i].Locked = true
+			}
+		} else { // for partners viewing customers' campaigns if no valid subscription then "lock" all campaigns
+			if !subscribed {
+				cs[i].Locked = true
+			}
+		}
 	}
 
 	overview.Total = int64(len(cs))

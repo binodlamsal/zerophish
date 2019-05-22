@@ -460,6 +460,12 @@ func API_Campaigns_Id_Results(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if models.IsCampaignLockedForUser(id, uid) {
+		log.Errorf("Campaign %d is locked for user %d", id, uid)
+		JSONResponse(w, models.Response{Success: false, Message: "Campaign is locked"}, http.StatusForbidden)
+		return
+	}
+
 	cr, err := models.GetCampaignResults(id)
 
 	if err != nil {

@@ -40,6 +40,7 @@ type GroupSummary struct {
 	Name         string    `json:"name"`
 	ModifiedDate time.Time `json:"modified_date"`
 	NumTargets   int64     `json:"num_targets"`
+	Locked       bool      `json:"locked"`
 }
 
 // GroupTarget is used for a many-to-many relationship between 1..* Groups and 1..* Targets
@@ -190,20 +191,22 @@ func GetGroupSummaries(uid int64, filter string) (GroupSummaries, error) {
 		return gs, err
 	}
 
+	user, err := GetUser(uid)
+
+	if err != nil {
+		return gs, err
+	}
+
+	subscribed := user.IsSubscribed() || user.IsAdministrator()
+
 	var query *gorm.DB
 
 	if filter == "own" {
 		if role.IsOneOf([]int64{Partner, ChildUser}) {
-			u, err := GetUser(uid)
-
-			if err != nil {
-				return gs, err
-			}
-
-			partner := u.Partner
+			partner := user.Partner
 
 			if role.Is(Partner) {
-				partner = u.Id
+				partner = user.Id
 			}
 
 			cuids, err := GetChildUserIds(partner)
@@ -212,7 +215,7 @@ func GetGroupSummaries(uid int64, filter string) (GroupSummaries, error) {
 				return gs, err
 			}
 
-			query = db.Table("groups").Where("user_id = ? OR user_id = ? OR user_id IN (?)", uid, u.Partner, cuids)
+			query = db.Table("groups").Where("user_id = ? OR user_id = ? OR user_id IN (?)", uid, user.Partner, cuids)
 		} else {
 			query = db.Table("groups").Where("user_id = ?", uid)
 		}
@@ -236,6 +239,16 @@ func GetGroupSummaries(uid int64, filter string) (GroupSummaries, error) {
 		return gs, err
 	}
 	for i := range gs.Groups {
+		if filter == "own" { // if no valid subscription then "lock" all except the first group
+			if !subscribed && i > 0 {
+				gs.Groups[i].Locked = true
+			}
+		} else { // for partners viewing customers' groups if no valid subscription then "lock" all groups
+			if !subscribed {
+				gs.Groups[i].Locked = true
+			}
+		}
+
 		query = db.Table("group_targets").Where("group_id=?", gs.Groups[i].Id)
 		err = query.Count(&gs.Groups[i].NumTargets).Error
 		if err != nil {
@@ -637,6 +650,31 @@ func IsGroupAccessibleByUser(gid, uid int64) bool {
 	}
 
 	return false
+}
+
+// IsGroupLockedForUser tells if a group with the given gid is locked for user identified by uid
+func IsGroupLockedForUser(gid, uid int64) bool {
+	u, err := GetUser(uid)
+
+	if err != nil {
+		log.Error(err)
+		return true
+	}
+
+	if u.IsSubscribed() || u.IsAdministrator() {
+		return false
+	}
+
+	result := struct {
+		ID int64
+	}{}
+
+	if db.Raw("SELECT id FROM groups WHERE user_id = ? ORDER BY id ASC LIMIT 1", uid).Scan(&result).Error != nil {
+		log.Error(err)
+		return true
+	}
+
+	return gid > result.ID
 }
 
 // GetTargetsFullName finds and returns full name of a target user
