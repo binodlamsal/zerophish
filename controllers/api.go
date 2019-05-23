@@ -19,6 +19,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/everycloud-technologies/phishing-simulation/auth"
+	"github.com/everycloud-technologies/phishing-simulation/config"
 	ctx "github.com/everycloud-technologies/phishing-simulation/context"
 	log "github.com/everycloud-technologies/phishing-simulation/logger"
 	"github.com/everycloud-technologies/phishing-simulation/models"
@@ -92,14 +93,24 @@ func API_Campaigns(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		parsedURL, err := url.Parse("https://" + r.Host)
+		proto := "http://"
 
-		if err != nil {
-			JSONResponse(w, models.Response{Success: false, Message: "Could not determine hostname"}, http.StatusInternalServerError)
-			return
+		if config.Conf.PhishConf.UseTLS {
+			proto = "https://"
 		}
 
-		c.URL = "https://" + parsedURL.Hostname()
+		if os.Getenv("PHISHING_DOMAIN") != "" {
+			c.URL = proto + os.Getenv("PHISHING_DOMAIN")
+		} else {
+			parsedURL, err := url.Parse(proto + r.Host)
+
+			if err != nil {
+				JSONResponse(w, models.Response{Success: false, Message: "Could not determine hostname"}, http.StatusInternalServerError)
+				return
+			}
+
+			c.URL = proto + parsedURL.Hostname()
+		}
 
 		err = models.PostCampaign(&c, ctx.Get(r, "user_id").(int64))
 		if err != nil {
