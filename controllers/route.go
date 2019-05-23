@@ -493,9 +493,10 @@ func SSO_Login(w http.ResponseWriter, r *http.Request) {
 	params := struct {
 		User    models.User
 		Title   string
+		Year    string
 		Flashes []interface{}
 		Token   string
-	}{Title: "Login", Token: csrf.Token(r)}
+	}{Title: "Login", Token: csrf.Token(r), Year: strconv.Itoa(time.Now().UTC().Year())}
 
 	session := ctx.Get(r, "session").(*sessions.Session)
 
@@ -616,9 +617,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	params := struct {
 		User    models.User
 		Title   string
+		Year    string
 		Flashes []interface{}
 		Token   string
-	}{Title: "Login", Token: csrf.Token(r)}
+	}{Title: "Login", Token: csrf.Token(r), Year: strconv.Itoa(time.Now().UTC().Year())}
 	session := ctx.Get(r, "session").(*sessions.Session)
 	switch {
 	case r.Method == "GET":
