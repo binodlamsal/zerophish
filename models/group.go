@@ -669,7 +669,20 @@ func IsGroupLockedForUser(gid, uid int64) bool {
 		ID int64
 	}{}
 
-	if db.Raw("SELECT id FROM groups WHERE user_id = ? ORDER BY id ASC LIMIT 1", uid).Scan(&result).Error != nil {
+	var uids []int64
+
+	if u.IsPartner() || u.IsChildUser() {
+		uids, err = GetUserIds(uid)
+
+		if err != nil {
+			log.Errorf("Could not find users related to uid %d - %s", uid, err.Error())
+			return true
+		}
+	}
+
+	uids = append(uids, uid)
+
+	if db.Raw("SELECT id FROM groups WHERE user_id IN (?) ORDER BY id ASC LIMIT 1", uids).Scan(&result).Error != nil {
 		log.Error(err)
 		return true
 	}

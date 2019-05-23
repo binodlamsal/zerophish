@@ -591,27 +591,41 @@ func (u User) IsSubscribed() bool {
 // CanCreateCampaign tells if this user is allowed to create a campaign,
 // the decision is made based on user's subscription status and plan
 func (u User) CanCreateCampaign() bool {
-	var count int64
-	db.Model(&Campaign{}).Where("user_id = ?", u.Id).Count(&count)
-
-	if u.IsAdministrator() || u.IsSubscribed() || count < 1 {
+	if u.IsAdministrator() || u.IsSubscribed() {
 		return true
 	}
 
-	return false
+	uids, err := GetUserIds(u.Id)
+
+	if err != nil {
+		log.Errorf("Could not find users related to uid %d - %s", u.Id, err.Error())
+		return false
+	}
+
+	uids = append(uids, u.Id)
+	var count int64
+	db.Model(&Campaign{}).Where("user_id IN (?)", uids).Count(&count)
+	return count < 1
 }
 
 // CanCreateGroup tells if this user is allowed to create a group (of target users),
 // the decision is made based on user's subscription status and plan
 func (u User) CanCreateGroup() bool {
-	var count int64
-	db.Model(&Group{}).Where("user_id = ?", u.Id).Count(&count)
-
-	if u.IsAdministrator() || u.IsSubscribed() || count < 1 {
+	if u.IsAdministrator() || u.IsSubscribed() {
 		return true
 	}
 
-	return false
+	uids, err := GetUserIds(u.Id)
+
+	if err != nil {
+		log.Errorf("Could not find users related to uid %d - %s", u.Id, err.Error())
+		return false
+	}
+
+	uids = append(uids, u.Id)
+	var count int64
+	db.Model(&Group{}).Where("user_id IN (?)", uids).Count(&count)
+	return count < 1
 }
 
 // CanHaveXTargetsInAGroup tells if this user is allowed to have X targets in a group,
