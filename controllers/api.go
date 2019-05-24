@@ -23,6 +23,7 @@ import (
 	ctx "github.com/everycloud-technologies/phishing-simulation/context"
 	log "github.com/everycloud-technologies/phishing-simulation/logger"
 	"github.com/everycloud-technologies/phishing-simulation/models"
+	"github.com/everycloud-technologies/phishing-simulation/notifier"
 	"github.com/everycloud-technologies/phishing-simulation/usersync"
 	"github.com/everycloud-technologies/phishing-simulation/util"
 	"github.com/everycloud-technologies/phishing-simulation/worker"
@@ -238,6 +239,17 @@ func API_Users(w http.ResponseWriter, r *http.Request) {
 				JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
 				return
 			}
+		}
+
+		if os.Getenv("DONT_NOTIFY_USERS") == "" &&
+			(ud.Role == models.Partner || ud.Role == models.Customer) {
+			partner := false
+
+			if ud.Role == models.Partner {
+				partner = true
+			}
+
+			notifier.SendWelcomeEmail(iu.Email, iu.FullName, iu.Username, partner)
 		}
 
 		JSONResponse(w, models.Response{Success: true, Message: "User has been created"}, http.StatusOK)

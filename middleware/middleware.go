@@ -17,6 +17,7 @@ import (
 	ctx "github.com/everycloud-technologies/phishing-simulation/context"
 	log "github.com/everycloud-technologies/phishing-simulation/logger"
 	"github.com/everycloud-technologies/phishing-simulation/models"
+	"github.com/everycloud-technologies/phishing-simulation/notifier"
 	"github.com/everycloud-technologies/phishing-simulation/usersync"
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/sessions"
@@ -255,6 +256,17 @@ func SSO(handler http.Handler) http.HandlerFunc {
 						logoutWithError(fmt.Errorf("Could not sync user data with the main server - %s", err.Error()))
 						return
 					}
+				}
+
+				if os.Getenv("DONT_NOTIFY_USERS") == "" &&
+					(int64(rid) == models.Partner || int64(rid) == models.Customer) {
+					partner := false
+
+					if int64(rid) == models.Partner {
+						partner = true
+					}
+
+					notifier.SendWelcomeEmail(user.Email, user.Username, user.Username, partner)
 				}
 			} else if err != nil {
 				logoutWithError(fmt.Errorf("User lookup failed - %s", err.Error()))
