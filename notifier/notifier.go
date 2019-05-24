@@ -44,3 +44,26 @@ func SendWelcomeEmail(email, name, username string, partner bool) {
 			Errorf("Could not send welcome email to %s - %s", email, err.Error())
 	}
 }
+
+// SendAccountUpgradeEmail sends an account upgrade notification email to the given address.
+func SendAccountUpgradeEmail(email, name string) {
+	message := &m.Message{}
+	message.AddRecipient(email, name, "to")
+	message.FromEmail = "donotreply@everycloudtech.com"
+	message.FromName = "EveryCloud Technologies LLC"
+	message.Subject = "Account upgraded"
+
+	message.MergeVars = []*m.RcptMergeVars{
+		m.MapToRecipientVars(email, map[string]interface{}{
+			"FIRST_NAME": name,
+		}),
+	}
+
+	_, err := client.MessagesSendTemplate(message, "sat-account-upgraded", nil)
+
+	if err != nil {
+		log.
+			WithFields(map[string]interface{}{"tag": "notifier"}).
+			Errorf("Could not send account upgrade notification email to %s - %s", email, err.Error())
+	}
+}

@@ -14,6 +14,7 @@ import (
 	ctx "github.com/everycloud-technologies/phishing-simulation/context"
 	log "github.com/everycloud-technologies/phishing-simulation/logger"
 	"github.com/everycloud-technologies/phishing-simulation/models"
+	"github.com/everycloud-technologies/phishing-simulation/notifier"
 	"github.com/everycloud-technologies/phishing-simulation/usersync"
 	"github.com/everycloud-technologies/phishing-simulation/util"
 	"github.com/gorilla/securecookie"
@@ -450,6 +451,7 @@ func UpdateSettingsByAdmin(r *http.Request) error {
 	err = models.PutUserRole(&ur)
 
 	if currentUser.CanManageSubscriptions() {
+		wasSubscribed := u.IsSubscribed()
 		s := u.GetSubscription()
 
 		if s != nil {
@@ -495,6 +497,12 @@ func UpdateSettingsByAdmin(r *http.Request) error {
 				if err != nil {
 					return err
 				}
+			}
+		}
+
+		if !wasSubscribed && u.IsSubscribed() {
+			if os.Getenv("DONT_NOTIFY_USERS") == "" {
+				notifier.SendAccountUpgradeEmail(u.Email, u.FullName)
 			}
 		}
 	}
