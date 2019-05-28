@@ -179,6 +179,15 @@ div.dataTables_wrapper div.dataTables_length select {
 #enable_qa_resubmit .instant-wrapper .instant-content{
   margin-top: 0;
 }
+/*.custom-menu .nav > li{
+  padding-left: 7px;
+  padding-right: 7px;
+}
+.custom-menu .nav > li > a{
+   padding-left: 3px;
+   padding-right: 3px;
+   font-size: 12px !important;
+}*/
  @media (min-width: 1200px){
   #emptyMessage{
   margin-top: 50px;
