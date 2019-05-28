@@ -282,6 +282,9 @@ func SSO(handler http.Handler) http.HandlerFunc {
 			http.Redirect(w, r, r.URL.Path, 302)
 		} else if _, err := r.Cookie("CHOCOLATECHIPSSL"); err != nil {
 			http.Redirect(w, r, "logout", 302)
+		} else if u := ctx.Get(r, "user").(models.User); u.ToBeDeleted {
+			logoutWithError(fmt.Errorf("This account will be deleted (id: %d)", u.Id))
+			return
 		} else {
 			handler.ServeHTTP(w, r)
 		}

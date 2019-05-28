@@ -90,6 +90,7 @@ func CreateAdminRouter() http.Handler {
 	api.HandleFunc("/plans/", Use(API_Plans, mid.RequireRoles([]int64{models.Administrator, models.Partner, models.ChildUser}), mid.RequireAPIKey))
 	api.HandleFunc("/subscriptions/", Use(API_Subscriptions, mid.RequireRoles([]int64{models.Administrator}), mid.RequireAPIKey))
 	api.HandleFunc("/subscription", Use(API_Subscription, mid.RequireRoles([]int64{models.Partner, models.ChildUser, models.Customer}), mid.RequireAPIKey))
+	api.HandleFunc("/user", Use(API_User, mid.RequireRoles([]int64{models.Partner, models.ChildUser, models.Customer}), mid.RequireAPIKey))
 	api.HandleFunc("/smtp/", Use(API_SMTP, mid.RequireAPIKey))
 	api.HandleFunc("/sendingdomains", Use(API_SMTP_domains, mid.RequireAPIKey))
 	api.HandleFunc("/smtp/{id:[0-9]+}", Use(API_SMTP_Id, mid.RequireRoles([]int64{models.Administrator}), mid.RequireAPIKey))

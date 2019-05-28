@@ -42,6 +42,7 @@ type User struct {
 	LastLoginAt     time.Time `json:"last_login_at"`
 	LastLoginIp     string    `json:"last_login_ip" sql:"not null"`
 	LastUserAgent   string    `json:"last_user_agent"`
+	ToBeDeleted     bool      `json:"to_be_deleted"`
 }
 
 // BakeryUser stores relations between local user ids and bakery master user ids

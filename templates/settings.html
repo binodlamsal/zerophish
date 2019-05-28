@@ -22,7 +22,9 @@
         <ul class="nav nav-tabs" role="tablist">
             <li  role="mainSettings"><a href="#mainSettings" aria-controls="mainSettings" role="tab"
                     data-toggle="tab" class="active">Account Settings</a></li>
+            {{if not (eq role "admin")}}
             <li role="subscription"><a href="#subscription" aria-controls="subscription" role="tab" data-toggle="tab">Subscription</a></li>
+            {{end}}
 
         </ul>
     </div>
@@ -169,6 +171,7 @@
             </form>
             <br />
         </div>
+        {{if not (eq role "admin")}}
         <div role="tabpanel" class="tab-pane" id="subscription">
             <br />
             <!--<div class ="subscriptioDetails hide">   Your subscription details </div> -->
@@ -182,13 +185,16 @@
                             {{end}}
                         </div>
                         {{end}}
-                            <li class="list-group-item list-group-item-danger"><a href="#" class="deleteSubscription">Delete My Account</a></li>
+                        {{if not (eq role "child_user")}}
+                        <li class="list-group-item list-group-item-danger"><a href="#" class="deleteSubscription" onclick="deleteAccount()">Delete My Account</a></li>
+                        {{end}}
                     </ul>
            <!--  <div class="checkbox checkbox-primary">
                 <input id="use_map" type="checkbox">
                 <label for="use_map">Show campaign results map</label>
             </div> -->
         </div>
+        {{end}}
     </div>
 </div>
 </div> <!-- col-xs-9 -->

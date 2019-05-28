@@ -1649,6 +1649,25 @@ func API_Subscription(w http.ResponseWriter, r *http.Request) {
 	JSONResponse(w, models.Response{Success: true, Message: "Subscription cancelled"}, http.StatusOK)
 }
 
+// API_User handles account deletion requests
+func API_User(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "DELETE" {
+		JSONResponse(w, models.Response{Success: false, Message: "Method not allowed"}, http.StatusMethodNotAllowed)
+		return
+	}
+
+	u := ctx.Get(r, "user").(models.User)
+	u.ToBeDeleted = true
+	err := models.PutUser(&u)
+
+	if err != nil {
+		JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
+		return
+	}
+
+	JSONResponse(w, models.Response{Success: true, Message: "Account will be deleted"}, http.StatusOK)
+}
+
 // API_UserSync handles updates and deletions of users
 func API_UserSync(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)

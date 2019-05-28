@@ -576,7 +576,10 @@ function load() {
                       ? "/avatars/" + a.avatar_id
                       : "/images/noavatar.png") +
                     '"> ' +
-                    a.username,
+                    a.username +
+                    (a.to_be_deleted && role == "admin"
+                      ? ' <i class="fa fa-ban" style="color: red" title="To be deleted"></i>'
+                      : ""),
                   a.full_name,
                   a.email,
                   a.role,

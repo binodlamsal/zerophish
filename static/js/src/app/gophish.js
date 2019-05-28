@@ -282,6 +282,11 @@ var capitalize = function(e) {
       cancel: function() {
         return query("/subscription", "DELETE", {}, !0);
       }
+    },
+    user: {
+      delete: function() {
+        return query("/user", "DELETE", {}, !0);
+      }
     }
   };
 $(document).ready(function() {

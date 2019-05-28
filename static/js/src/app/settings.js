@@ -155,3 +155,18 @@ function cancelSubscription() {
       errorFlash(e.message);
     });
 }
+
+function deleteAccount() {
+  if (!confirm("You are sure you want to DELETE your account?")) {
+    return;
+  }
+
+  api.user
+    .delete()
+    .success(function(result) {
+      document.location = "/logout";
+    })
+    .error(function(e) {
+      errorFlash(e.message);
+    });
+}
