@@ -139,3 +139,19 @@ $(document).ready(function() {
     $("#avatar").val("DELETE");
   });
 });
+
+function cancelSubscription() {
+  if (!confirm("You are sure you want to cancel the subscription?")) {
+    return;
+  }
+
+  api.subscription
+    .cancel()
+    .success(function(result) {
+      $("#plan").hide();
+      successFlash(result.message);
+    })
+    .error(function(e) {
+      errorFlash(e.message);
+    });
+}

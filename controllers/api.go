@@ -1626,6 +1626,29 @@ func API_Subscriptions(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// API_Subscription handles subscription cancellation requests
+func API_Subscription(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "DELETE" {
+		JSONResponse(w, models.Response{Success: false, Message: "Method not allowed"}, http.StatusMethodNotAllowed)
+		return
+	}
+
+	u := ctx.Get(r, "user").(models.User)
+	s := u.GetSubscription()
+
+	if s == nil || !s.IsActive() {
+		JSONResponse(w, models.Response{Success: false, Message: "Not subscribed"}, http.StatusBadRequest)
+		return
+	}
+
+	if err := models.DeleteUserSubscriptions(u.Id); err != nil {
+		JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusBadRequest)
+		return
+	}
+
+	JSONResponse(w, models.Response{Success: true, Message: "Subscription cancelled"}, http.StatusOK)
+}
+
 // API_UserSync handles updates and deletions of users
 func API_UserSync(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)

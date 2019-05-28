@@ -89,6 +89,7 @@ func CreateAdminRouter() http.Handler {
 	api.HandleFunc("/pages/{id:[0-9]+}", Use(API_Pages_Id, mid.RequireAPIKey))
 	api.HandleFunc("/plans/", Use(API_Plans, mid.RequireRoles([]int64{models.Administrator, models.Partner, models.ChildUser}), mid.RequireAPIKey))
 	api.HandleFunc("/subscriptions/", Use(API_Subscriptions, mid.RequireRoles([]int64{models.Administrator}), mid.RequireAPIKey))
+	api.HandleFunc("/subscription", Use(API_Subscription, mid.RequireRoles([]int64{models.Partner, models.ChildUser, models.Customer}), mid.RequireAPIKey))
 	api.HandleFunc("/smtp/", Use(API_SMTP, mid.RequireAPIKey))
 	api.HandleFunc("/sendingdomains", Use(API_SMTP_domains, mid.RequireAPIKey))
 	api.HandleFunc("/smtp/{id:[0-9]+}", Use(API_SMTP_Id, mid.RequireRoles([]int64{models.Administrator}), mid.RequireAPIKey))
@@ -403,13 +404,21 @@ func PhishingCategories(w http.ResponseWriter, r *http.Request) {
 func Settings(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case r.Method == "GET":
+		u := ctx.Get(r, "user").(models.User)
+
 		params := struct {
-			User    models.User
-			Title   string
-			Flashes []interface{}
-			Token   string
-			Version string
-		}{Title: "Settings", Version: config.Version, User: ctx.Get(r, "user").(models.User), Token: csrf.Token(r)}
+			User           models.User
+			ExpirationDate string
+			Title          string
+			Flashes        []interface{}
+			Token          string
+			Version        string
+		}{Title: "Settings", Version: config.Version, User: u, Token: csrf.Token(r)}
+
+		if u.IsSubscribed() {
+			params.ExpirationDate = u.GetSubscription().ExpirationDate.Format("2006-01-02")
+		}
+
 		getTemplate(r, w, "settings").ExecuteTemplate(w, "base", params)
 	case r.Method == "POST":
 		msg := models.Response{Success: true, Message: "Settings Updated Successfully"}

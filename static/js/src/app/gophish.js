@@ -27,9 +27,12 @@ function modalError(e) {
 }
 
 function scrollToError(e) {
-  $('#modal').animate({
-    scrollTop: $("#modal\\.flashes").offset().top
-  }, 200)
+  $("#modal").animate(
+    {
+      scrollTop: $("#modal\\.flashes").offset().top
+    },
+    200
+  );
 }
 
 function query(e, t, n, r) {
@@ -274,6 +277,11 @@ var capitalize = function(e) {
     },
     reset: function() {
       return query("/reset", "POST", {}, !0);
+    },
+    subscription: {
+      cancel: function() {
+        return query("/subscription", "DELETE", {}, !0);
+      }
     }
   };
 $(document).ready(function() {

@@ -173,9 +173,15 @@
             <br />
             <!--<div class ="subscriptioDetails hide">   Your subscription details </div> -->
                     <ul class="list-group list-group-flush">
-                            <li class="list-group-item plan">Plan : Basic</li>
-                            <li class="list-group-item date">Expiry Date: <date>July 21 2019</date></li>
-                            <li class="list-group-item list-group-item-warning"><a href="#" class="canelSubscription">Cancel Subscription</a></li>
+                        {{if not (eq .ExpirationDate "")}}
+                        <div id="plan">
+                            <li class="list-group-item plan">Plan: Basic</li>
+                            <li class="list-group-item date">Expiry Date: <date>{{.ExpirationDate}}</date></li>
+                            {{if not (eq role "child_user")}}
+                            <li class="list-group-item list-group-item-warning"><a href="#" class="canelSubscription" onclick="cancelSubscription()">Cancel Subscription</a></li>
+                            {{end}}
+                        </div>
+                        {{end}}
                             <li class="list-group-item list-group-item-danger"><a href="#" class="deleteSubscription">Delete My Account</a></li>
                     </ul>
            <!--  <div class="checkbox checkbox-primary">
