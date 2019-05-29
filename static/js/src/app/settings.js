@@ -138,6 +138,13 @@ $(document).ready(function() {
     );
     $("#avatar").val("DELETE");
   });
+
+  if (expirationDate !== "") {
+    $("#plan").text("Basic");
+    $("#exp-date").text(expirationDate);
+    $("#cancel-link").show();
+    $("#upgrade-link").hide();
+  }
 });
 
 function cancelSubscription() {
@@ -148,7 +155,10 @@ function cancelSubscription() {
   api.subscription
     .cancel()
     .success(function(result) {
-      $("#plan").hide();
+      $("#plan").text("One Free Off Phish");
+      $("#exp-date").text("Never");
+      $("#cancel-link").hide();
+      $("#upgrade-link").show();
       successFlash(result.message);
     })
     .error(function(e) {
