@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -291,7 +292,7 @@ func setupContext(r *http.Request) (error, *http.Request) {
 		log.Error(err)
 	}
 	d := models.EventDetails{
-		Payload: r.Form,
+		Payload: url.Values{},
 		Browser: make(map[string]string),
 	}
 
