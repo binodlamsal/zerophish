@@ -1665,6 +1665,21 @@ func API_User(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if os.Getenv("DONT_NOTIFY_USERS") == "" {
+		if role, err := models.GetUserRole(u.Id); err == nil {
+			var partnerAddr, partnerName string
+
+			if u.Partner != 0 {
+				if partner, err := models.GetUser(u.Partner); err == nil {
+					partnerAddr = partner.Email
+					partnerName = partner.FullName
+				}
+			}
+
+			notifier.SendDeletionRequestEmail(partnerAddr, partnerName, u.Username, u.FullName, role.DisplayName())
+		}
+	}
+
 	JSONResponse(w, models.Response{Success: true, Message: "Account will be deleted"}, http.StatusOK)
 }
 

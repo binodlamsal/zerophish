@@ -67,3 +67,39 @@ func SendAccountUpgradeEmail(email, name string) {
 			Errorf("Could not send account upgrade notification email to %s - %s", email, err.Error())
 	}
 }
+
+// SendDeletionRequestEmail sends account deletion request to the given recipient and
+// optionally bcc to EveryCloud support with the given details.
+// If rcptAddr is passed as empty string then email will be sent to EveryCloud support only.
+func SendDeletionRequestEmail(rcptAddr, rcptName, username, name, role string) {
+	supportAddr := "support@everycloudtech.com"
+	message := &m.Message{}
+
+	if rcptAddr != "" {
+		message.BCCAddress = supportAddr
+	} else {
+		rcptAddr = supportAddr
+		rcptName = "EveryCloud Support"
+	}
+
+	message.AddRecipient(rcptAddr, rcptName, "to")
+	message.FromEmail = "donotreply@everycloudtech.com"
+	message.FromName = "EveryCloud Technologies LLC"
+	message.Subject = "SAT - Account Delete Request"
+
+	message.MergeVars = []*m.RcptMergeVars{
+		m.MapToRecipientVars(rcptAddr, map[string]interface{}{
+			"FIRST_NAME": name,
+			"USERNAME":   username,
+			"ACCTYPE":    role,
+		}),
+	}
+
+	_, err := client.MessagesSendTemplate(message, "sat-account-delete-request", nil)
+
+	if err != nil {
+		log.
+			WithFields(map[string]interface{}{"tag": "notifier"}).
+			Errorf("Could not send account deletion request email to %s - %s", rcptAddr, err.Error())
+	}
+}
