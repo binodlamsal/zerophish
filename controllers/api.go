@@ -787,7 +787,9 @@ func API_Groups_Id_LMS(w http.ResponseWriter, r *http.Request) {
 			}
 
 			for i, t := range targets {
-				u, err := models.CreateUser(t.Email, t.FirstName+" "+t.LastName, t.Email, "qwerty", models.LMSUser, partner)
+				fullname := t.FirstName + " " + t.LastName
+				username := util.GenerateUsername(fullname, t.Email)
+				u, err := models.CreateUser(username, fullname, t.Email, "qwerty", models.LMSUser, partner)
 
 				if err != nil {
 					j.Progress <- calcProgress(i, len(targets))
