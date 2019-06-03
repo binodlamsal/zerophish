@@ -96,7 +96,7 @@ func API_Campaigns(w http.ResponseWriter, r *http.Request) {
 
 		proto := "http://"
 
-		if config.Conf.PhishConf.UseTLS {
+		if config.Conf.PhishConf.UseTLS || os.Getenv("VIA_PROXY") != "" {
 			proto = "https://"
 		}
 

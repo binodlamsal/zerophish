@@ -106,7 +106,7 @@ func CreateAdminRouter() http.Handler {
 	// Setup CSRF Protection
 	csrfHandler := csrf.Protect([]byte(util.GenerateSecureKey()),
 		csrf.FieldName("csrf_token"),
-		csrf.Secure(config.Conf.AdminConf.UseTLS))
+		csrf.Secure(config.Conf.AdminConf.UseTLS || os.Getenv("VIA_PROXY") != ""))
 	csrfRouter := csrfHandler(router)
 	return Use(csrfRouter.ServeHTTP, mid.CSRFExceptions, mid.GetContext)
 }
@@ -549,7 +549,13 @@ func SSO_Login(w http.ResponseWriter, r *http.Request) {
 		template.Must(templates, err).ExecuteTemplate(w, "base", params)
 	case r.Method == "POST":
 		username, password := r.FormValue("username"), r.FormValue("password")
-		cookie, err := bakery.CreateOatmealCookie(username, password, "login", "https://"+r.Host+"/")
+		host := r.Host
+
+		if os.Getenv("ADMIN_DOMAIN") != "" {
+			host = os.Getenv("ADMIN_DOMAIN")
+		}
+
+		cookie, err := bakery.CreateOatmealCookie(username, password, "login", "https://"+host+"/")
 
 		if err != nil {
 			Flash(w, r, "danger", err.Error())
