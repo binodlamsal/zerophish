@@ -564,29 +564,32 @@ function load() {
               //     var n = t + "<br><br>Number of recipients: " + a.stats.total + "<br><br>Emails opened: " + a.stats.opened + "<br><br>Emails clicked: " + a.stats.clicked + "<br><br>Submitted Credentials: " + a.stats.submitted_data + "<br><br>Errors : " + a.stats.error + "Reported : " + a.stats.reported
               // }
 
-              peopleTable.row
-                .add([
-                  '<img style="max-height: 40px" src="' +
-                    (a.avatar_id
-                      ? "/avatars/" + a.avatar_id
-                      : "/images/noavatar.png") +
-                    '"> ' +
-                    a.username +
-                    (a.to_be_deleted && role == "admin"
-                      ? ' <i class="fa fa-ban" style="color: red" title="Delete Requested"></i>'
-                      : ""),
-                  a.full_name,
-                  a.email,
-                  a.role,
-                  a.last_login_at !== "0001-01-01T00:00:00Z"
-                    ? moment(a.last_login_at).fromNow()
-                    : "never",
-                  a.subscription
-                    ? a.subscription.plan +
-                      (a.subscription.expired ? " (expired)" : " ✔")
-                    : "✖",
-                  moment(a.last_login_at).format("X"),
-                  "<div class='pull-right'>" +
+              var isOwner = a.id == partnerId;
+
+              var row = peopleTable.row.add([
+                '<img style="max-height: 40px" src="' +
+                  (a.avatar_id
+                    ? "/avatars/" + a.avatar_id
+                    : "/images/noavatar.png") +
+                  '"> ' +
+                  a.username +
+                  (isOwner ? " [owner]" : "") +
+                  (a.to_be_deleted && role == "admin"
+                    ? ' <i class="fa fa-ban" style="color: red" title="Delete Requested"></i>'
+                    : ""),
+                a.full_name,
+                a.email,
+                a.role,
+                a.last_login_at !== "0001-01-01T00:00:00Z"
+                  ? moment(a.last_login_at).fromNow()
+                  : "never",
+                a.subscription
+                  ? a.subscription.plan +
+                    (a.subscription.expired ? " (expired)" : " ✔")
+                  : "✖",
+                moment(a.last_login_at).format("X"),
+                !isOwner
+                  ? "<div class='pull-right'>" +
                     "<span data-toggle='modal' data-backdrop='static' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='' onclick='edit(" +
                     i +
                     ")' data-original-title='Edit Member'>  <i class='fa fa-pencil'></i> </button> </span> " +
@@ -594,8 +597,14 @@ function load() {
                     a.id +
                     ")' data-toggle='tooltip' data-placement='left' title='Delete User'> <i class='fa fa-trash-o'></i></button></span>" +
                     "</div>"
-                ])
-                .draw();
+                  : ""
+              ]);
+
+              if (isOwner) {
+                $(row.node()).addClass("table-info");
+              }
+
+              row.draw();
             }))
           : $("#emptyMessage").show();
     })
