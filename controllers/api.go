@@ -722,6 +722,18 @@ func API_Groups_Id_LMS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	u, err := models.GetUser(uid)
+
+	if err != nil {
+		JSONResponse(w, models.Response{Success: false, Message: "Could not determine current user"}, http.StatusInternalServerError)
+		return
+	}
+
+	if !u.IsAdministrator() && !u.IsSubscribed() {
+		JSONResponse(w, models.Response{Success: false, Message: "LMS user management requires a valid subscription"}, http.StatusPreconditionFailed)
+		return
+	}
+
 	var tids []int64
 
 	if err := json.NewDecoder(r.Body).Decode(&tids); err != nil {
@@ -764,11 +776,6 @@ func API_Groups_Id_LMS(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			JSONResponse(w, models.Response{Success: false, Message: "Could not determine group owner"}, http.StatusInternalServerError)
-			return
-		}
-
-		if !groupOwner.IsSubscribed() {
-			JSONResponse(w, models.Response{Success: false, Message: "LMS user management requires a valid subscription"}, http.StatusPreconditionFailed)
 			return
 		}
 

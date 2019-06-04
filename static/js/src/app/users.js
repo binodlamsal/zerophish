@@ -251,7 +251,7 @@ function load(filter) {
                   t.locked
                     ? ""
                     : "<div class='pull-right'>" +
-                      (isSubscribed
+                      (isSubscribed || _role == "admin"
                         ? "<span data-toggle='modal' data-backdrop='static' data-target='#lms-modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' data-original-title='Create Training Users' onclick='lms(" +
                           t.id +
                           ")'>LMS</button></span>"
