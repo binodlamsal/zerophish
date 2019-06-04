@@ -16775,7 +16775,8 @@ div.page-title-section {
 #header {
   padding-top: 24px;
   border-bottom: 2px solid #eee;
-  padding-bottom: 11px; }
+  padding-bottom: 11px;
+  min-height: 128px; }
   #header.border-btm-none {
     border-bottom: none; }
 
@@ -17100,7 +17101,7 @@ select.form-control {
   .login-form-section .form-title h2 {
     font-weight: 500;
     text-transform: capitalize;
-    background: url(../images/login-icon.png) no-repeat center left;
+    background: url(../../images/login-icon.png) no-repeat center left;
     padding-left: 40px; }
   @media (max-width: 479px) {
     .login-form-section .form-title div[class^='col'] {
@@ -17304,6 +17305,10 @@ select.form-control {
       line-height: 20px; }
   .login-form-section .login-form .form-type-password {
     margin-bottom: 0; }
+.login-form-section .login-form:before {
+  display: none; }
+.login-form-section .login-form > .alert {
+  margin-top: -30px; }
 
 .password-item label {
   margin-bottom: -10px; }

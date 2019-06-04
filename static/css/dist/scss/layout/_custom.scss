@@ -6325,7 +6325,12 @@ table.dataTable thead .sorting.empty:after{
 .rating label .icon {
   font-size: 25px !important;
 }
-
+.table-image-wrap{
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+}
 /*campain result page*/
 .timeline {
     text-align: left;
@@ -6468,4 +6473,10 @@ i.fa-laptop+i.fa-vendor-icon {
     span{
       font-size: 13px;
     }
+}
+/*remove table border for campaign page*/
+body .table > thead > tr > th, .table > tbody > tr > th,
+body .table > tfoot > tr > th, .table > thead > tr > td, 
+body .table > tbody > tr > td, .table > tfoot > tr > td{
+  border-top: transparent;
 }

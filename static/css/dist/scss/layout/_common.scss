@@ -10,13 +10,12 @@ html{
 }
 body{
  font-family: 'Gotham HTF' !important; 
- font-size: 16px;
+ font-size: 15px;
  font-weight: 500;
  background: #f8faf9;
  color: #989898;
  overflow-x: hidden;
  width: 100%;
-
 }
 h1,
 h2,
@@ -822,7 +821,7 @@ h1.page-header{
   }
 }
 .rm-ans{
-  color: rgba(127, 127, 127, 0.6);
+  color: rgba(127, 127, 127, 0.8);
   &:hover{
     color: $primary-color;
   }
@@ -933,9 +932,16 @@ form#targetForm.user-form-section .row{
    width: 400px;
     max-width: calc(100% - 50px);
 }
+
 #emptyMessage{
   margin-top: 20px;
  border-radius: 0;
+ @media (min-width: 1200px){
+  margin-top: 50px;
+ }
+}
+.srijanatest{
+  margin-top: 0;
 }
 .btn-headers.btn-custom{
   padding: 8px 25px;

@@ -228,7 +228,7 @@
 							padding-left: 0;  
 						}
 						input {
-							color: rgba(127, 127, 127, 0.6);
+							color: rgba(127, 127, 127, 0.8);
 							font-size: 12px;
 							font-weight: 500;
 							padding: 12px 111px 12px 44px;
@@ -240,16 +240,16 @@
 							padding-left: 53px;
 							text-transform: capitalize;
 							&::-webkit-input-placeholder { 
-								color: rgba(127, 127, 127, 0.6);
+								color: rgba(127, 127, 127, 0.8);
 							}
 							&::-moz-placeholder {
-								color: rgba(127, 127, 127, 0.6);
+								color: rgba(127, 127, 127, 0.8);
 							}
 							&:-ms-input-placeholder { 
-								color: rgba(127, 127, 127, 0.6);
+								color: rgba(127, 127, 127, 0.8);
 							}
 							&:-moz-placeholder { 
-								color: rgba(127, 127, 127, 0.6);
+								color: rgba(127, 127, 127, 0.8);
 							}
 							@media (max-width: 1480px) {
 								padding:12px 79px 12px 44px;
@@ -468,7 +468,7 @@
 				padding:20px 30px 0 30px;
 				width: 100%;
 				font-size: 15px;
-				color: rgba(127, 127, 127, 0.6);
+				color: rgba(127, 127, 127, 0.8);
 				font-weight: 500;
 			}
 			.video-bg {
@@ -481,7 +481,7 @@
 					margin-bottom:20px;
 					span {
 						font-size: 15px;
-						color: rgba(127, 127, 127, 0.6);
+						color: rgba(127, 127, 127, 0.8);
 						font-weight: 500;
 					}
 					img {
@@ -540,7 +540,7 @@
 		.selection-wrap {
 			border: 1px solid #e6e7e8;
 			label {
-				color:rgba(127, 127, 127, 0.6);
+				color:rgba(127, 127, 127, 0.8);
 				font-size: 15px;
 				font-weight: 500;
 				&.checkbx{
@@ -694,7 +694,7 @@
 			.cnt-item {
 				padding:20px;
 				height: 100%;
-				color: rgba(127, 127, 127, 0.6);
+				color: rgba(127, 127, 127, 0.8);
 				font-size: 15px;
 				font-weight: 500;
 				line-height: 30px;
@@ -735,7 +735,7 @@
 			display: -ms-flexbox;
 			display: -webkit-flex; 
 			display: flex;
-			color: rgba(127, 127, 127, 0.6);
+			color: rgba(127, 127, 127, 0.8);
 			font-size: 15px;
 			font-weight: 500;
 			@include breakpoint(small){
@@ -750,7 +750,7 @@
 				padding:15px 30px;
 				border-top-right-radius: 0;
 				border-bottom-right-radius: 0;
-				color: rgba(127, 127, 127, 0.6);
+				color: rgba(127, 127, 127, 0.8);
 				font-size: 15px;
 				font-weight: 500;
 				@include breakpoint(small){
@@ -787,7 +787,7 @@
 				border-top-left-radius: 0;
 				border-bottom-left-radius: 0;
 				padding:20px 40px;
-				color: rgba(127, 127, 127, 0.6);
+				color: rgba(127, 127, 127, 0.8);
 				font-size: 15px;
 				font-weight: 500;
 				i {
@@ -965,7 +965,7 @@ pointer-events:auto;
 	}
 }
 .delete-btn{
-    color: rgba(127, 127, 127, 0.6);
+    color: rgba(127, 127, 127, 0.8);
     float: none;
     width: 100%;
     text-align: center;

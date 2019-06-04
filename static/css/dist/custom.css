@@ -162,9 +162,7 @@ div.dataTables_wrapper div.dataTables_length select {
 .btn-green, .modal-footer .btn.btn-primary, .btn-blue {
   padding:13px 40px;
 }
-/*.select2-container .select2-search--inline .select2-search__field{
-  width: auto !important;
-}*/
+
 .select2-container--bootstrap .select2-selection--multiple .select2-search--inline .select2-search__field{
   width: auto !important;
 }
@@ -179,15 +177,19 @@ div.dataTables_wrapper div.dataTables_length select {
 #enable_qa_resubmit .instant-wrapper .instant-content{
   margin-top: 0;
 }
-/*.custom-menu .nav > li{
-  padding-left: 7px;
-  padding-right: 7px;
+/*people page*/
+#peopleTable tr > td img{
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
 }
-.custom-menu .nav > li > a{
-   padding-left: 3px;
-   padding-right: 3px;
-   font-size: 12px !important;
-}*/
+#peopleTable tr td{
+   vertical-align: text-top;
+}
+/*people page*/
+#overview_chart > .highcharts-container {
+    width: 100% !important;
+}
  @media (min-width: 1200px){
   #emptyMessage{
   margin-top: 50px;
@@ -196,6 +198,64 @@ div.dataTables_wrapper div.dataTables_length select {
 .header-inner .logo img{
   width: auto;
 }
+
+
+
+/*==================== table-reponsive ==================*/
+table.dataTable thead .sorting:before, 
+table.dataTable thead .sorting:after, 
+table.dataTable thead .sorting_asc:before, 
+table.dataTable thead .sorting_asc:after, 
+table.dataTable thead .sorting_desc:before, 
+table.dataTable thead .sorting_desc:after, 
+table.dataTable thead .sorting_asc_disabled:before, 
+table.dataTable thead .sorting_asc_disabled:after, 
+table.dataTable thead .sorting_desc_disabled:before, 
+table.dataTable thead .sorting_desc_disabled:after{
+  bottom: 0 !important;
+}
+table.dataTable thead .sorting:before, 
+table.dataTable thead .sorting_asc:before, 
+table.dataTable thead .sorting_desc:before, 
+table.dataTable thead .sorting_asc_disabled:before, 
+table.dataTable thead .sorting_desc_disabled:before{
+  display: none !important;
+}
+@media (max-width: 991px){
+  table.dataTable th,
+  table.dataTable td {
+    white-space: nowrap;
+  }
+  .dtr-data{
+    display: -webkit-box; 
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex; 
+    display: flex;
+  }
+  table.dataTable>tbody>tr.child ul.dtr-details{
+    width: 100%;
+  }
+  table.dataTable.dtr-inline.collapsed tbody td:first-child:before, 
+  table.dataTable.dtr-inline.collapsed tbody th:first-child:before {
+    top: 14px !important;
+    content: '+';
+    background-image: linear-gradient(to right, #00caff 0%, #25419d), linear-gradient(to bottom, #444444, #444444);
+    background-clip: text;
+    line-height: 16px !important;
+    text-align: center;
+    font-weight: bold;
+    width: 16px !important;
+    box-shadow: none !important;
+    height: 16px !important;
+  }
+  #dataTable{
+    width: 100% !important;
+  }
+
+}
+/*==================== table-reponsive ==================*/
+
 @media (max-width: 767px){
   #mainSettings #reset-logo,
     #mainSettings #reset-avatar{
@@ -204,6 +264,9 @@ div.dataTables_wrapper div.dataTables_length select {
  #mainSettings #apiResetForm{
       margin-top: 20px;
       margin-left: 20px;
+  }
+  .header-inner .logo img{
+    max-width: inherit;
   }
 }
 @media (max-width: 991px){
