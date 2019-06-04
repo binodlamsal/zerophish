@@ -251,9 +251,11 @@ function load(filter) {
                   t.locked
                     ? ""
                     : "<div class='pull-right'>" +
-                      "<span data-toggle='modal' data-backdrop='static' data-target='#lms-modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' data-original-title='Create Training Users' onclick='lms(" +
-                      t.id +
-                      ")'>LMS</button></span>" +
+                      (isSubscribed
+                        ? "<span data-toggle='modal' data-backdrop='static' data-target='#lms-modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' data-original-title='Create Training Users' onclick='lms(" +
+                          t.id +
+                          ")'>LMS</button></span>"
+                        : "") +
                       "<span data-toggle='modal' data-backdrop='static' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' data-original-title='Edit Group'  onclick='edit(" +
                       t.id +
                       ")'>                    <i class='fa fa-pencil'></i>                    </button></span>                    <button class='btn btn-danger' data-toggle='tooltip' data-placement='left' data-original-title='Delete' onclick='deleteGroup(" +

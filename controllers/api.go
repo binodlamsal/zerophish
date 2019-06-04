@@ -767,6 +767,11 @@ func API_Groups_Id_LMS(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		if !groupOwner.IsSubscribed() {
+			JSONResponse(w, models.Response{Success: false, Message: "LMS user management requires a valid subscription"}, http.StatusPreconditionFailed)
+			return
+		}
+
 		partner := groupOwner.Id
 
 		if groupOwner.IsChildUser() {

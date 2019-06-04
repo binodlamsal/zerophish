@@ -30,12 +30,12 @@
         <div style="display: inline-block; position: absolute; right: 0%; transform: translate(-15px, 100px)">
             <div class="filter-section" data-toggle="tooltip" data-placement="left" data-original-title="Chose to filter just your own account groups or those of your customers.">
              <strong>Filter: &nbsp;</strong>
-             <label class="radiobx"> 
-                <input class="checkAll" type="radio" name="filter" value="own" id="filter-own" checked> 
+             <label class="radiobx">
+                <input class="checkAll" type="radio" name="filter" value="own" id="filter-own" checked>
                 <span class="radio-btn"><img src="images/tick.png" alt=""></span> Own &nbsp;
             </label>
-            <label class="radiobx"> 
-                <input class="checkAll" type="radio" name="filter" value="customers" id="filter-customers"> 
+            <label class="radiobx">
+                <input class="checkAll" type="radio" name="filter" value="customers" id="filter-customers">
                 <span class="radio-btn"><img src="images/tick.png" alt=""></span>Customers &nbsp;
             </label>
         </div> <!-- filter -->
@@ -166,8 +166,8 @@
                         <thead>
                             <tr>
                                 <th>
-                                    <label class="checkbx lms-checkbox"> 
-                                        <input type="checkbox" id="toggle-all"> 
+                                    <label class="checkbx lms-checkbox">
+                                        <input type="checkbox" id="toggle-all">
                                         <span class="checkbox-btn"><img src="images/tick.png" alt=""></span>
                                     </label>
                                 </th>
@@ -200,5 +200,8 @@
 </div> <!-- container-fluid -->
 </section>
 {{end}} {{define "scripts"}}
+<script>
+    var isSubscribed = {{.Subscribed}};
+</script>
 <script src="/js/dist/app/users.min.js"></script>
 {{end}}

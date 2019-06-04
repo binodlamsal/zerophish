@@ -879,6 +879,10 @@ func (e *Event) AfterCreate(tx *gorm.DB) error {
 		return nil
 	}
 
+	if !campaignOwner.IsSubscribed() {
+		return nil
+	}
+
 	partner := campaignOwner.Id
 
 	if campaignOwner.IsChildUser() {

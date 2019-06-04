@@ -313,16 +313,21 @@ func Templates(w http.ResponseWriter, r *http.Request) {
 func Users(w http.ResponseWriter, r *http.Request) {
 	// Example of using session - will be removed.
 	params := struct {
-		User    models.User
-		Role    string
-		Title   string
-		Flashes []interface{}
-		Token   string
+		User       models.User
+		Subscribed bool
+		Role       string
+		Title      string
+		Flashes    []interface{}
+		Token      string
 	}{
 		Title: "Users & Groups",
 		User:  ctx.Get(r, "user").(models.User),
 		Role:  "",
 		Token: csrf.Token(r),
+	}
+
+	if params.User.IsSubscribed() {
+		params.Subscribed = true
 	}
 
 	role, err := models.GetUserRole(params.User.Id)
