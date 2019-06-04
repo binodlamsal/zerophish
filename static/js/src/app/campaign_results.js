@@ -427,35 +427,7 @@ function renderTimeline(data) {
             results += deviceView;
           }
         }
-        if (event.message == "Submitted Data") {
-          results +=
-            '<div class="timeline-replay-button"><button onclick="replay(' +
-            i +
-            ')" class="btn btn-success">';
-          results +=
-            '<i class="fa fa-refresh"></i> Replay Credentials</button></div>';
-          results +=
-            '<div class="timeline-event-details"><i class="fa fa-caret-right"></i> View Details</div>';
-        }
-        if (details.payload) {
-          results += '<div class="timeline-event-results">';
-          results +=
-            '    <table class="table table-condensed table-bordered table-striped">';
-          results +=
-            "        <thead><tr><th>Parameter</th><th>Value(s)</tr></thead><tbody>";
-          $.each(Object.keys(details.payload), function(i, param) {
-            if (param == "rid") {
-              return true;
-            }
-            results += "    <tr>";
-            results += "        <td>" + escapeHtml(param) + "</td>";
-            results +=
-              "        <td>" + escapeHtml(details.payload[param]) + "</td>";
-            results += "    </tr>";
-          });
-          results += "       </tbody></table>";
-          results += "</div>";
-        }
+
         if (details.error) {
           results +=
             '<div class="timeline-event-details"><i class="fa fa-caret-right"></i> View Details</div>';

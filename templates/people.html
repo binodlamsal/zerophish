@@ -158,6 +158,7 @@
 {{end}} {{define "scripts"}}
 <script>
     var role = "{{.Role}}";
+    var partnerId = "{{.User.Partner}}";
     var canManageSubscriptions = {{.CanManageSubscriptions}};
 </script>
 <script src="/js/dist/app/people.min.js"></script>

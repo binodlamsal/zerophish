@@ -16,6 +16,8 @@ import (
 	"net/mail"
 	"os"
 	"regexp"
+	"strconv"
+	"strings"
 	"time"
 
 	log "github.com/gophish/gophish/logger"
@@ -230,6 +232,22 @@ func GenerateSecureKey() string {
 	k := make([]byte, 32)
 	io.ReadFull(rand.Reader, k)
 	return fmt.Sprintf("%x", k)
+}
+
+// GenerateUsername generates a pseudo-unique username from the given combination of full name and email.
+// Returns an empty string if both params are blank.
+func GenerateUsername(fullname, email string) string {
+	username := strings.Replace(strings.ToLower(fullname), " ", "", -1)
+
+	if username == "" && email != "" {
+		username = email[0:strings.LastIndex(email, "@")]
+	}
+
+	if username == "" {
+		return username
+	}
+
+	return username + strconv.Itoa(len(email))
 }
 
 // IsEmail tells if the given string is a valid email address

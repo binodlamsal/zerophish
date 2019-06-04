@@ -96,7 +96,7 @@ func API_Campaigns(w http.ResponseWriter, r *http.Request) {
 
 		proto := "http://"
 
-		if config.Conf.PhishConf.UseTLS {
+		if config.Conf.PhishConf.UseTLS || os.Getenv("VIA_PROXY") != "" {
 			proto = "https://"
 		}
 
@@ -194,15 +194,11 @@ func API_Users(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if role.Is(models.Administrator) || role.Is(models.Partner) {
-			if ud.Role == models.Customer || ud.Role == models.ChildUser || ud.Role == models.LMSUser {
-				if !role.Is(models.Administrator) || ud.Role != models.ChildUser {
-					ud.Partner = user.Id
-				}
-			}
-		} else if role.Is(models.ChildUser) {
-			if ud.Role == models.Customer || ud.Role == models.LMSUser {
+		if !role.Is(models.Administrator) {
+			if role.Is(models.ChildUser) {
 				ud.Partner = user.Partner
+			} else {
+				ud.Partner = user.Id
 			}
 		}
 
@@ -787,7 +783,9 @@ func API_Groups_Id_LMS(w http.ResponseWriter, r *http.Request) {
 			}
 
 			for i, t := range targets {
-				u, err := models.CreateUser(t.Email, t.FirstName+" "+t.LastName, t.Email, "qwerty", models.LMSUser, partner)
+				fullname := t.FirstName + " " + t.LastName
+				username := util.GenerateUsername(fullname, t.Email)
+				u, err := models.CreateUser(username, fullname, t.Email, "qwerty", models.LMSUser, partner)
 
 				if err != nil {
 					j.Progress <- calcProgress(i, len(targets))
@@ -1663,6 +1661,21 @@ func API_User(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
 		return
+	}
+
+	if os.Getenv("DONT_NOTIFY_USERS") == "" {
+		if role, err := models.GetUserRole(u.Id); err == nil {
+			var partnerAddr, partnerName string
+
+			if u.Partner != 0 {
+				if partner, err := models.GetUser(u.Partner); err == nil {
+					partnerAddr = partner.Email
+					partnerName = partner.FullName
+				}
+			}
+
+			notifier.SendDeletionRequestEmail(partnerAddr, partnerName, u.Username, u.FullName, role.DisplayName())
+		}
 	}
 
 	JSONResponse(w, models.Response{Success: true, Message: "Account will be deleted"}, http.StatusOK)

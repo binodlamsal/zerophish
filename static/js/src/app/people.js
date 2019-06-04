@@ -17,8 +17,13 @@ function save(e) {
   t.api_key = $("#hidden_api_key").val();
   t.id = e;
   t.role = parseInt($("#roles").val());
+
   t.partner =
-    parseInt($("#partner").val()) || parseInt($("#hidden_partner").val());
+    parseInt(
+      $("#partner")
+        .find(":selected")
+        .val()
+    ) || parseInt($("#hidden_partner").val());
   t.plan_id =
     parseInt($("#plan_id").val()) || parseInt($("#hidden_plan_id").val());
 
@@ -202,40 +207,35 @@ function edit(index) {
       });
 
       //populate the partners
-      api.users.partners().success(function(p) {
-        $("#partner")
-          .find("option")
-          .each(function(i) {
-            if ($(this).val() !== "") {
-              $(this).remove();
-            }
+
+      if (
+        $("#partner").length &&
+        !$("#partner").hasClass("select2-hidden-accessible")
+      ) {
+        api.users.partners().success(function(p) {
+          var partners = p.map(function(pp) {
+            return { id: pp.id, text: pp.username };
           });
 
-        if (!$("#partner").length || user.role == "LMS User") {
-          $("#hidden_partner").val(partner);
-        } else {
-          $("#hidden_partner").val("");
-        }
+          $("#partner").select2({
+            placeholder: "Select Partner",
+            data: partners,
+            allowClear: true
+          });
 
-        $.each(p, function(e, pp) {
-          var selected = "";
-          if (partner == pp.id) {
-            selected = 'selected = "selected"';
-          } else {
-            selected = "";
-          }
-
-          $("#partner").append(
-            '<option value="' +
-              pp.id +
-              '"  ' +
-              selected +
-              ">" +
-              pp.username +
-              "</option>"
-          );
+          $("#partner").val(partner);
+          $("#partner").trigger("change.select2");
         });
-      });
+      } else {
+        $("#partner").val(partner);
+        $("#partner").trigger("change.select2");
+      }
+
+      if (!$("#partner").length || user.role == "LMS User") {
+        $("#hidden_partner").val(partner);
+      } else {
+        $("#hidden_partner").val("");
+      }
 
       if (canManageSubscriptions) {
         //populate the plans
@@ -341,36 +341,31 @@ function edit(index) {
     });
 
     //populate the partners
-    api.users.partners().success(function(p) {
-      $("#partner")
-        .find("option")
-        .each(function(i) {
-          if ($(this).val() !== "") {
-            $(this).remove();
-          }
+
+    if (
+      role == "admin" &&
+      $("#partner").length &&
+      !$("#partner").hasClass("select2-hidden-accessible")
+    ) {
+      api.users.partners().success(function(p) {
+        var partners = p.map(function(pp) {
+          return { id: pp.id, text: pp.username };
         });
 
-      if (role == "admin") {
-        $.each(p, function(e, pp) {
-          var selected = "";
-          if (partner == pp.id) {
-            selected = 'selected = "selected"';
-          } else {
-            selected = "";
-          }
-
-          $("#partner").append(
-            '<option value="' +
-              pp.id +
-              '"  ' +
-              selected +
-              ">" +
-              pp.username +
-              "</option>"
-          );
+        $("#partner").select2({
+          placeholder: "Select Partner",
+          data: partners,
+          allowClear: true
         });
-      }
-    });
+      });
+    }
+
+    if ($("#partner").hasClass("select2-hidden-accessible")) {
+      $("#partner").val(partner);
+      $("#partner").trigger("change.select2");
+    }
+
+    // });
 
     // conditionally show and hide partner field depending on the selected role
     $("#roles").change(function() {
@@ -569,29 +564,32 @@ function load() {
               //     var n = t + "<br><br>Number of recipients: " + a.stats.total + "<br><br>Emails opened: " + a.stats.opened + "<br><br>Emails clicked: " + a.stats.clicked + "<br><br>Submitted Credentials: " + a.stats.submitted_data + "<br><br>Errors : " + a.stats.error + "Reported : " + a.stats.reported
               // }
 
-              peopleTable.row
-                .add([
-                  '<img style="max-height: 40px" src="' +
-                    (a.avatar_id
-                      ? "/avatars/" + a.avatar_id
-                      : "/images/noavatar.png") +
-                    '"> ' +
-                    a.username +
-                    (a.to_be_deleted && role == "admin"
-                      ? ' <i class="fa fa-ban" style="color: red" title="To be deleted"></i>'
-                      : ""),
-                  a.full_name,
-                  a.email,
-                  a.role,
-                  a.last_login_at !== "0001-01-01T00:00:00Z"
-                    ? moment(a.last_login_at).fromNow()
-                    : "never",
-                  a.subscription
-                    ? a.subscription.plan +
-                      (a.subscription.expired ? " (expired)" : " ✔")
-                    : "✖",
-                  moment(a.last_login_at).format("X"),
-                  "<div class='pull-right'>" +
+              var isOwner = a.id == partnerId;
+
+              var row = peopleTable.row.add([
+                '<img style="max-height: 40px" src="' +
+                  (a.avatar_id
+                    ? "/avatars/" + a.avatar_id
+                    : "/images/noavatar.png") +
+                  '"> ' +
+                  a.username +
+                  (isOwner ? " [owner]" : "") +
+                  (a.to_be_deleted && role == "admin"
+                    ? ' <i class="fa fa-ban" style="color: red" title="Delete Requested"></i>'
+                    : ""),
+                a.full_name,
+                a.email,
+                a.role,
+                a.last_login_at !== "0001-01-01T00:00:00Z"
+                  ? moment(a.last_login_at).fromNow()
+                  : "never",
+                a.subscription
+                  ? a.subscription.plan +
+                    (a.subscription.expired ? " (expired)" : " ✔")
+                  : "✖",
+                moment(a.last_login_at).format("X"),
+                !isOwner
+                  ? "<div class='pull-right'>" +
                     "<span data-toggle='modal' data-backdrop='static' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='' onclick='edit(" +
                     i +
                     ")' data-original-title='Edit Member'>  <i class='fa fa-pencil'></i> </button> </span> " +
@@ -599,8 +597,14 @@ function load() {
                     a.id +
                     ")' data-toggle='tooltip' data-placement='left' title='Delete User'> <i class='fa fa-trash-o'></i></button></span>" +
                     "</div>"
-                ])
-                .draw();
+                  : ""
+              ]);
+
+              if (isOwner) {
+                $(row.node()).addClass("table-info");
+              }
+
+              row.draw();
             }))
           : $("#emptyMessage").show();
     })

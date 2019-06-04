@@ -113,7 +113,7 @@ func main() {
 		defer wg.Done()
 		gzipWrapper, _ := gziphandler.NewGzipLevelHandler(gzip.BestCompression)
 		adminHandler := gzipWrapper(controllers.CreateAdminRouter())
-		auth.Store.Options.Secure = config.Conf.AdminConf.UseTLS
+		auth.Store.Options.Secure = config.Conf.AdminConf.UseTLS || os.Getenv("VIA_PROXY") != ""
 		if config.Conf.AdminConf.UseTLS { // use TLS for Admin web server if available
 			err := util.CheckAndCreateSSL(config.Conf.AdminConf.CertPath, config.Conf.AdminConf.KeyPath)
 			if err != nil {

@@ -176,15 +176,18 @@
             <br />
             <!--<div class ="subscriptioDetails hide">   Your subscription details </div> -->
                     <ul class="list-group list-group-flush">
-                        {{if not (eq .ExpirationDate "")}}
-                        <div id="plan">
-                            <li class="list-group-item plan">Plan: Basic</li>
-                            <li class="list-group-item date">Expiry Date: <date>{{.ExpirationDate}}</date></li>
-                            {{if not (eq role "child_user")}}
-                            <li class="list-group-item list-group-item-warning"><a href="#" class="canelSubscription" onclick="cancelSubscription()">Cancel Subscription</a></li>
-                            {{end}}
-                        </div>
+                        <li class="list-group-item plan">Plan: <span id="plan">One Free Off Phish</span></li>
+                        <li class="list-group-item date">Expiry Date: <date id="exp-date">Never</date></li>
+
+                        {{if not (eq role "child_user")}}
+                            <li class="list-group-item list-group-item-warning" id="cancel-link" style="display: none">
+                                <a href="#" class="canelSubscription" onclick="cancelSubscription()">Cancel Subscription</a>
+                            </li>
+                            <li class="list-group-item list-group-item-info" id="upgrade-link">
+                                <a href="https://www.everycloudtech.com/talk-us" target="_blank">Upgrade Account</a>
+                            </li>
                         {{end}}
+
                         {{if not (eq role "child_user")}}
                         <li class="list-group-item list-group-item-danger"><a href="#" class="deleteSubscription" onclick="deleteAccount()">Delete My Account</a></li>
                         {{end}}
@@ -202,5 +205,8 @@
 </div> <!-- container-fluid -->
 </section>
 {{end}} {{define "scripts"}}
+<script>
+    var expirationDate = {{.ExpirationDate}}
+</script>
 <script src="/js/dist/app/settings.min.js"></script>
 {{end}}
