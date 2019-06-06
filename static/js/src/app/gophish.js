@@ -39,11 +39,12 @@ function query(e, t, n, r) {
   const sep = e.includes("?") ? "&" : "?";
 
   return $.ajax({
-    url: "/api" + e + sep + "api_key=" + user.api_key,
+    url: "/api" + e,
+    headers: { Authorization: "Bearer " + user.api_key },
     async: r,
     method: t,
     type: t,
-    data: JSON.stringify(n),
+    data: t !== "GET" ? JSON.stringify(n) : null,
     dataType: "json",
     contentType: "application/json"
   });
@@ -286,6 +287,13 @@ var capitalize = function(e) {
     user: {
       delete: function() {
         return query("/user", "DELETE", {}, !0);
+      }
+    },
+    auth: {
+      lak: {
+        get: function(e) {
+          return query("/auth/lak?route=" + e, "GET", {}, !1);
+        }
       }
     }
   };

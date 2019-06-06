@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/mail"
@@ -1657,6 +1658,33 @@ func API_Subscription(w http.ResponseWriter, r *http.Request) {
 	}
 
 	JSONResponse(w, models.Response{Success: true, Message: "Subscription cancelled"}, http.StatusOK)
+}
+
+// API_Auth_LAK handles generation of limited access keys
+func API_Auth_LAK(w http.ResponseWriter, r *http.Request) {
+	uid := ctx.Get(r, "user_id").(int64)
+	ip := r.RemoteAddr
+
+	if ipAddr, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
+		ip = ipAddr
+	}
+
+	r.ParseForm()
+	route := r.Form.Get("route")
+
+	if route == "" {
+		JSONResponse(w, models.Response{Success: false, Message: "Missing route param"}, http.StatusBadRequest)
+		return
+	}
+
+	key := auth.GenerateLimitedAccessKey(uid, ip, route)
+
+	if key == "" {
+		JSONResponse(w, models.Response{Success: false, Message: "Could not generate limited access key"}, http.StatusInternalServerError)
+		return
+	}
+
+	JSONResponse(w, models.Response{Success: true, Message: "Limited access key for route " + route, Data: key}, http.StatusOK)
 }
 
 // API_User handles account deletion requests

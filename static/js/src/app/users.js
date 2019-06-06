@@ -101,8 +101,9 @@ function edit(e) {
         errorFlash("Error fetching group");
       });
   $("#csvupload").fileupload({
-    url: "/api/import/group?api_key=" + user.api_key,
+    url: "/api/import/group",
     dataType: "json",
+    headers: { Authorization: "Bearer " + user.api_key },
     add: function(e, a) {
       $("#modal\\.flashes").empty();
       var t = /(csv|txt)$/i,

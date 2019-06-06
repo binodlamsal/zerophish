@@ -5,11 +5,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
+
+	"github.com/everycloud-technologies/phishing-simulation/bakery"
 
 	ctx "github.com/everycloud-technologies/phishing-simulation/context"
 	log "github.com/everycloud-technologies/phishing-simulation/logger"
@@ -25,6 +29,13 @@ import (
 
 const SSODomain = ".everycloudtech.com"                                 // ".localhost"
 const SSOMasterLoginURL = "https://www.everycloudtech.com/bakery/login" // "https://localhost:3333/sso/mock"
+
+// LimitedAccessKey holds a combo of user id, ip and route prefix
+type LimitedAccessKey struct {
+	ID    int64  `json:"id"`
+	IP    string `json:"ip"`
+	Route string `json:"route"`
+}
 
 //init registers the necessary models to be saved in the session later
 func init() {
@@ -525,6 +536,68 @@ func IsValidPassword(password string) bool {
 	specialMatches := regexp.MustCompile(`([^a-zA-Z0-9\s])`).FindStringSubmatch(password)
 
 	if len(alphaMatches) < 2 || len(numMatches) < 2 || len(specialMatches) < 2 {
+		return false
+	}
+
+	return true
+}
+
+// GenerateLimitedAccessKey generates an encrypted access key limited to the given route prefix and IP.
+// Will return empty string in case of any errors.
+func GenerateLimitedAccessKey(id int64, ip, route string) string {
+	keyBytes, err := json.Marshal(LimitedAccessKey{
+		ID:    id,
+		IP:    ip,
+		Route: route,
+	})
+
+	if err != nil {
+		log.Errorf("Could not serialize limited access key to JSON - %s", err.Error())
+		return ""
+	}
+
+	key, err := bakery.Encrypt(string(keyBytes))
+
+	if err != nil {
+		log.Errorf("Could not encrypt limited access key - %s", err.Error())
+		return ""
+	}
+
+	return key
+}
+
+// ParseLimitedAccessKey decrypts the given limited access key
+func ParseLimitedAccessKey(key string) (*LimitedAccessKey, error) {
+	keyJSON, err := bakery.Decrypt(key)
+
+	if err != nil {
+		return nil, fmt.Errorf("Could not decrypt limited access key - %s", err.Error())
+	}
+
+	var lak LimitedAccessKey
+
+	if err := json.Unmarshal([]byte(keyJSON), &lak); err != nil {
+		return nil, fmt.Errorf("Could not unserialize limited access key - %s", err.Error())
+	}
+
+	return &lak, nil
+}
+
+// IsValidForRequest tells if this limited access key is valid for the given request
+func (lak *LimitedAccessKey) IsValidForRequest(r *http.Request) bool {
+	if !strings.HasPrefix(r.URL.Path, lak.Route) {
+		log.Error("Invalid limited access key - route mismatch")
+		return false
+	}
+
+	ip := r.RemoteAddr
+
+	if ipAddr, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
+		ip = ipAddr
+	}
+
+	if ip != lak.IP {
+		log.Error("Invalid limited access key - IP mismatch")
 		return false
 	}
 

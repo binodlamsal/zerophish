@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -103,6 +104,49 @@ func RequireAPIKey(handler http.Handler) http.HandlerFunc {
 		}
 		r = ctx.Set(r, "user_id", u.Id)
 		r = ctx.Set(r, "api_key", ak)
+		handler.ServeHTTP(w, r)
+	}
+}
+
+func RequireLimitedAccessKey(handler http.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		if r.Method == "OPTIONS" {
+			w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+			w.Header().Set("Access-Control-Max-Age", "1000")
+			w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+			return
+		}
+
+		key := r.Form.Get("access_key")
+
+		if key == "" {
+			JSONError(w, 400, "Missing access key")
+			return
+		}
+
+		lak, err := auth.ParseLimitedAccessKey(url.QueryEscape(key))
+
+		if err != nil {
+			JSONError(w, 500, err.Error())
+			return
+		}
+
+		if !lak.IsValidForRequest(r) {
+			JSONError(w, 403, "Invalid access key")
+			return
+		}
+
+		u, err := models.GetUser(lak.ID)
+
+		if err != nil {
+			JSONError(w, 403, "Invalid access key (unknown user id)")
+			return
+		}
+
+		u.DecryptApiKey()
+		r = ctx.Set(r, "user_id", u.Id)
+		r = ctx.Set(r, "api_key", u.PlainApiKey)
 		handler.ServeHTTP(w, r)
 	}
 }

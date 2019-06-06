@@ -621,9 +621,18 @@ function preview() {
     );
     $("#modalforpreview .subject").html(t.subject);
 
-    $("#modalforpreview .modal-body iframe").prop(
-      "src",
-      "/api/templates/" + t.id + "/preview?api_key=" + user.api_key
-    );
+    api.auth.lak
+      .get("/api/templates/" + t.id + "/preview")
+      .success(function(r) {
+        if (!r.success || r.data == null) {
+          errorFlash("Could not retrieve access key for template preview");
+          return;
+        }
+
+        $("#modalforpreview .modal-body iframe").prop(
+          "src",
+          "/api/templates/" + t.id + "/preview?access_key=" + r.data
+        );
+      });
   });
 }
