@@ -395,6 +395,45 @@ function edit(index) {
   }
 }
 
+function resetPassword(uid) {
+  swal({
+    title: "Want to reset password?",
+    text:
+      "An e-mail with password reset instructions will be sent to this user...",
+    type: "warning",
+    animation: false,
+    showCancelButton: true,
+    confirmButtonText: "Reset Password",
+    confirmButtonColor: "#428bca",
+    reverseButtons: true,
+    allowOutsideClick: false,
+    showLoaderOnConfirm: true,
+
+    preConfirm: function() {
+      return new Promise(function(resolve, reject) {
+        api.userId
+          .resetPassword(uid)
+          .done(function(r) {
+            resolve();
+          })
+          .fail(function(e) {
+            if (
+              e.responseJSON !== undefined &&
+              e.responseJSON.message !== undefined
+            ) {
+              reject(e.responseJSON.message);
+            } else {
+              reject("Something went wrong!");
+            }
+          });
+      });
+    }
+  }).then(function() {
+    swal("Password reset e-mail sent."),
+      $('button:contains("OK")').on("click", function() {});
+  });
+}
+
 function deleteUser(e) {
   swal({
     title: "Are you sure?",
@@ -593,6 +632,9 @@ function load() {
                     "<span data-toggle='modal' data-backdrop='static' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='' onclick='edit(" +
                     i +
                     ")' data-original-title='Edit Member'>  <i class='fa fa-pencil'></i> </button> </span> " +
+                    "<span><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='' onclick='resetPassword(" +
+                    a.id +
+                    ")' data-original-title='Reset Password'>  <i class='fa fa-recycle'></i> </button> </span> " +
                     " <span data-backdrop='static' data-target='#modal'><button class='btn btn-danger' onclick='deleteUser(" +
                     a.id +
                     ")' data-toggle='tooltip' data-placement='left' title='Delete User'> <i class='fa fa-trash-o'></i></button></span>" +

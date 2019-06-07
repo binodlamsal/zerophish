@@ -340,6 +340,40 @@ func API_Users_Id(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// API_Users_Id_ResetPassword handles password reset requests
+func API_Users_Id_ResetPassword(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		JSONResponse(w, models.Response{Success: false, Message: "Method not supported"}, http.StatusMethodNotAllowed)
+		return
+	}
+
+	vars := mux.Vars(r)
+	id, _ := strconv.ParseInt(vars["id"], 0, 64)
+	u, err := models.GetUser(id)
+
+	if err != nil {
+		log.Error(err)
+		JSONResponse(w, models.Response{Success: false, Message: "User not found"}, http.StatusNotFound)
+		return
+	}
+
+	buid := models.GetUserBakeryID(u.Id)
+
+	if buid == 0 {
+		err := fmt.Errorf("Could not find bakery id of user with id %d", u.Id)
+		log.Error(err)
+		JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusNotFound)
+		return
+	}
+
+	if err := usersync.ResetPassword(buid); err != nil {
+		JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
+		return
+	}
+
+	JSONResponse(w, models.Response{Success: true, Message: "Password-reset email has been sent"}, http.StatusOK)
+}
+
 // API_Roles_Id returns details about the requested User. If the User is not
 // valid, API_Roles_Id returns null.
 func API_Roles_Id(w http.ResponseWriter, r *http.Request) {

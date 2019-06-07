@@ -16,7 +16,7 @@ import (
 )
 
 // APIURL is a URL of the user sync API
-var APIURL = "https://www.everycloudtech.com/api/bakery"
+var APIURL = "https://www.everycloudtech.com/api"
 
 // APIUser is a username used during authentication
 var APIUser = os.Getenv("USERSYNC_API_USER")
@@ -43,7 +43,7 @@ func PushUser(id int64, username, email, fullName, password string, rid, pid int
 	}
 
 	client := &http.Client{}
-	req, err := http.NewRequest("POST", APIURL+"/create", strings.NewReader(params.Encode()))
+	req, err := http.NewRequest("POST", APIURL+"/bakery/create", strings.NewReader(params.Encode()))
 	req.SetBasicAuth(APIUser, APIPassword)
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
@@ -122,7 +122,7 @@ func UpdateUser(buid int64, username, email, password string, role, partner int6
 	}
 
 	client := &http.Client{}
-	req, err := http.NewRequest("POST", APIURL+"/update", strings.NewReader(params.Encode()))
+	req, err := http.NewRequest("POST", APIURL+"/bakery/update", strings.NewReader(params.Encode()))
 	req.SetBasicAuth(APIUser, APIPassword)
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
@@ -187,7 +187,7 @@ func DeleteUser(buid int64) error {
 	}
 
 	client := &http.Client{}
-	req, err := http.NewRequest("POST", APIURL+"/delete", strings.NewReader(params.Encode()))
+	req, err := http.NewRequest("POST", APIURL+"/bakery/delete", strings.NewReader(params.Encode()))
 	req.SetBasicAuth(APIUser, APIPassword)
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
@@ -229,6 +229,68 @@ func DeleteUser(buid int64) error {
 
 	if !respData.Success {
 		msg := "Unable to delete user on the main server"
+
+		if respData.Message != "" {
+			msg = respData.Message
+		}
+
+		return errors.New(msg)
+	}
+
+	return nil
+}
+
+// ResetPassword instructs the main server to perform password reset procedure for the given bakery user id
+func ResetPassword(buid int64) error {
+	if buid == 0 {
+		return nil
+	}
+
+	params := url.Values{"uid": {strconv.FormatInt(buid, 10)}}
+
+	client := &http.Client{}
+	req, err := http.NewRequest("POST", APIURL+"/v1/passwordreset", strings.NewReader(params.Encode()))
+	req.SetBasicAuth(APIUser, APIPassword)
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	if dump, err := httputil.DumpRequestOut(req, true); err == nil {
+		log.WithFields(map[string]interface{}{"tag": "usersync.ResetPassword ->"}).Infof("%q", dump)
+	}
+
+	resp, err := client.Do(req)
+
+	if err != nil {
+		return err
+	}
+
+	if dump, err := httputil.DumpResponse(resp, true); err == nil {
+		log.WithFields(map[string]interface{}{"tag": "usersync.ResetPassword <-"}).Infof("%q", dump)
+	}
+
+	if resp.StatusCode != 200 {
+		return errors.New("Unable to initiate password reset for user on the main server - status code: " + strconv.Itoa(resp.StatusCode))
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		return err
+	}
+
+	respData := struct {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+	}{}
+
+	err = json.Unmarshal(body, &respData)
+
+	if err != nil {
+		return fmt.Errorf("Could not parse response from the main server - %s", err.Error())
+	}
+
+	if !respData.Success {
+		msg := "Could not reset password of the user on the main server"
 
 		if respData.Message != "" {
 			msg = respData.Message

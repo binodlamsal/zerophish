@@ -114,6 +114,9 @@ var capitalize = function(e) {
       post: function(e) {
         return query("/people/" + e.id, "POST", e, !1);
       },
+      resetPassword: function(e) {
+        return query("/people/" + e + "/reset_password", "POST", {}, true);
+      },
       delete: function(e) {
         return query("/people/" + e, "DELETE", {}, !1);
       }
