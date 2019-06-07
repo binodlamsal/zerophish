@@ -159,9 +159,9 @@ function load(filter) {
                     escapeHtml(a.name),
                     a.username,
                     moment(a.modified_date).format("MMMM Do YYYY, h:mm:ss a"),
-                    "<div class='pull-right'><span data-toggle='modal' data-backdrop='static' data-target='#modal'>" +
+                    "<div class='pull-right'>" +
                       (a.writable
-                        ? "<button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Edit Page' onclick='edit(" +
+                        ? "<span data-toggle='modal' data-backdrop='static' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Edit Page' onclick='edit(" +
                           e +
                           ")'><i class='fa fa-pencil'></i></button></span>\t\t"
                         : "") +

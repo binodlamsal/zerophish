@@ -205,12 +205,18 @@ func IsPageWritableByUser(pid, uid int64) bool {
 // IsPageAccessibleByUser tells if a page (identified by pid)
 // is accessible by a user (identified by uid)
 func IsPageAccessibleByUser(pid, uid int64) bool {
-	oid, err := GetPageOwnerId(pid)
+	p, err := GetPage(pid)
 
 	if err != nil {
 		log.Error(err)
 		return false
 	}
+
+	if p.Public {
+		return true
+	}
+
+	oid := p.UserId
 
 	if oid == uid {
 		return true
