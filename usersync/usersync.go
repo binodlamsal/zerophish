@@ -16,7 +16,7 @@ import (
 )
 
 // APIURL is a URL of the user sync API
-var APIURL = "https://www.everycloudtech.com/api"
+var APIURL = "https://www.everycloud.com/api"
 
 // APIUser is a username used during authentication
 var APIUser = os.Getenv("USERSYNC_API_USER")
@@ -25,7 +25,7 @@ var APIUser = os.Getenv("USERSYNC_API_USER")
 var APIPassword = os.Getenv("USERSYNC_API_PASSWORD")
 
 // SlaveURL URL to identify origin website
-const SlaveURL = "https://awareness.everycloudtech.com/"
+const SlaveURL = "https://awareness.everycloud.com/"
 
 // PushUser sends user details to the main server and returns error if something is wrong and
 // in case of success it returns a master user id assigned to the newly created user.

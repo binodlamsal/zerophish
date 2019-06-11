@@ -81,7 +81,7 @@ func API_Campaigns(w http.ResponseWriter, r *http.Request) {
 			JSONResponse(
 				w, models.Response{
 					Success: false,
-					Message: `You’re currently using a free one-off phish subscription. If you’d like to run more campaigns, please <a href="https://www.everycloudtech.com/talk-us" target="_blank">contact us</a> to upgrade.`,
+					Message: `You’re currently using a free one-off phish subscription. If you’d like to run more campaigns, please <a href="https://www.everycloud.com/talk-us" target="_blank">contact us</a> to upgrade.`,
 				},
 				http.StatusConflict)
 			return

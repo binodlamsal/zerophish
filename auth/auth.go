@@ -27,8 +27,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-const SSODomain = ".everycloudtech.com"                                 // ".localhost"
-const SSOMasterLoginURL = "https://www.everycloudtech.com/bakery/login" // "https://localhost:3333/sso/mock"
+const SSODomain = ".everycloud.com"                                 // ".localhost"
+const SSOMasterLoginURL = "https://www.everycloud.com/bakery/login" // "https://localhost:3333/sso/mock"
 
 // LimitedAccessKey holds a combo of user id, ip and route prefix
 type LimitedAccessKey struct {

@@ -19,7 +19,7 @@ func init() {
 func SendWelcomeEmail(email, name, username string, partner bool) {
 	message := &m.Message{}
 	message.AddRecipient(email, name, "to")
-	message.FromEmail = "donotreply@everycloudtech.com"
+	message.FromEmail = "donotreply@everycloud.com"
 	message.FromName = "EveryCloud Technologies LLC"
 	message.Subject = "Welcome from EveryCloud"
 
@@ -49,7 +49,7 @@ func SendWelcomeEmail(email, name, username string, partner bool) {
 func SendAccountUpgradeEmail(email, name string) {
 	message := &m.Message{}
 	message.AddRecipient(email, name, "to")
-	message.FromEmail = "donotreply@everycloudtech.com"
+	message.FromEmail = "donotreply@everycloud.com"
 	message.FromName = "EveryCloud Technologies LLC"
 	message.Subject = "Account upgraded"
 
@@ -72,7 +72,7 @@ func SendAccountUpgradeEmail(email, name string) {
 // optionally bcc to EveryCloud support with the given details.
 // If rcptAddr is passed as empty string then email will be sent to EveryCloud support only.
 func SendDeletionRequestEmail(rcptAddr, rcptName, username, name, role string) {
-	supportAddr := "support@everycloudtech.com"
+	supportAddr := "support@everycloud.com"
 	message := &m.Message{}
 
 	if rcptAddr != "" {
@@ -83,7 +83,7 @@ func SendDeletionRequestEmail(rcptAddr, rcptName, username, name, role string) {
 	}
 
 	message.AddRecipient(rcptAddr, rcptName, "to")
-	message.FromEmail = "donotreply@everycloudtech.com"
+	message.FromEmail = "donotreply@everycloud.com"
 	message.FromName = "EveryCloud Technologies LLC"
 	message.Subject = "SAT - Account Delete Request"
 
