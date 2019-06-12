@@ -1480,10 +1480,22 @@ func API_Send_Test_Email(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	proto := "http://"
+
+	if config.Conf.PhishConf.UseTLS || os.Getenv("VIA_PROXY") != "" {
+		proto = "https://"
+	}
+
+	url := proto + parsedURL.Hostname()
+
+	if os.Getenv("PHISHING_DOMAIN") != "" {
+		url = proto + os.Getenv("PHISHING_DOMAIN")
+	}
+
 	s := &models.EmailRequest{
 		ErrorChan: make(chan error),
 		UserId:    ctx.Get(r, "user_id").(int64),
-		URL:       "https://" + parsedURL.Hostname(),
+		URL:       url,
 	}
 	if r.Method != "POST" {
 		JSONResponse(w, models.Response{Success: false, Message: "Method not allowed"}, http.StatusBadRequest)
