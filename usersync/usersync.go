@@ -1,6 +1,7 @@
 package usersync
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -15,8 +16,14 @@ import (
 	log "github.com/everycloud-technologies/phishing-simulation/logger"
 )
 
+// Debug if set to true will route all API requests to a local endpoint
+var Debug = false
+
 // APIURL is a URL of the user sync API
 var APIURL = "https://www.everycloud.com/api"
+
+// TrainingAPIURL is a URL of the security awareness training API
+var TrainingAPIURL = "https://awareness-stage.everycloud.com:4433/api"
 
 // APIUser is a username used during authentication
 var APIUser = os.Getenv("USERSYNC_API_USER")
@@ -26,6 +33,14 @@ var APIPassword = os.Getenv("USERSYNC_API_PASSWORD")
 
 // SlaveURL URL to identify origin website
 const SlaveURL = "https://awareness.everycloud.com/"
+
+func init() {
+	if Debug {
+		APIURL = "https://localhost:3333/api/mock"
+		TrainingAPIURL = "https://localhost:3333/api/mock"
+		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	}
+}
 
 // PushUser sends user details to the main server and returns error if something is wrong and
 // in case of success it returns a master user id assigned to the newly created user.
@@ -300,4 +315,69 @@ func ResetPassword(buid int64) error {
 	}
 
 	return nil
+}
+
+// DeleteTrainingCampaigns tells the main server to delete training campaigns of user with the given uid
+func DeleteTrainingCampaigns(uid int64) {
+	id := strconv.FormatInt(uid, 10)
+	params := url.Values{"uid": {id}}
+	client := &http.Client{}
+
+	req, err := http.NewRequest("POST", TrainingAPIURL+"/v1/delete_campaigns", strings.NewReader(params.Encode()))
+	req.SetBasicAuth(APIUser, APIPassword)
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	if dump, err := httputil.DumpRequestOut(req, true); err == nil {
+		log.WithFields(map[string]interface{}{"tag": "usersync.DeleteTrainingCampaigns ->"}).Infof("%q", dump)
+	}
+
+	resp, err := client.Do(req)
+
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	if dump, err := httputil.DumpResponse(resp, true); err == nil {
+		log.WithFields(map[string]interface{}{"tag": "usersync.DeleteTrainingCampaigns <-"}).Infof("%q", dump)
+	}
+
+	if resp.StatusCode != 200 {
+		log.Errorf(
+			"Unable to delete learning campaigns on the main server - status code: %s",
+			strconv.Itoa(resp.StatusCode),
+		)
+
+		return
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	respData := struct {
+		Code    bool   `json:"code"`
+		Message string `json:"message"`
+	}{}
+
+	err = json.Unmarshal(body, &respData)
+
+	if err != nil {
+		log.Errorf("Could not parse response from the main server - %s", err.Error())
+		return
+	}
+
+	if !respData.Code {
+		msg := "Unable to delete training campaigns on the main server"
+
+		if respData.Message != "" {
+			msg = respData.Message
+		}
+
+		log.Error(errors.New(msg))
+	}
 }

@@ -102,6 +102,40 @@ func CreateAdminRouter() http.Handler {
 	api.HandleFunc("/import/site", Use(API_Import_Site, mid.RequireAPIKey))
 	api.HandleFunc("/users/{buid:[0-9]+}", Use(API_UserSync, mid.RequireIP("104.131.171.183")))
 
+	api.HandleFunc("/mock/{method:\\S+}", Use(func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		method := vars["method"]
+		log.Infof("Mocked API call - method: %s", method)
+
+		switch method {
+		case "v1/delete_campaigns":
+			type response struct {
+				Message string      `json:"message"`
+				Code    bool        `json:"code"`
+				Data    interface{} `json:"data"`
+			}
+
+			JSONResponse(w, response{Message: "Mocked success", Code: false}, http.StatusOK)
+
+		case "bakery/create":
+			var resp struct {
+				Success bool   `json:"success"`
+				Message string `json:"message"`
+				User    struct {
+					UID string `json:"uid"`
+				} `json:"user"`
+			}
+
+			resp.Message = "Mocked success"
+			resp.Success = true
+			resp.User.UID = "100000"
+			JSONResponse(w, resp, http.StatusOK)
+		default:
+			JSONResponse(w, models.Response{Success: true, Message: "Mocked success"}, http.StatusOK)
+		}
+
+	}, mid.RequireIP("::1")))
+
 	// Setup static file serving
 	router.PathPrefix("/").Handler(http.FileServer(UnindexedFileSystem{http.Dir("./static/")}))
 

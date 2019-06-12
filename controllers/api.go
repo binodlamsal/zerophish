@@ -311,6 +311,8 @@ func API_Users_Id(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if os.Getenv("USERSYNC_DISABLE") == "" {
+			usersync.DeleteTrainingCampaigns(id)
+
 			if err := usersync.DeleteUser(buid); err != nil {
 				log.Error(err)
 				JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
@@ -917,6 +919,8 @@ func API_Groups_Id_LMS(w http.ResponseWriter, r *http.Request) {
 				}
 
 				if os.Getenv("USERSYNC_DISABLE") == "" {
+					usersync.DeleteTrainingCampaigns(u.Id)
+
 					if err := usersync.DeleteUser(buid); err != nil {
 						j.Errors <- err
 					}

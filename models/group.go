@@ -407,6 +407,8 @@ func PutGroup(g *Group) error {
 			if u, err := GetLMSUser(t.Email); err == nil {
 				if buid, err := DeleteUser(u.Id); err == nil {
 					if os.Getenv("USERSYNC_DISABLE") == "" {
+						usersync.DeleteTrainingCampaigns(u.Id)
+
 						if err := usersync.DeleteUser(buid); err != nil {
 							log.Error(err)
 						}
@@ -467,6 +469,8 @@ func DeleteGroup(g *Group) error {
 		if u, err := GetLMSUser(t.Email); err == nil {
 			if buid, err := DeleteUser(u.Id); err == nil {
 				if os.Getenv("USERSYNC_DISABLE") == "" {
+					usersync.DeleteTrainingCampaigns(u.Id)
+
 					if err := usersync.DeleteUser(buid); err != nil {
 						log.Error(err)
 					}
