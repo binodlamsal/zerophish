@@ -821,7 +821,7 @@ func CompleteCampaign(id int64) error {
 	// Mark the campaign as complete
 	c.CompletedDate = time.Now().UTC()
 	c.Status = CAMPAIGN_COMPLETE
-	err = db.Where("id=?", id).Save(&c).Error
+	err = db.Set("gorm:association_autocreate", false).Where("id=?", id).Save(&c).Error
 	if err != nil {
 		log.Error(err)
 	}
