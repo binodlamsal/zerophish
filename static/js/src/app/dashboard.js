@@ -468,7 +468,9 @@ function load(filter) {
         generateStatsPieCharts(campaigns);
         generateTimelineChart(campaigns);
       } else {
-        $("#emptyMessage").show();
+        if (filter === "own") {
+          $("#emptyMessage").show();
+        }
       }
     })
     .error(function() {
