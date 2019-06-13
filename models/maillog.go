@@ -169,6 +169,7 @@ func (m *MailLog) Generate(msg *gomail.Message) error {
 	}
 
 	// Add the transparency headers
+	msg.SetHeader("X-Sender", "X-PHISHTEST")
 	msg.SetHeader("X-Mailer", config.ServerName)
 	if config.Conf.ContactAddress != "" {
 		msg.SetHeader("X-Gophish-Contact", config.Conf.ContactAddress)
