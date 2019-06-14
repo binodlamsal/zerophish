@@ -637,6 +637,15 @@ func API_Groups(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		if (u.IsPartner() || u.IsChildUser()) && g.ContainsTargetsOutsideOfDomain(u.Domain) {
+			JSONResponse(w,
+				models.Response{
+					Success: false,
+					Message: fmt.Sprintf("There is one or more target emails not in %s domain", u.Domain),
+				}, http.StatusConflict)
+			return
+		}
+
 		err = models.PostGroup(&g)
 		if err != nil {
 			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusBadRequest)

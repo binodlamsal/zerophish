@@ -1,6 +1,20 @@
 var groupTable;
 var groupId;
 
+if (!String.prototype.endsWith) {
+  Object.defineProperty(String.prototype, "endsWith", {
+    value: function(searchString, position) {
+      var subjectString = this.toString();
+      if (position === undefined || position > subjectString.length) {
+        position = subjectString.length;
+      }
+      position -= searchString.length;
+      var lastIndex = subjectString.indexOf(searchString, position);
+      return lastIndex !== -1 && lastIndex === position;
+    }
+  });
+}
+
 function save(e) {
   var a = [];
   $.each(
@@ -113,10 +127,25 @@ function edit(e) {
       a.submit();
     },
     done: function(e, a) {
+      var skipped = 0;
+
       $.each(a.result, function(e, a) {
-        addTarget(a.first_name, a.last_name, a.email, a.position);
-      }),
-        targets.DataTable().draw();
+        if (a.email.endsWith(_domain)) {
+          addTarget(a.first_name, a.last_name, a.email, a.position);
+        } else {
+          skipped++;
+        }
+      });
+
+      if (skipped) {
+        modalError(
+          skipped +
+            " record(s) skipped - make sure all email addresses belong to domain " +
+            _domain
+        );
+      }
+
+      targets.DataTable().draw();
     }
   });
 }
@@ -345,18 +374,30 @@ $(document).ready(function() {
   load("own");
 
   $("#targetForm").submit(function() {
-    return (
-      addTarget(
-        $("#firstName").val(),
-        $("#lastName").val(),
-        $("#email").val(),
-        $("#position").val()
-      ),
-      targets.DataTable().draw(),
-      $("#targetForm input").val(""),
-      $("#firstName").focus(),
-      !1
+    if (
+      !$("#email")
+        .val()
+        .endsWith(_domain)
+    ) {
+      modalError(
+        "You may only add email addresses on your own domain (like user@" +
+          _domain +
+          ")"
+      );
+      return false;
+    }
+
+    addTarget(
+      $("#firstName").val(),
+      $("#lastName").val(),
+      $("#email").val(),
+      $("#position").val()
     );
+
+    targets.DataTable().draw();
+    $("#targetForm input").val("");
+    $("#firstName").focus();
+    return false;
   });
 
   $("#modal").on("hide.bs.modal", function() {

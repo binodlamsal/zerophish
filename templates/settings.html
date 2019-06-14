@@ -93,7 +93,7 @@
                 <div class="row">
                     <label for="domain" class="col-sm-3 col-md-2 control-label form-label">Domain:</label>
                     <div class="col-md-8 col-sm-7">
-                        <input type="text" id="domain" name="domain" value="{{.User.Domain}}" class="form-control" />
+                        <input type="text" id="domain" name="domain" value="{{.User.Domain}}" class="form-control" {{if eq .Role "child_user"}}disabled{{end}} />
                     </div>
                 </div>
                 <br />

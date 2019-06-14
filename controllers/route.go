@@ -450,12 +450,33 @@ func Settings(w http.ResponseWriter, r *http.Request) {
 
 		params := struct {
 			User           models.User
+			Role           string
 			ExpirationDate string
 			Title          string
 			Flashes        []interface{}
 			Token          string
 			Version        string
-		}{Title: "Settings", Version: config.Version, User: u, Token: csrf.Token(r)}
+		}{Title: "Settings", Version: config.Version, User: u, Role: "", Token: csrf.Token(r)}
+
+		role, err := models.GetUserRole(u.Id)
+
+		if err != nil {
+			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
+			return
+		}
+
+		params.Role = role.Name()
+
+		if u.IsChildUser() {
+			partner, err := models.GetUser(u.Partner)
+
+			if err != nil {
+				JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
+				return
+			}
+
+			params.User.Domain = partner.Domain
+		}
 
 		if u.IsSubscribed() {
 			params.ExpirationDate = u.GetSubscription().ExpirationDate.Format("2006-01-02")

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/mail"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/everycloud-technologies/phishing-simulation/usersync"
@@ -128,6 +129,22 @@ func (g *Group) HasTargets(tids []int64) bool {
 	}
 
 	return len(tids) == int(count)
+}
+
+// ContainsTargetsOutsideOfDomain tells if this group's targets contain one or more email addresses
+// outside of the given domain. If domain is blank then it always returns false.
+func (g *Group) ContainsTargetsOutsideOfDomain(domain string) bool {
+	if domain == "" {
+		return false
+	}
+
+	for _, t := range g.Targets {
+		if !strings.HasSuffix(t.Email, domain) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // GetGroups returns the groups owned by the given user.
