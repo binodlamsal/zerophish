@@ -1,5 +1,8 @@
 var people = [];
 var peopleTable;
+var admins;
+var partners;
+var customers;
 
 function save(e) {
   var t = {};
@@ -212,21 +215,30 @@ function edit(index) {
         $("#partner").length &&
         !$("#partner").hasClass("select2-hidden-accessible")
       ) {
-        api.users.partners().success(function(p) {
-          var partners = p.map(function(pp) {
-            return { id: pp.id, text: pp.username };
-          });
+        $("#partner").select2({
+          placeholder: "Select Partner",
+          data:
+            user.role === "LMS User"
+              ? admins.concat(partners, customers)
+              : admins.concat(partners),
+          allowClear: true
+        });
 
-          $("#partner").select2({
+        $("#partner").val(partner);
+        $("#partner").trigger("change.select2");
+      } else if ($("#partner").length) {
+        $("#partner")
+          .select2("destroy")
+          .empty()
+          .select2({
             placeholder: "Select Partner",
-            data: partners,
+            data:
+              user.role === "LMS User"
+                ? admins.concat(partners, customers)
+                : admins.concat(partners),
             allowClear: true
           });
 
-          $("#partner").val(partner);
-          $("#partner").trigger("change.select2");
-        });
-      } else {
         $("#partner").val(partner);
         $("#partner").trigger("change.select2");
       }
@@ -291,10 +303,32 @@ function edit(index) {
           $(
             "label[for=num_of_users], #num_of_users, label[for=admin_email], #admin_email, label[for=domain], #domain"
           ).hide();
+
+          $("#partner")
+            .select2("destroy")
+            .empty()
+            .select2({
+              placeholder: "Select Partner",
+              data: admins.concat(partners, customers),
+              allowClear: true
+            });
+
+          $("#partner").trigger("change.select2");
         } else {
           $(
             "label[for=num_of_users], #num_of_users, label[for=admin_email], #admin_email, label[for=domain], #domain"
           ).show();
+
+          $("#partner")
+            .select2("destroy")
+            .empty()
+            .select2({
+              placeholder: "Select Partner",
+              data: admins.concat(partners),
+              allowClear: true
+            });
+
+          $("#partner").trigger("change.select2");
         }
       });
 
@@ -347,16 +381,10 @@ function edit(index) {
       $("#partner").length &&
       !$("#partner").hasClass("select2-hidden-accessible")
     ) {
-      api.users.partners().success(function(p) {
-        var partners = p.map(function(pp) {
-          return { id: pp.id, text: pp.username };
-        });
-
-        $("#partner").select2({
-          placeholder: "Select Partner",
-          data: partners,
-          allowClear: true
-        });
+      $("#partner").select2({
+        placeholder: "Select Partner",
+        data: admins.concat(partners),
+        allowClear: true
       });
     }
 
@@ -380,10 +408,32 @@ function edit(index) {
         $(
           "label[for=num_of_users], #num_of_users, label[for=admin_email], #admin_email, label[for=domain], #domain"
         ).hide();
+
+        $("#partner")
+          .select2("destroy")
+          .empty()
+          .select2({
+            placeholder: "Select Partner",
+            data: admins.concat(partners, customers),
+            allowClear: true
+          });
+
+        $("#partner").trigger("change.select2");
       } else {
         $(
           "label[for=num_of_users], #num_of_users, label[for=admin_email], #admin_email, label[for=domain], #domain"
         ).show();
+
+        $("#partner")
+          .select2("destroy")
+          .empty()
+          .select2({
+            placeholder: "Select Partner",
+            data: admins.concat(partners),
+            allowClear: true
+          });
+
+        $("#partner").trigger("change.select2");
       }
     });
 
@@ -583,6 +633,36 @@ function load() {
   } else {
     peopleTable.clear();
     peopleTable.draw();
+  }
+
+  if (admins === undefined) {
+    admins = [];
+
+    api.users.admins().success(function(r) {
+      admins = r.map(function(user) {
+        return { id: user.id, text: user.username };
+      });
+    });
+  }
+
+  if (partners === undefined) {
+    partners = [];
+
+    api.users.partners().success(function(r) {
+      partners = r.map(function(user) {
+        return { id: user.id, text: user.username };
+      });
+    });
+  }
+
+  if (customers === undefined) {
+    customers = [];
+
+    api.users.customers().success(function(r) {
+      customers = r.map(function(user) {
+        return { id: user.id, text: user.username };
+      });
+    });
   }
 
   api.users

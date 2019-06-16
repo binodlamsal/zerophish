@@ -253,15 +253,35 @@ func API_Users(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// API_User_Partners returns a list of User Partners if requested via GET.
-func API_User_Partners(w http.ResponseWriter, r *http.Request) {
+// API_User_ByRole returns a list of users of a certain role.
+func API_User_ByRole(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	role := vars["role"]
+
 	switch {
 	case r.Method == "GET":
-		cs, err := models.GetUserPartners()
+		var rid int64
+
+		if role == "admin" {
+			rid = models.Administrator
+		} else if role == "partner" {
+			rid = models.Partner
+		} else if role == "customer" {
+			rid = models.Customer
+		} else {
+			JSONResponse(w, models.Response{Success: false, Message: "Unknown role"}, http.StatusBadRequest)
+			return
+		}
+
+		users, err := models.GetUsersByRoleID(rid)
+
 		if err != nil {
 			log.Error(err)
+			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
+			return
 		}
-		JSONResponse(w, cs, http.StatusOK)
+
+		JSONResponse(w, users, http.StatusOK)
 	}
 }
 

@@ -872,15 +872,10 @@ func DeleteCustomers(uid int64) error {
 	return nil
 }
 
-// GetUserPartners returns all the partners from the database
-func GetUserPartners() ([]User, error) {
+// GetUsersByRole returns all users of the given role (rid)
+func GetUsersByRoleID(rid int64) ([]User, error) {
 	u := []User{}
-
-	err = db.Raw(
-		"SELECT * FROM users u LEFT JOIN users_role ur ON (u.id = ur.uid) where ur.rid IN (?)",
-		[]int64{Administrator, Partner, Customer},
-	).Scan(&u).Error
-
+	err = db.Raw("SELECT * FROM users u LEFT JOIN users_role ur ON (u.id = ur.uid) where ur.rid = ?", rid).Scan(&u).Error
 	return u, err
 }
 

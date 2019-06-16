@@ -88,8 +88,14 @@ var capitalize = function(e) {
       post: function(e) {
         return query("/people", "POST", e, !1);
       },
+      admins: function() {
+        return query("/people/by_role/admin", "GET", {}, !0);
+      },
       partners: function() {
-        return query("/people/partner", "GET", {}, !0);
+        return query("/people/by_role/partner", "GET", {}, !0);
+      },
+      customers: function() {
+        return query("/people/by_role/customer", "GET", {}, !0);
       }
     },
     plans: {
