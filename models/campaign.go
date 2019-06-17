@@ -46,11 +46,16 @@ type Campaign struct {
 
 // CampaignResults is a struct representing the results from a campaign
 type CampaignResults struct {
-	Id      int64    `json:"id"`
-	Name    string   `json:"name"`
-	Status  string   `json:"status"`
-	Results []Result `json:"results,omitempty"`
-	Events  []Event  `json:"timeline,omitempty"`
+	Id           int64     `json:"id"`
+	Name         string    `json:"name"`
+	LaunchDate   time.Time `json:"launch_date"`
+	TemplateID   int64     `json:"template_id"`
+	TemplateName string    `json:"template_name"`
+	PageID       int64     `json:"page_id"`
+	PageName     string    `json:"page_name"`
+	Status       string    `json:"status"`
+	Results      []Result  `json:"results,omitempty"`
+	Events       []Event   `json:"timeline,omitempty"`
 }
 
 // CampaignSummaries is a struct representing the overview of campaigns
@@ -553,6 +558,17 @@ func GetCampaignResults(id int64) (CampaignResults, error) {
 			"error":       err,
 		}).Error(err)
 		return cr, err
+	}
+
+	cr.TemplateName = "Unknown"
+	cr.PageName = "Unknown"
+
+	if t, err := GetTemplate(cr.TemplateID); err == nil {
+		cr.TemplateName = t.Name
+	}
+
+	if p, err := GetPage(cr.PageID); err == nil {
+		cr.PageName = p.Name
 	}
 
 	err = db.Table("results").Where("campaign_id=?", cr.Id).Find(&cr.Results).Error

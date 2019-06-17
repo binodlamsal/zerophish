@@ -822,6 +822,15 @@ function load() {
           $("#complete_button").text("Completed!");
           doPoll = false;
         }
+
+        // Campaign details
+        $("#launch_date").text(
+          moment(c.launch_date).format("MMMM Do YYYY, h:mm:ss a")
+        );
+
+        $("#template").text(c.template_name);
+        $("#page").text(c.page_name);
+
         // Setup viewing the details of a result
         $("#resultsTable").on("click", ".timeline-event-details", function() {
           // Show the parameters
