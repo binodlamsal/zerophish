@@ -41,6 +41,10 @@ function save(e) {
     }
   }
 
+  $("#modalSubmit").attr("disabled", true);
+  $("#modalSubmit .loading").toggle();
+  $("#modalSubmit .text").toggle();
+
   api.userId
     .post(t)
     .success(function(e) {
@@ -49,6 +53,11 @@ function save(e) {
     })
     .error(function(e) {
       modalError(e.responseJSON.message);
+    })
+    .always(function() {
+      $("#modalSubmit").attr("disabled", false);
+      $("#modalSubmit .loading").toggle();
+      $("#modalSubmit .text").toggle();
     });
 }
 
@@ -73,6 +82,10 @@ function create() {
     return;
   }
 
+  $("#modalSubmit").attr("disabled", true);
+  $("#modalSubmit .loading").toggle();
+  $("#modalSubmit .text").toggle();
+
   api.users
     .post(t)
     .success(function(e) {
@@ -81,6 +94,11 @@ function create() {
     })
     .error(function(e) {
       modalError(e.responseJSON.message);
+    })
+    .always(function() {
+      $("#modalSubmit").attr("disabled", false);
+      $("#modalSubmit .loading").toggle();
+      $("#modalSubmit .text").toggle();
     });
 }
 

@@ -86,7 +86,7 @@ var capitalize = function(e) {
         return query("/people", "GET", {}, !1);
       },
       post: function(e) {
-        return query("/people", "POST", e, !1);
+        return query("/people", "POST", e, true);
       },
       admins: function() {
         return query("/people/by_role/admin", "GET", {}, !0);
@@ -118,7 +118,7 @@ var capitalize = function(e) {
         return query("/people/" + e, "GET", {}, !1);
       },
       post: function(e) {
-        return query("/people/" + e.id, "POST", e, !1);
+        return query("/people/" + e.id, "POST", e, true);
       },
       resetPassword: function(e) {
         return query("/people/" + e + "/reset_password", "POST", {}, true);
