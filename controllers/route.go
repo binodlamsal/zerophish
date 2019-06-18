@@ -68,7 +68,16 @@ func CreateAdminRouter() http.Handler {
 	api.HandleFunc("/roles", Use(API_Roles, mid.RequireAPIKey))
 	api.HandleFunc("/roles/{id:[0-9]+}", Use(API_Roles_Id, mid.RequireAPIKey))
 	api.HandleFunc("/people/{id:[0-9]+}", Use(API_Users_Id, mid.RequireAPIKey))
-	api.HandleFunc("/people/{id:[0-9]+}/reset_password", Use(API_Users_Id_ResetPassword, mid.RequireRoles([]int64{models.Administrator, models.Partner, models.ChildUser}), mid.RequireAPIKey))
+
+	api.HandleFunc(
+		"/people/{id:[0-9]+}/reset_password",
+		Use(
+			API_Users_Id_ResetPassword,
+			mid.RequireRoles([]int64{models.Administrator, models.Partner, models.ChildUser, models.Customer}),
+			mid.RequireAPIKey,
+		),
+	)
+
 	api.HandleFunc("/phishtags/", Use(API_Tags, mid.RequireAPIKey))
 	api.HandleFunc("/phishtagssingle/{id:[0-9]+}", Use(API_Tags_Single, mid.RequireAPIKey))
 	api.HandleFunc("/campaigns/summary", Use(API_Campaigns_Summary, mid.RequireAPIKey))
