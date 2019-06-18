@@ -122,10 +122,14 @@ function edit(index) {
       $(
         "label[for=num_of_users], #num_of_users, label[for=admin_email], #admin_email, label[for=domain], #domain"
       ).hide();
+
+      $("#roles").attr("disabled", true);
     } else {
       $(
         "label[for=num_of_users], #num_of_users, label[for=admin_email], #admin_email, label[for=domain], #domain"
       ).show();
+
+      $("#roles").attr("disabled", false);
     }
 
     var exp_date =
@@ -200,6 +204,10 @@ function edit(index) {
           });
 
         $.each(r, function(e, rr) {
+          if (rr.name === "lms_user" && user.role !== "LMS User") {
+            return;
+          }
+
           $("#roles").append(
             '<option value="' + rr.rid + '" >' + rr.name + "</option>"
           );
@@ -380,6 +388,10 @@ function edit(index) {
         });
 
       $.each(r, function(e, rr) {
+        if (rr.name === "lms_user") {
+          return;
+        }
+
         $("#roles").append(
           '<option value="' + rr.rid + '" >' + rr.name + "</option>"
         );
@@ -547,6 +559,7 @@ function dismiss() {
   $("#roles").val("");
   $("#modal").modal("hide");
   $("#roles[type=hidden]").remove();
+  $("#roles").attr("disabled", false);
 
   $(
     ".row.subscription, label[for=current_password], #curpassword, label[for=confirm_password], #confirm_password"
