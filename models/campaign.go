@@ -7,6 +7,7 @@ import (
 	"net/mail"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -622,8 +623,8 @@ func PostCampaign(c *Campaign, uid int64) error {
 		c.LaunchDate = c.LaunchDate.UTC()
 	}
 
-	if os.Getenv("DONT_DELAY_SENDING") == "" {
-		c.LaunchDate = c.LaunchDate.Add(15 * time.Minute)
+	if delay, _ := strconv.ParseInt(os.Getenv("DELAY_SENDING_BY_X_MINS"), 10, 0); delay > 0 {
+		c.LaunchDate = c.LaunchDate.Add(time.Duration(delay) * time.Minute)
 	}
 
 	if !c.SendByDate.IsZero() {
