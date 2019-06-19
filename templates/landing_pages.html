@@ -87,12 +87,15 @@
                     <input type="text" class="form-control" placeholder="Page name" id="name" autofocus data-toggle="tooltip" data-original-title="Give your landing page a name. This isn’t used on the page, it’s just to
                     help you find it later." data-placement="right" data-trigger="focus" />
                 </div>
+
+                {{if (eq .Role "admin") }}
                 <div class="form-group" data-toggle="tooltip" data-placement="right" data-original-title="Add the URL of an existing website to import as much as we can.
                 You can then make changes using the edit below.">
                     <button class="btn btn-danger" data-toggle="modal" data-backdrop="static" data-target="#importSiteModal"><i
                             class="fa fa-globe"></i>
                         Import Site</button>
                 </div>
+                {{end}}
 
                 <div class="form-group">
                     <label class="control-label" for="url">Category <i class="fa fa-question-circle"
