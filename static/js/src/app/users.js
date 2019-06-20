@@ -426,6 +426,26 @@ $(document).ready(function() {
     }
   });
 
+  $("#lmsTargetsTable")
+    .DataTable()
+    .on("deselect", function(e, dt, type, indexes) {
+      if (type === "row") {
+        $("#toggle-all").prop("checked", false);
+      }
+    });
+
+  $("#lmsTargetsTable")
+    .DataTable()
+    .on("select", function(e, dt, type, indexes) {
+      if (type === "row") {
+        var lmsTable = $("#lmsTargetsTable").DataTable();
+
+        if (lmsTable.rows(".selected").count() === lmsTable.rows().count()) {
+          $("#toggle-all").prop("checked", true);
+        }
+      }
+    });
+
   $("#create-users").click(function() {
     $(".lms-buttons > button").prop("disabled", "disabled");
 
