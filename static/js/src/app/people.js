@@ -610,7 +610,7 @@ $(document).ready(function() {
       placeholder: "Select Timezone",
       data: moment.tz.names()
     });
-  }, 1000);
+  }, 200);
 
   load();
 
