@@ -575,7 +575,9 @@ function load(filter) {
               campaignTable.row
                 .add([
                   escapeHtml(a.name) +
-                    (a.locked ? ' <i class="fa fa-lock"></i>' : ""),
+                    (a.locked
+                      ? ' <i class="fa fa-lock" data-toggle="tooltip" data-placement="right" data-original-title="Your subscription has expired, therefore your campagains have been locked. Please contact your account manager to extend your subscription."></i>'
+                      : ""),
                   a.username,
                   moment(a.created_date).format("MMMM Do YYYY, h:mm:ss a"),
                   '<span class="label ' +

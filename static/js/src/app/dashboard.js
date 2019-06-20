@@ -433,7 +433,9 @@ function load(filter) {
           campaignTable.row
             .add([
               escapeHtml(campaign.name) +
-                (campaign.locked ? ' <i class="fa fa-lock"></i>' : ""),
+                (campaign.locked
+                  ? ' <i class="fa fa-lock" data-toggle="tooltip" data-placement="right" data-original-title="Your subscription has expired, therefore your campagains have been locked. Please contact your account manager to extend your subscription."></i>'
+                  : ""),
               campaign.username,
               campaign_date,
               campaign.stats.sent,

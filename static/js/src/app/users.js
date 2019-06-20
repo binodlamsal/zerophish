@@ -274,7 +274,9 @@ function load(filter) {
               groupTable.row
                 .add([
                   escapeHtml(t.name) +
-                    (t.locked ? ' <i class="fa fa-lock"></i>' : ""),
+                    (t.locked
+                      ? ' <i class="fa fa-lock" data-toggle="tooltip" data-placement="right" data-original-title="Your subscription has expired, therefore your user groups have been locked. Please contact your account manager to extend your subscription."></i>'
+                      : ""),
                   t.username,
                   escapeHtml(t.num_targets),
                   moment(t.modified_date).format("MMMM Do YYYY, h:mm:ss a"),
