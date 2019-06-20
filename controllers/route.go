@@ -232,12 +232,20 @@ func Register(w http.ResponseWriter, r *http.Request) {
 // Base handles the default path and template execution
 func Base(w http.ResponseWriter, r *http.Request) {
 	params := struct {
-		User    models.User
-		Role    string
-		Title   string
-		Flashes []interface{}
-		Token   string
-	}{Title: "Dashboard", User: ctx.Get(r, "user").(models.User), Role: "", Token: csrf.Token(r)}
+		User                models.User
+		Role                string
+		Title               string
+		Flashes             []interface{}
+		Token               string
+		TrainingPlatformURL string
+	}{
+		Title:               "Dashboard",
+		User:                ctx.Get(r, "user").(models.User),
+		Role:                "",
+		Token:               csrf.Token(r),
+		TrainingPlatformURL: os.Getenv("TRAINING_PLATFORM_URL"),
+	}
+
 	role, err := models.GetUserRole(params.User.Id)
 
 	if err != nil {
