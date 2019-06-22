@@ -300,6 +300,24 @@ func SSO(handler http.Handler) http.HandlerFunc {
 						logoutWithError(fmt.Errorf("Could not sync user data with the main server - %s", err.Error()))
 						return
 					}
+
+					fullname, domain, err := usersync.GetUserDetails(c.BakeryID)
+
+					if err != nil {
+						logoutWithError(err)
+						return
+					}
+
+					if err := models.UpdateUser(
+						&models.User{
+							Id:       user.Id,
+							FullName: fullname,
+							Domain:   domain,
+						}); err != nil {
+
+						logoutWithError(fmt.Errorf("Could not update user with id %d - %s", user.Id, err.Error()))
+						return
+					}
 				}
 
 				if os.Getenv("DONT_NOTIFY_USERS") == "" &&
@@ -328,7 +346,6 @@ func SSO(handler http.Handler) http.HandlerFunc {
 			http.Redirect(w, r, "logout", 302)
 		} else if u := ctx.Get(r, "user").(models.User); u.ToBeDeleted {
 			logoutWithError(fmt.Errorf("This account will be deleted (id: %d)", u.Id))
-			return
 		} else {
 			handler.ServeHTTP(w, r)
 		}

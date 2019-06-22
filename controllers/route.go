@@ -139,6 +139,77 @@ func CreateAdminRouter() http.Handler {
 			resp.Success = true
 			resp.User.UID = "100000"
 			JSONResponse(w, resp, http.StatusOK)
+		case "v1/userdetails":
+			var goodResp struct {
+				Success bool   `json:"success"`
+				Message string `json:"message"`
+				Data    struct {
+					FullName struct {
+						Und []struct {
+							Value string `json:"value"`
+						} `json:"und"`
+					} `json:"field_full_name"`
+
+					Domain struct {
+						Und []struct {
+							Value string `json:"value"`
+						} `json:"und"`
+					} `json:"field_domain_url"`
+				} `json:"data,omitempty"`
+			}
+
+			var emptyDomainResp struct {
+				Success bool   `json:"success"`
+				Message string `json:"message"`
+				Data    struct {
+					FullName struct {
+						Und []struct {
+							Value string `json:"value"`
+						} `json:"und"`
+					} `json:"field_full_name"`
+
+					Domain []int64 `json:"field_domain_url"`
+				} `json:"data,omitempty"`
+			}
+
+			var badResp struct {
+				Success bool   `json:"success"`
+				Message string `json:"message"`
+			}
+
+			r.ParseForm()
+			buid, _ := strconv.ParseInt(r.Form.Get("uid"), 10, 0)
+
+			if buid == 0 {
+				badResp.Message = "Mocked failure"
+				badResp.Success = false
+				JSONResponse(w, badResp, http.StatusOK)
+				return
+			}
+
+			if buid == 2 {
+				emptyDomainResp.Message = "Mocked success"
+				emptyDomainResp.Success = true
+				emptyDomainResp.Data.FullName.Und = append(goodResp.Data.FullName.Und, struct {
+					Value string `json:"value"`
+				}{Value: "Jon Snow"})
+				emptyDomainResp.Data.Domain = make([]int64, 0)
+				JSONResponse(w, emptyDomainResp, http.StatusOK)
+				return
+			}
+
+			goodResp.Message = "Mocked success"
+			goodResp.Success = true
+
+			goodResp.Data.FullName.Und = append(goodResp.Data.FullName.Und, struct {
+				Value string `json:"value"`
+			}{Value: "Jon Snow"})
+
+			goodResp.Data.Domain.Und = append(goodResp.Data.Domain.Und, struct {
+				Value string `json:"value"`
+			}{Value: "got.com"})
+
+			JSONResponse(w, goodResp, http.StatusOK)
 		default:
 			JSONResponse(w, models.Response{Success: true, Message: "Mocked success"}, http.StatusOK)
 		}

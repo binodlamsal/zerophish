@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Jeffail/gabs"
 	log "github.com/everycloud-technologies/phishing-simulation/logger"
 )
 
@@ -380,4 +381,70 @@ func DeleteTrainingCampaigns(uid int64) {
 
 		log.Error(errors.New(msg))
 	}
+}
+
+// GetUserDetails requests details of user with the given bakery id from the main server
+func GetUserDetails(buid int64) (fullname, domain string, err error) {
+	params := url.Values{"uid": {strconv.FormatInt(buid, 10)}}
+
+	client := &http.Client{}
+	req, err := http.NewRequest("POST", APIURL+"/v1/userdetails", strings.NewReader(params.Encode()))
+	req.SetBasicAuth(APIUser, APIPassword)
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	if dump, err := httputil.DumpRequestOut(req, true); err == nil {
+		log.WithFields(map[string]interface{}{"tag": "usersync.GetUserDetails ->"}).Infof("%q", dump)
+	}
+
+	resp, err := client.Do(req)
+
+	if err != nil {
+		return
+	}
+
+	if dump, err := httputil.DumpResponse(resp, true); err == nil {
+		log.WithFields(map[string]interface{}{"tag": "usersync.GetUserDetails <-"}).Infof("%q", dump)
+	}
+
+	if resp.StatusCode != 200 {
+		err = errors.New("Unable to retrieve user details from the main server - status code: " + strconv.Itoa(resp.StatusCode))
+		return
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		return
+	}
+
+	data, err := gabs.ParseJSON(body)
+
+	if err != nil {
+		err = fmt.Errorf("Could not parse response from the main server - %s", err.Error())
+		return
+	}
+
+	success := data.S("success").Data().(bool)
+
+	if !success {
+		msg := "Could not get user details from the main server"
+
+		if data.S("message").Data().(string) != "" {
+			msg = data.S("message").Data().(string)
+		}
+
+		err = errors.New(msg)
+		return
+	}
+
+	if container, err := data.JSONPointer("/data/field_full_name/und/0/value"); err == nil {
+		fullname = container.Data().(string)
+	}
+
+	if container, err := data.JSONPointer("/data/field_domain_url/und/0/value"); err == nil {
+		domain = container.Data().(string)
+	}
+
+	return
 }
