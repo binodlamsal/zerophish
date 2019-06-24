@@ -122,7 +122,7 @@ func (s *EmailRequest) Generate(msg *gomail.Message) error {
 
 	// Add the transparency headers
 	msg.SetHeader("X-Sender", "X-PHISHTEST")
-	msg.SetHeader("X-Mailer", config.ServerName)
+	msg.SetHeader("X-Mailer", "EveryCloud")
 	if config.Conf.ContactAddress != "" {
 		msg.SetHeader("X-Gophish-Contact", config.Conf.ContactAddress)
 	}
