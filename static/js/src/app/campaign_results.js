@@ -1038,6 +1038,16 @@ function load() {
         }
         updateMap(campaign.results);
       }
+
+      if (window.localStorage.getItem("NewCampaign")) {
+        window.localStorage.removeItem("NewCampaign");
+
+        $("#campaign_announcement .launch_date").text(
+          moment(c.launch_date).format("MMMM Do YYYY, h:mm:ss a")
+        );
+
+        $("#campaign_announcement").show();
+      }
     })
     .error(function() {
       $("#loading").hide();

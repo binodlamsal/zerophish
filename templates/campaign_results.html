@@ -14,6 +14,12 @@
                 <i class="fa fa-spinner fa-spin fa-4x"></i>
             </div>
             <div style="display:none;" id="campaignResults">
+                <div class="alert alert-info" role="alert" id="campaign_announcement" style="margin-top: 20px; display: none">
+                    E-mail(s) will be sent by <span class="launch_date"></span>, if you have anything wrong please delete the campaign or contact our support.
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                </div>
                 <div class="page-title-section">
                     <h1 class="page-header" id="page-title">Results for campaign.name</h1>
                 <div class="top-btn-result">
@@ -50,7 +56,7 @@
                     </span>
                 </div>
 
-                <div style="display: inline-block; position: absolute; top: 30px; right: 20px; min-width: 300px; text-align: right; font-size: small">
+                <div style="display: inline-block; position: relative; top: -50px; right: -240px; min-width: 300px; text-align: right; font-size: small">
                     <strong>Launch Date:</strong> <span id="launch_date"></span><br>
                     <strong>E-mail Template:</strong> <span id="template">Unknown</span><br>
                     <strong>Landing Page:</strong> <span id="page">Unknown</span><br>

@@ -116,10 +116,13 @@ function launch() {
       "Campaign Scheduled!",
       "This campaign has been scheduled for launch!",
       "success"
-    ),
-      $('button:contains("OK")').on("click", function() {
-        window.location = "/campaigns/" + campaign.id.toString();
-      });
+    );
+
+    window.localStorage.setItem("NewCampaign", "true");
+
+    $('button:contains("OK")').on("click", function() {
+      window.location = "/campaigns/" + campaign.id.toString();
+    });
   });
 }
 
