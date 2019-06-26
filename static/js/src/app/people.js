@@ -322,40 +322,35 @@ function edit(index) {
           $("#partner-container").css("display", "");
         } else {
           $("#partner-container").css("display", "none");
-          $("#partner").val("");
         }
+
+        var data;
 
         if ($(this).val() == 5) {
           $(
             "label[for=num_of_users], #num_of_users, label[for=admin_email], #admin_email, label[for=domain], #domain"
           ).hide();
 
-          $("#partner")
-            .select2("destroy")
-            .empty()
-            .select2({
-              placeholder: "Select Partner",
-              data: admins.concat(partners, customers),
-              allowClear: true
-            });
-
-          $("#partner").trigger("change.select2");
+          data = admins.concat(partners, customers);
         } else {
           $(
             "label[for=num_of_users], #num_of_users, label[for=admin_email], #admin_email, label[for=domain], #domain"
           ).show();
 
-          $("#partner")
-            .select2("destroy")
-            .empty()
-            .select2({
-              placeholder: "Select Partner",
-              data: admins.concat(partners),
-              allowClear: true
-            });
-
-          $("#partner").trigger("change.select2");
+          data = admins.concat(partners);
         }
+
+        $("#partner")
+          .select2("destroy")
+          .empty()
+          .select2({
+            placeholder: "Select Partner",
+            data: data,
+            allowClear: true
+          });
+
+        $("#partner").val(0);
+        $("#partner").trigger("change.select2");
       });
 
       // conditionally enable/disable expiration date field depending on the selected plan
@@ -423,48 +418,41 @@ function edit(index) {
       $("#partner").trigger("change.select2");
     }
 
-    // });
-
     // conditionally show and hide partner field depending on the selected role
     $("#roles").change(function() {
       if ($(this).val() == 3 || $(this).val() == 4 || $(this).val() == 5) {
         $("#partner-container").css("display", "");
       } else {
         $("#partner-container").css("display", "none");
-        $("#partner").val("");
       }
+
+      var data;
 
       if ($(this).val() == 5) {
         $(
           "label[for=num_of_users], #num_of_users, label[for=admin_email], #admin_email, label[for=domain], #domain"
         ).hide();
 
-        $("#partner")
-          .select2("destroy")
-          .empty()
-          .select2({
-            placeholder: "Select Partner",
-            data: admins.concat(partners, customers),
-            allowClear: true
-          });
-
-        $("#partner").trigger("change.select2");
+        data = admins.concat(partners, customers);
       } else {
         $(
           "label[for=num_of_users], #num_of_users, label[for=admin_email], #admin_email, label[for=domain], #domain"
         ).show();
 
-        $("#partner")
-          .select2("destroy")
-          .empty()
-          .select2({
-            placeholder: "Select Partner",
-            data: admins.concat(partners),
-            allowClear: true
-          });
-
-        $("#partner").trigger("change.select2");
+        data = admins.concat(partners);
       }
+
+      $("#partner")
+        .select2("destroy")
+        .empty()
+        .select2({
+          placeholder: "Select Partner",
+          data: data,
+          allowClear: true
+        });
+
+      $("#partner").val(0);
+      $("#partner").trigger("change.select2");
     });
 
     $("#modalSubmit")
