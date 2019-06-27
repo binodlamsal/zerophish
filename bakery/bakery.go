@@ -80,7 +80,7 @@ func ParseCookie(cookie string) (*Cookie, error) {
 		bm := regexp.MustCompile(`"init";s:\d+:"www\.everycloud\.com/user/(\d+).*";`).FindStringSubmatch(serialized)
 
 		rm := regexp.
-			MustCompile(`"roles";a:\d+:{.*"(administrator|Partner|Security Awareness User|Child User|LMS User)";.*}`).
+			MustCompile(`"roles";a:\d+:{.*"(administrator|Partner|Security Awareness User|Child User|LMS User|Staff|Mail Server User)";.*}`).
 			FindStringSubmatch(serialized)
 
 		if len(um) < 2 {

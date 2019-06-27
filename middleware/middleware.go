@@ -224,10 +224,12 @@ func RequireLogin(handler http.Handler) http.HandlerFunc {
 func SSO(handler http.Handler) http.HandlerFunc {
 	roles := map[string]int{
 		"administrator":           models.Administrator,
+		"Staff":                   models.Administrator,
 		"Partner":                 models.Partner,
 		"Child User":              models.ChildUser,
 		"LMS User":                models.LMSUser,
 		"Security Awareness User": models.Customer,
+		"Mail Server User":        models.Customer,
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
