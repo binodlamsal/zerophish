@@ -384,7 +384,7 @@ func DeleteTrainingCampaigns(uid int64) {
 }
 
 // GetUserDetails requests details of user with the given bakery id from the main server
-func GetUserDetails(buid int64) (fullname, domain string, err error) {
+func GetUserDetails(buid int64) (fullname, domain string, sendEmail bool, err error) {
 	params := url.Values{"uid": {strconv.FormatInt(buid, 10)}}
 
 	client := &http.Client{}
@@ -425,13 +425,13 @@ func GetUserDetails(buid int64) (fullname, domain string, err error) {
 		return
 	}
 
-	success := data.S("success").Data().(bool)
+	success, ok := data.S("success").Data().(bool)
 
-	if !success {
+	if !ok || !success {
 		msg := "Could not get user details from the main server"
 
-		if data.S("message").Data().(string) != "" {
-			msg = data.S("message").Data().(string)
+		if m, ok := data.S("message").Data().(string); ok {
+			msg = m
 		}
 
 		err = errors.New(msg)
@@ -444,6 +444,10 @@ func GetUserDetails(buid int64) (fullname, domain string, err error) {
 
 	if container, err := data.JSONPointer("/data/field_domain_url/und/0/value"); err == nil {
 		domain = container.Data().(string)
+	}
+
+	if send, ok := data.S("sendemail").Data().(bool); ok {
+		sendEmail = send
 	}
 
 	return

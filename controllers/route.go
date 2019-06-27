@@ -156,6 +156,7 @@ func CreateAdminRouter() http.Handler {
 						} `json:"und"`
 					} `json:"field_domain_url"`
 				} `json:"data,omitempty"`
+				SendEmail bool `json:"sendemail"`
 			}
 
 			var emptyDomainResp struct {
@@ -199,6 +200,7 @@ func CreateAdminRouter() http.Handler {
 			}
 
 			goodResp.Message = "Mocked success"
+			goodResp.SendEmail = true
 			goodResp.Success = true
 
 			goodResp.Data.FullName.Und = append(goodResp.Data.FullName.Und, struct {

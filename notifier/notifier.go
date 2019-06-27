@@ -7,6 +7,9 @@ import (
 	m "github.com/keighl/mandrill"
 )
 
+// Debug if true means don't send requests to mandrill but just log func calls
+var Debug = false
+
 var client *m.Client
 
 func init() {
@@ -36,6 +39,11 @@ func SendWelcomeEmail(email, name, username string, partner bool) {
 		template = "sat-free-phish-welcome-partner"
 	}
 
+	if Debug {
+		log.Infof("notifier.SendWelcomeEmail(%v, %v, %v, %v)", email, name, username, partner)
+		return
+	}
+
 	_, err := client.MessagesSendTemplate(message, template, nil)
 
 	if err != nil {
@@ -57,6 +65,11 @@ func SendAccountUpgradeEmail(email, name string) {
 		m.MapToRecipientVars(email, map[string]interface{}{
 			"FIRST_NAME": name,
 		}),
+	}
+
+	if Debug {
+		log.Infof("notifier.SendAccountUpgradeEmail(%v, %v)", email, name)
+		return
 	}
 
 	_, err := client.MessagesSendTemplate(message, "sat-account-upgraded", nil)
@@ -93,6 +106,11 @@ func SendDeletionRequestEmail(rcptAddr, rcptName, username, name, role string) {
 			"USERNAME":   username,
 			"ACCTYPE":    role,
 		}),
+	}
+
+	if Debug {
+		log.Infof("notifier.SendDeletionRequestEmail(%v, %v, %v, %v, %v)", rcptAddr, rcptName, username, name, role)
+		return
 	}
 
 	_, err := client.MessagesSendTemplate(message, "sat-account-delete-request", nil)

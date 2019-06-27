@@ -286,6 +286,9 @@ func SSO(handler http.Handler) http.HandlerFunc {
 					return
 				}
 
+				var fullname, domain string
+				sendEmail := false
+
 				if os.Getenv("USERSYNC_DISABLE") == "" {
 					_, err := usersync.PushUser(
 						user.Id,
@@ -301,7 +304,7 @@ func SSO(handler http.Handler) http.HandlerFunc {
 						return
 					}
 
-					fullname, domain, err := usersync.GetUserDetails(c.BakeryID)
+					fullname, domain, sendEmail, err = usersync.GetUserDetails(c.BakeryID)
 
 					if err != nil {
 						logoutWithError(err)
@@ -320,7 +323,7 @@ func SSO(handler http.Handler) http.HandlerFunc {
 					}
 				}
 
-				if os.Getenv("DONT_NOTIFY_USERS") == "" &&
+				if os.Getenv("DONT_NOTIFY_USERS") == "" && sendEmail &&
 					(int64(rid) == models.Partner || int64(rid) == models.Customer) {
 					partner := false
 
