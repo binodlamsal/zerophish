@@ -1926,6 +1926,64 @@ func API_UserSync(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// API_PhishAlarm handles sending of phish alarm emails
+func API_PhishAlarm(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		JSONResponse(w, models.Response{Success: false, Message: "Method not allowed"}, http.StatusMethodNotAllowed)
+		return
+	}
+
+	if dump, err := httputil.DumpRequest(r, true); err == nil {
+		log.WithFields(map[string]interface{}{"tag": "phishalarm.POST <-"}).Infof("%q", dump)
+	}
+
+	props := struct {
+		ID      string `json:"id"`
+		From    string `json:"from"`
+		Subject string `json:"subject"`
+		Body    string `json:"body"`
+		Domain  string `json:"domain"`
+	}{}
+
+	if err := json.NewDecoder(r.Body).Decode(&props); err != nil {
+		LoggableJSONResponse(w,
+			models.Response{Success: false, Message: fmt.Sprintf("Invalid request - %s", err.Error())},
+			http.StatusBadRequest, "phishalarm.POST ->")
+
+		return
+	}
+
+	if props.Domain == "" {
+		LoggableJSONResponse(w,
+			models.Response{Success: false, Message: "Missing domain"},
+			http.StatusBadRequest, "phishalarm.POST ->")
+
+		return
+	}
+
+	u, err := models.GetUserByDomain(props.Domain)
+
+	if err != nil {
+		LoggableJSONResponse(w,
+			models.Response{Success: false, Message: fmt.Sprintf("Could not find user with domain - %s", props.Domain)},
+			http.StatusBadRequest, "phishalarm.POST ->")
+
+		return
+	}
+
+	to := u.Email
+
+	if u.AdminEmail != "" {
+		to = u.AdminEmail
+	}
+
+	notifier.SendPhishAlarmEmail(to, props.From, props.ID, props.Subject, props.Body)
+
+	LoggableJSONResponse(w,
+		models.Response{Success: true, Message: "Phish alarm e-mail sent to " + to},
+		http.StatusOK, "phishalarm.POST ->")
+}
+
 // JSONResponse attempts to set the status code, c, and marshal the given interface, d, into a response that
 // is written to the given ResponseWriter.
 func JSONResponse(w http.ResponseWriter, d interface{}, c int) {

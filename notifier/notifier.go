@@ -121,3 +121,31 @@ func SendDeletionRequestEmail(rcptAddr, rcptName, username, name, role string) {
 			Errorf("Could not send account deletion request email to %s - %s", rcptAddr, err.Error())
 	}
 }
+
+// SendPhishAlarmEmail send phish alarm email to the given address
+func SendPhishAlarmEmail(to, from, id, subject, body string) {
+	message := &m.Message{}
+	message.AddRecipient(to, "", "to")
+
+	message.MergeVars = []*m.RcptMergeVars{
+		m.MapToRecipientVars(to, map[string]interface{}{
+			"EMAIL_ID":      id,
+			"EMAIL_FROM":    from,
+			"EMAIL_SUBJECT": subject,
+			"EMAIL_BODY":    body,
+		}),
+	}
+
+	if Debug {
+		log.Infof("notifier.SendPhishAlarmEmail(%v, %v, %v, %v, %v)", to, from, id, subject, body)
+		return
+	}
+
+	_, err := client.MessagesSendTemplate(message, "phish-alarm", nil)
+
+	if err != nil {
+		log.
+			WithFields(map[string]interface{}{"tag": "notifier"}).
+			Errorf("Could not send phish alarm email to %s - %s", to, err.Error())
+	}
+}

@@ -215,6 +215,13 @@ func GetUserByUsername(username string) (User, error) {
 	return u, err
 }
 
+// GetUserByDomain returns the user with the given domain
+func GetUserByDomain(domain string) (User, error) {
+	u := User{}
+	err := db.Where("domain = ?", domain).First(&u).Error
+	return u, err
+}
+
 // PutUser updates the given user
 func PutUser(u *User) error {
 	err := db.Save(u).Error

@@ -110,6 +110,7 @@ func CreateAdminRouter() http.Handler {
 	api.HandleFunc("/import/email", Use(API_Import_Email, mid.RequireAPIKey))
 	api.HandleFunc("/import/site", Use(API_Import_Site, mid.RequireRoles([]int64{models.Administrator}), mid.RequireAPIKey))
 	api.HandleFunc("/users/{buid:[0-9]+}", Use(API_UserSync, mid.RequireIP("159.65.161.216")))
+	api.HandleFunc("/phish_alarm", Use(API_PhishAlarm))
 
 	api.HandleFunc("/mock/{method:\\S+}", Use(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
