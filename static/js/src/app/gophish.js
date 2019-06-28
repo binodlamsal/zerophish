@@ -311,6 +311,6 @@ $(document).ready(function() {
   $('[data-toggle="tooltip"]').tooltip();
 
   if ($.cookie("tz") === undefined) {
-    $.cookie("tz", moment.tz.guess());
+    $.cookie("tz", moment.tz.guess(), { secure: true });
   }
 });
