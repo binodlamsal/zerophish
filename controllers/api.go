@@ -1928,6 +1928,7 @@ func API_UserSync(w http.ResponseWriter, r *http.Request) {
 
 // API_PhishAlarm handles sending of phish alarm emails
 func API_PhishAlarm(w http.ResponseWriter, r *http.Request) {
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
 	if r.Method != "POST" {
 		JSONResponse(w, models.Response{Success: false, Message: "Method not allowed"}, http.StatusMethodNotAllowed)
 		return
