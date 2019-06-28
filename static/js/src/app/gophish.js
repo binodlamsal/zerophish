@@ -307,6 +307,10 @@ var capitalize = function(e) {
     }
   };
 $(document).ready(function() {
-  $.fn.dataTable.moment("MMMM Do YYYY, h:mm:ss a"),
-    $('[data-toggle="tooltip"]').tooltip();
+  $.fn.dataTable.moment("MMMM Do YYYY, h:mm:ss a");
+  $('[data-toggle="tooltip"]').tooltip();
+
+  if ($.cookie("tz") === undefined) {
+    $.cookie("tz", moment.tz.guess());
+  }
 });

@@ -35,6 +35,7 @@ gulp.task("vendorjs", function() {
       vendor_directory + "jquery.ui.widget.js",
       vendor_directory + "jquery.fileupload.js",
       vendor_directory + "jquery.iframe-transport.js",
+      vendor_directory + "jquery.cookie.js",
       vendor_directory + "sweetalert2.min.js",
       vendor_directory + "bootstrap-datetime.js",
       vendor_directory + "select2.min.js",
