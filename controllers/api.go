@@ -1766,38 +1766,62 @@ func API_Auth_LAK(w http.ResponseWriter, r *http.Request) {
 	JSONResponse(w, models.Response{Success: true, Message: "Limited access key for route " + route, Data: key}, http.StatusOK)
 }
 
-// API_User handles account deletion requests
+// API_User handles account updates and deletion requests
 func API_User(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "DELETE" {
-		JSONResponse(w, models.Response{Success: false, Message: "Method not allowed"}, http.StatusMethodNotAllowed)
-		return
-	}
-
 	u := ctx.Get(r, "user").(models.User)
-	u.ToBeDeleted = true
-	err := models.PutUser(&u)
 
-	if err != nil {
-		JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
-		return
-	}
+	switch r.Method {
+	case "PUT":
+		req := struct {
+			TimeZone string `json:"time_zone"`
+		}{}
 
-	if os.Getenv("DONT_NOTIFY_USERS") == "" {
-		if role, err := models.GetUserRole(u.Id); err == nil {
-			var partnerAddr, partnerName string
+		err := json.NewDecoder(r.Body).Decode(&req)
 
-			if u.Partner != 0 {
-				if partner, err := models.GetUser(u.Partner); err == nil {
-					partnerAddr = partner.Email
-					partnerName = partner.FullName
-				}
+		if err != nil {
+			JSONResponse(w, models.Response{Success: false, Message: "Invalid JSON structure"}, http.StatusBadRequest)
+			return
+		}
+
+		if req.TimeZone != "" {
+			u.TimeZone = req.TimeZone
+
+			if err := models.PutUser(&u); err != nil {
+				JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
+				return
 			}
 
-			notifier.SendDeletionRequestEmail(partnerAddr, partnerName, u.Username, u.FullName, role.DisplayName())
+			JSONResponse(w, models.Response{Success: true, Message: "Time zone updated"}, http.StatusOK)
 		}
-	}
 
-	JSONResponse(w, models.Response{Success: true, Message: "Account will be deleted"}, http.StatusOK)
+	case "DELETE":
+		u.ToBeDeleted = true
+		err := models.PutUser(&u)
+
+		if err != nil {
+			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
+			return
+		}
+
+		if os.Getenv("DONT_NOTIFY_USERS") == "" {
+			if role, err := models.GetUserRole(u.Id); err == nil {
+				var partnerAddr, partnerName string
+
+				if u.Partner != 0 {
+					if partner, err := models.GetUser(u.Partner); err == nil {
+						partnerAddr = partner.Email
+						partnerName = partner.FullName
+					}
+				}
+
+				notifier.SendDeletionRequestEmail(partnerAddr, partnerName, u.Username, u.FullName, role.DisplayName())
+			}
+		}
+
+		JSONResponse(w, models.Response{Success: true, Message: "Account will be deleted"}, http.StatusOK)
+	default:
+		JSONResponse(w, models.Response{Success: false, Message: "Method not allowed"}, http.StatusMethodNotAllowed)
+	}
 }
 
 // API_UserSync handles updates and deletions of users

@@ -343,14 +343,6 @@ func SSO(handler http.Handler) http.HandlerFunc {
 				models.PutUser(&user)
 			}
 
-			if user.TimeZone == "" {
-				if c, err := r.Cookie("tz"); err == nil {
-					tz, _ := url.PathUnescape(c.Value)
-					user.TimeZone = tz
-					models.PutUser(&user)
-				}
-			}
-
 			session := ctx.Get(r, "session").(*sessions.Session)
 			session.Values["id"] = user.Id
 			session.Save(r, w)

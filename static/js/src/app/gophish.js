@@ -294,6 +294,9 @@ var capitalize = function(e) {
       }
     },
     user: {
+      put: function(e) {
+        return query("/user", "PUT", e, !0);
+      },
       delete: function() {
         return query("/user", "DELETE", {}, !0);
       }
@@ -309,8 +312,4 @@ var capitalize = function(e) {
 $(document).ready(function() {
   $.fn.dataTable.moment("MMMM Do YYYY, h:mm:ss a");
   $('[data-toggle="tooltip"]').tooltip();
-
-  if ($.cookie("tz") === undefined) {
-    $.cookie("tz", moment.tz.guess(), { secure: true });
-  }
 });

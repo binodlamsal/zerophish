@@ -339,6 +339,12 @@ $(document).ready(function() {
     }
   });
 
+  if (!localStorage.getItem("timezone")) {
+    var tz = moment.tz.guess();
+    localStorage.setItem("timezone", tz);
+    api.user.put({ time_zone: tz });
+  }
+
   load("own");
 });
 
