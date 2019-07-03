@@ -21,28 +21,31 @@ import (
 
 // Campaign is a struct representing a created campaign
 type Campaign struct {
-	Id            int64     `json:"id"`
-	UserId        int64     `json:"-"`
-	Name          string    `json:"name" sql:"not null"`
-	CreatedDate   time.Time `json:"created_date"`
-	LaunchDate    time.Time `json:"launch_date"`
-	SendByDate    time.Time `json:"send_by_date"`
-	StartTime     string    `json:"start_time"`
-	EndTime       string    `json:"end_time"`
-	TimeZone      string    `json:"time_zone"`
-	CompletedDate time.Time `json:"completed_date"`
-	TemplateId    int64     `json:"-"`
-	Template      Template  `json:"template"`
-	FromAddress   string    `json:"from_address"`
-	PageId        int64     `json:"-"`
-	Page          Page      `json:"page"`
-	Status        string    `json:"status"`
-	Results       []Result  `json:"results,omitempty"`
-	Groups        []Group   `json:"groups,omitempty"`
-	Events        []Event   `json:"timeline,omitemtpy"`
-	SMTPId        int64     `json:"-"`
-	SMTP          SMTP      `json:"smtp"`
-	URL           string    `json:"url"`
+	Id                int64     `json:"id"`
+	UserId            int64     `json:"-"`
+	Name              string    `json:"name" sql:"not null"`
+	CreatedDate       time.Time `json:"created_date"`
+	LaunchDate        time.Time `json:"launch_date"`
+	SendByDate        time.Time `json:"send_by_date"`
+	StartTime         string    `json:"start_time"`
+	EndTime           string    `json:"end_time"`
+	TimeZone          string    `json:"time_zone"`
+	CompletedDate     time.Time `json:"completed_date"`
+	TemplateId        int64     `json:"-"`
+	Template          Template  `json:"template"`
+	FromAddress       string    `json:"from_address"`
+	PageId            int64     `json:"-"`
+	Page              Page      `json:"page"`
+	Status            string    `json:"status"`
+	Results           []Result  `json:"results,omitempty"`
+	Groups            []Group   `json:"groups,omitempty"`
+	Events            []Event   `json:"timeline,omitemtpy"`
+	SMTPId            int64     `json:"-"`
+	SMTP              SMTP      `json:"smtp"`
+	URL               string    `json:"url"`
+	RemoveNonClickers bool      `json:"remove_non_clickers"`
+	ClickersGroupId   int64     `json:"clickers_group_id"`
+	ClickersGroup     string    `json:"clickers_group,omitemtpy" gorm:"-"`
 }
 
 // CampaignResults is a struct representing the results from a campaign
@@ -275,6 +278,50 @@ func (c *Campaign) generateSendDate(idx int, totalRecipients int) time.Time {
 	// Finally, we can just add this offset to the launch date to determine
 	// when the email should be sent
 	return c.LaunchDate.Add(time.Duration(offset) * time.Minute)
+}
+
+// GetClickers returns target users who clicked at least one phishing link during this campaign
+func (c *Campaign) GetClickers() ([]Target, error) {
+	clickers := []Target{}
+	results := []Result{}
+
+	err = db.
+		Where("campaign_id = ? AND status IN (?)", c.Id, []string{EVENT_CLICKED, EVENT_DATA_SUBMIT}).
+		Find(&results).Error
+
+	for _, r := range results {
+		t, err := GetTargetByEmail(r.Email)
+
+		if err != nil {
+			return clickers, err
+		}
+
+		clickers = append(clickers, t)
+	}
+
+	return clickers, nil
+}
+
+// GetNonClickers returns target users who never clicked a phishing link during this campaign
+func (c *Campaign) GetNonClickers() ([]Target, error) {
+	nonclickers := []Target{}
+	results := []Result{}
+
+	err = db.
+		Where("campaign_id = ? AND status NOT IN (?)", c.Id, []string{EVENT_CLICKED, EVENT_DATA_SUBMIT}).
+		Find(&results).Error
+
+	for _, r := range results {
+		t, err := GetTargetByEmail(r.Email)
+
+		if err != nil {
+			return nonclickers, err
+		}
+
+		nonclickers = append(nonclickers, t)
+	}
+
+	return nonclickers, nil
 }
 
 // getCampaignStats returns a CampaignStats object for the campaign with the given campaign ID.
@@ -608,10 +655,42 @@ func GetQueuedCampaigns(t time.Time) ([]Campaign, error) {
 }
 
 // PostCampaign inserts a campaign and all associated records into the database.
-func PostCampaign(c *Campaign, uid int64) error {
-	if err := c.Validate(); err != nil {
-		return err
+func PostCampaign(c *Campaign, uid int64) (err error) {
+	if err = c.Validate(); err != nil {
+		return
 	}
+
+	var clickersGroup Group
+	clickersGroupCreated := false
+
+	defer func() {
+		if err != nil && clickersGroupCreated {
+			err := DeleteGroup(&clickersGroup)
+
+			if err != nil {
+				log.Errorf("Could not delete clickers group after failed creation of a campaign")
+			}
+		}
+	}()
+
+	if c.ClickersGroup != "" {
+		clickersGroup, err = CreateEmptyGroup(c.ClickersGroup, uid)
+
+		if err != nil {
+			log.Error(err)
+			return
+		}
+
+		clickersGroupCreated = true
+		c.ClickersGroupId = clickersGroup.Id
+	} else if c.ClickersGroupId != 0 {
+		for _, g := range c.Groups {
+			if c.ClickersGroupId == g.Id {
+				return fmt.Errorf("Clickers cannot be added to this group - %s", g.Name)
+			}
+		}
+	}
+
 	// Fill in the details
 	c.UserId = uid
 	c.CreatedDate = time.Now().UTC()
@@ -659,7 +738,7 @@ func PostCampaign(c *Campaign, uid int64) error {
 		return ErrTemplateNotFound
 	} else if err != nil {
 		log.Error(err)
-		return err
+		return
 	}
 	c.Template = t
 	c.TemplateId = t.Id
@@ -672,7 +751,7 @@ func PostCampaign(c *Campaign, uid int64) error {
 		return ErrPageNotFound
 	} else if err != nil {
 		log.Error(err)
-		return err
+		return
 	}
 	c.Page = p
 	c.PageId = p.Id
@@ -685,7 +764,7 @@ func PostCampaign(c *Campaign, uid int64) error {
 		return ErrSMTPNotFound
 	} else if err != nil {
 		log.Error(err)
-		return err
+		return
 	}
 	c.SMTP = s
 	c.SMTPId = s.Id
@@ -693,7 +772,7 @@ func PostCampaign(c *Campaign, uid int64) error {
 	err = db.Save(c).Error
 	if err != nil {
 		log.Error(err)
-		return err
+		return
 	}
 	err = c.AddEvent(&Event{Message: "Campaign Created"})
 	if err != nil {
@@ -751,7 +830,7 @@ func PostCampaign(c *Campaign, uid int64) error {
 		}
 	}
 	err = db.Save(c).Error
-	return err
+	return
 }
 
 //DeleteCampaign deletes the specified campaign
@@ -843,6 +922,98 @@ func CompleteCampaign(id int64) error {
 		log.Error(err)
 	}
 	return err
+}
+
+// ProcessCampaignTargets moves or copies clickers and non-clickers into different groups
+// according to settings of a campaign with the given id
+func ProcessCampaignTargets(id int64) error {
+	c, err := GetCampaign(id)
+
+	if err != nil {
+		err = fmt.Errorf("Could not find campaign with id %d: %s", id, err.Error())
+		log.Error(err)
+		return err
+	}
+
+	if !c.RemoveNonClickers && c.ClickersGroupId == 0 {
+		return nil
+	}
+
+	if c.ClickersGroupId != 0 {
+		clickers, err := c.GetClickers()
+
+		if err != nil {
+			log.Error(err)
+			return err
+		}
+
+		g, err := GetGroup(c.ClickersGroupId)
+
+		if err != nil {
+			err = fmt.Errorf("Couldn't find group %d: %s", c.ClickersGroupId, err.Error())
+			log.Error(err)
+			return err
+		}
+
+		err = (&g).AddTargets(clickers)
+
+		if err != nil {
+			log.Error(err)
+			return err
+		}
+	}
+
+	if c.RemoveNonClickers {
+		nonclickers, err := c.GetNonClickers()
+
+		if err != nil {
+			log.Error(err)
+			return err
+		}
+
+		groups := map[int64][]Target{}
+
+		for _, nc := range nonclickers {
+			gids, err := nc.GetGroupIds()
+
+			if err != nil {
+				err = fmt.Errorf("Could not get group ids of target %d: %s", nc.Id, err.Error())
+				log.Error(err)
+				return err
+			}
+
+			if len(gids) == 0 {
+				continue
+			}
+
+			gid := gids[0]
+
+			if _, ok := groups[gid]; ok {
+				groups[gid] = append(groups[gid], nc)
+			} else {
+				groups[gid] = []Target{nc}
+			}
+		}
+
+		for gid, ts := range groups {
+			g, err := GetGroup(gid)
+
+			if err != nil {
+				err = fmt.Errorf("Could not find group %d: %s", gid, err.Error())
+				log.Error(err)
+				return err
+			}
+
+			err = g.RemoveTargets(ts)
+
+			if err != nil {
+				log.Error(err)
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 // AfterFind decrypts encrypted passwords stored in event details

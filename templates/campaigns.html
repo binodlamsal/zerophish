@@ -190,11 +190,66 @@
                         </span>
                     </div>
                 </div>
-                <label class="control-label" for="users">Groups <i class="fa fa-question-circle"
-                    data-toggle="tooltip" data-placement="right" data-original-title="Select one or more groups to send your safe phishing emails to"></i>
-                    :</label>
-                <select class="form-control" id="users" multiple="multiple" ></select>
+
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            <label class="control-label" for="users">Groups <i class="fa fa-question-circle"
+                                data-toggle="tooltip" data-placement="right" data-original-title="Select one or more groups to send your safe phishing emails to"></i>
+                                :</label>
+                            <select class="form-control" id="users" multiple="multiple" ></select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group" style="margin-bottom: 0">
+                            <div class="checkbox checkbox-primary" id="remove_nonclickers">
+                                <label for="remove_nonclickers_checkbox" class="checkbx">
+                                    <input id="remove_nonclickers_checkbox" type="checkbox">
+                                    <span class="checkbox-btn"><img src="images/tick.png" alt=""></span> Remove non-clickers <i class="fa fa-question-circle"
+                                    data-toggle="tooltip" data-placement="right" data-original-title="When this campaign ends, remove users who never clicked phishing links."></i>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+
+
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            <label class="control-label" for="clickers_group_id">Add clickers to <i class="fa fa-question-circle"
+                                data-toggle="tooltip" data-placement="right" data-original-title="Pick a group to which all users who clicked phishing links will be added."></i>
+                                :</label>
+                            <select class="form-control" id="clickers_group_id">
+                                <option></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="control-label" for="clickers_group">OR TO:</label>
+                            <input type="text" class="form-control" placeholder="New group..." id="clickers_group" data-toggle="tooltip" data-placement="right" data-original-title="Enter name of a group to which all users who clicked phishing links will be added." data-trigger="focus" />
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+
+
+
+
+
+
+
+
             </div>
+
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal" onclick="dismiss()">Close</button>
                 <button type="button" id="launchButton" class="btn btn-primary" onclick="launch()">

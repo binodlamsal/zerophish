@@ -21,6 +21,7 @@ function launch() {
             .select2("data")
             .forEach(function(e) {
               groups.push({
+                id: parseInt(e.id),
                 name: e.text
               });
             });
@@ -55,7 +56,14 @@ function launch() {
               : "",
             time_zone: $("#during_certain_hours_checkbox").prop("checked")
               ? $("#time_zone").select2("data")[0].text
-              : ""
+              : "",
+            remove_non_clickers: $("#remove_nonclickers_checkbox").prop(
+              "checked"
+            ),
+            clickers_group_id: parseInt(
+              $("#clickers_group_id").select2("data")[0].id
+            ),
+            clickers_group: $("#clickers_group").val()
           });
 
         if (
@@ -185,6 +193,10 @@ function dismiss() {
     $("#users")
       .val("")
       .change(),
+    $("#clickers_group_id")
+      .val("")
+      .change(),
+    $("#clickers_group").val(""),
     $("#time_zone")
       .val("")
       .change();
@@ -242,6 +254,26 @@ function setupOptions() {
       placeholder: "Select Groups",
       data: a
     });
+
+    $("#clickers_group_id").select2({
+      placeholder: "Existing group...",
+      data: a,
+      allowClear: true
+    });
+
+    $("#clickers_group_id")
+      .off("select2:select")
+      .on("select2:select", function(e) {
+        $("#clickers_group").val("");
+      });
+
+    $("#clickers_group")
+      .off("keyup")
+      .on("keyup", function(e) {
+        $("#clickers_group_id")
+          .val(null)
+          .trigger("change");
+      });
   });
 
   if (!$("#template.form-control").hasClass("select2-hidden-accessible")) {

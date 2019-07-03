@@ -592,12 +592,26 @@ func API_Campaigns_Id_Complete(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err := models.CompleteCampaign(id)
+		err := models.ProcessCampaignTargets(id)
+
+		if err != nil {
+			JSONResponse(
+				w, models.Response{
+					Success: false,
+					Message: fmt.Sprintf("Failed to process campaign targets: %s", err.Error()),
+				}, http.StatusInternalServerError,
+			)
+
+			return
+		}
+
+		err = models.CompleteCampaign(id)
 
 		if err != nil {
 			JSONResponse(w, models.Response{Success: false, Message: "Error completing campaign"}, http.StatusInternalServerError)
 			return
 		}
+
 		JSONResponse(w, models.Response{Success: true, Message: "Campaign completed successfully!"}, http.StatusOK)
 	}
 }

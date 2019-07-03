@@ -93,6 +93,18 @@ func (t *Target) FormatAddress() string {
 	return addr
 }
 
+// GetGroupIds returns group ids which this target belongs to
+func (t *Target) GetGroupIds() ([]int64, error) {
+	gids := []int64{}
+	err = db.Table("group_targets").Where("target_id = ?", t.Id).Pluck("group_id", &gids).Error
+
+	if err != nil {
+		return gids, err
+	}
+
+	return gids, nil
+}
+
 // ErrEmailNotSpecified is thrown when no email is specified for the Target
 var ErrEmailNotSpecified = errors.New("No email address specified")
 
@@ -145,6 +157,63 @@ func (g *Group) ContainsTargetsOutsideOfDomain(domain string) bool {
 	}
 
 	return false
+}
+
+// AddTargets adds the given targets to this group
+func (g *Group) AddTargets(targets []Target) (err error) {
+	for _, t := range targets {
+		if g.HasTargets([]int64{t.Id}) {
+			continue
+		}
+
+		err = insertTargetIntoGroup(t, g.Id)
+
+		if err != nil {
+			err = fmt.Errorf("Could not add target %d to group %d: %s", t.Id, g.Id, err.Error())
+			return
+		}
+
+		log.Infof("Added target user %s to group %s", t.Email, g.Name)
+	}
+
+	return
+}
+
+// RemoveTargets removes the given targets from this group.
+// After removal, targets that won't belong to at least one another group will be deleted.
+func (g *Group) RemoveTargets(targets []Target) (err error) {
+	for _, t := range targets {
+		if !g.HasTargets([]int64{t.Id}) {
+			continue
+		}
+
+		err = db.Where("group_id=? AND target_id=?", g.Id, t.Id).Delete(&GroupTarget{}).Error
+
+		if err != nil {
+			err = fmt.Errorf("Could not remove target %d from group %d: %s", t.Id, g.Id, err.Error())
+			return
+		}
+
+		var count int64
+		err = db.Table("group_targets").Where("target_id=?", t.Id).Count(&count).Error
+
+		if err != nil {
+			err = fmt.Errorf("Could not count number of groups target %d belongs to: %s", t.Id, err.Error())
+			return
+		}
+
+		if count == 0 {
+			err = DeleteGroupTarget(t.Id)
+
+			if err != nil {
+				return
+			}
+
+			log.Infof("Removed target user %s from group %s", t.Email, g.Name)
+		}
+	}
+
+	return
 }
 
 // GetGroups returns the groups owned by the given user.
@@ -379,6 +448,27 @@ func PostGroup(g *Group) error {
 		insertTargetIntoGroup(t, g.Id)
 	}
 	return nil
+}
+
+// CreateEmptyGroup creates a new empty group with the given name owned by uid.
+func CreateEmptyGroup(name string, uid int64) (Group, error) {
+	g := Group{}
+
+	if _, err := GetGroupByName(name, uid); err == nil {
+		return g, fmt.Errorf("Group %s already exists", name)
+	}
+
+	g = Group{
+		UserId:       uid,
+		Name:         name,
+		ModifiedDate: time.Now(),
+	}
+
+	if err := db.Save(&g).Error; err != nil {
+		return g, fmt.Errorf("Could not create empty group - %s: %s", name, err.Error())
+	}
+
+	return g, nil
 }
 
 // PutGroup updates the given group if found in the database.
@@ -630,6 +720,12 @@ func GetGroupOwnerId(id int64) (int64, error) {
 	}
 
 	return g.UserId, nil
+}
+
+// GetTargetByEmail finds and returns target with the given email
+func GetTargetByEmail(email string) (t Target, err error) {
+	err = db.Where("email = ?", email).First(&t).Error
+	return
 }
 
 // IsGroupAccessibleByUser tells if a group (identified by gid)
