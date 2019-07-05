@@ -212,12 +212,17 @@ func Register(r *http.Request) (bool, error) {
 
 func UpdateSettings(r *http.Request) error {
 	shouldPushUpdates := false
+	domainChanged := false
 	u := ctx.Get(r, "user").(models.User)
 	r.ParseForm() // Parses the request body
 
 	if u.Email != r.Form.Get("email") ||
 		u.Username != r.Form.Get("username") {
 		shouldPushUpdates = true
+	}
+
+	if u.Domain != r.Form.Get("domain") && r.Form.Get("domain") != "" {
+		domainChanged = true
 	}
 
 	u.UpdatedAt = time.Now().UTC()
@@ -241,7 +246,8 @@ func UpdateSettings(r *http.Request) error {
 		return ErrBadEmail
 	}
 
-	if u.Domain != "" && u.Domain != "DELETE" && !util.IsValidDomain(u.Domain) {
+	if u.Domain != "" && u.Domain != "DELETE" &&
+		(!util.IsValidDomain(u.Domain) || (domainChanged && !models.IsUniqueDomain(u.Domain))) {
 		return ErrBadDomain
 	}
 
@@ -361,6 +367,7 @@ func UpdateSettingsByAdmin(r *http.Request) error {
 	}
 
 	shouldPushUpdates := false
+	domainChanged := false
 
 	if u.Email != ud.Email ||
 		u.Username != ud.Username ||
@@ -372,7 +379,12 @@ func UpdateSettingsByAdmin(r *http.Request) error {
 		return ErrBadEmail
 	}
 
-	if ud.Domain != "" && !util.IsValidDomain(ud.Domain) {
+	if u.Domain != ud.Domain && ud.Domain != "" {
+		domainChanged = true
+	}
+
+	if ud.Domain != "" &&
+		(!util.IsValidDomain(ud.Domain) || (domainChanged && !models.IsUniqueDomain(ud.Domain))) {
 		return ErrBadDomain
 	}
 

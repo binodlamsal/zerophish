@@ -930,6 +930,19 @@ func (u *User) BeforeUpdate(scope *gorm.Scope) error {
 	return scope.SetColumn("ApiKey", encKey)
 }
 
+// IsUniqueDomain tells if the given domain is unique among all other domains stored in the db
+func IsUniqueDomain(domain string) bool {
+	var unique bool
+	var count int64
+	_ = db.Table("users").Where("domain = ?", domain).Count(&count).Error
+
+	if count == 0 {
+		unique = true
+	}
+
+	return unique
+}
+
 func EncryptApiKeys() {
 	log.Info("Encrypting API keys...")
 	users := []User{}
