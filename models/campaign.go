@@ -43,6 +43,7 @@ type Campaign struct {
 	SMTPId            int64     `json:"-"`
 	SMTP              SMTP      `json:"smtp"`
 	URL               string    `json:"url"`
+	GroupId           int64     `json:"group_id"`
 	RemoveNonClickers bool      `json:"remove_non_clickers"`
 	ClickersGroupId   int64     `json:"clickers_group_id"`
 	ClickersGroup     string    `json:"clickers_group,omitemtpy" gorm:"-"`
@@ -964,6 +965,10 @@ func ProcessCampaignTargets(id int64) error {
 	}
 
 	if c.RemoveNonClickers {
+		if c.GroupId == 0 {
+			return nil
+		}
+
 		nonclickers, err := c.GetNonClickers()
 
 		if err != nil {
@@ -971,45 +976,18 @@ func ProcessCampaignTargets(id int64) error {
 			return err
 		}
 
-		groups := map[int64][]Target{}
+		g, err := GetGroup(c.GroupId)
 
-		for _, nc := range nonclickers {
-			gids, err := nc.GetGroupIds()
-
-			if err != nil {
-				err = fmt.Errorf("Could not get group ids of target %d: %s", nc.Id, err.Error())
-				log.Error(err)
-				return err
-			}
-
-			if len(gids) == 0 {
-				continue
-			}
-
-			gid := gids[0]
-
-			if _, ok := groups[gid]; ok {
-				groups[gid] = append(groups[gid], nc)
-			} else {
-				groups[gid] = []Target{nc}
-			}
+		if err != nil {
+			log.Error(err)
+			return err
 		}
 
-		for gid, ts := range groups {
-			g, err := GetGroup(gid)
+		err = g.RemoveTargets(nonclickers)
 
-			if err != nil {
-				err = fmt.Errorf("Could not find group %d: %s", gid, err.Error())
-				log.Error(err)
-				return err
-			}
-
-			err = g.RemoveTargets(ts)
-
-			if err != nil {
-				log.Error(err)
-				return err
-			}
+		if err != nil {
+			log.Error(err)
+			return err
 		}
 	}
 

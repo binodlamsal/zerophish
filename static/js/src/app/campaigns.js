@@ -48,6 +48,7 @@ function launch() {
               .format(),
             send_by_date: t || null,
             groups: groups,
+            group_id: parseInt($("#users").select2("data")[0].id),
             start_time: $("#during_certain_hours_checkbox").prop("checked")
               ? $("#start_time").val()
               : "",
