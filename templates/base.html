@@ -32,13 +32,13 @@
   // Please confirm the user properties to be sent with your project owner.
 
   // Required:
-  chmln.identify({{ .User.Username }}, {     // Unique ID of each user in your database (e.g. 23443 or "590b80e5f433ea81b96c9bf6")
+  chmln.identify({{ .User.Id }}, {     // Unique ID of each user in your database (e.g. 23443 or "590b80e5f433ea81b96c9bf6")
     email: {{ .User.Email }},                // Put quotes around text strings (e.g. "jim@example.com")
 
     // Optional - additional user properties:
     created: {{ .User.CreatedAt }},      // Send dates in ISO or unix timestamp format (e.g. "2017-07-01T03:21:10Z" or 1431432000)
     name: {{ .User.FullName }},                  // We will parse this to extra first and surnames (e.g. "James Doe")
-    role: USER.ROLE,                  // Send properties useful for targeting types of users (e.g. "Admin")
+    role: {{role}},                  // Send properties useful for targeting types of users (e.g. "Admin")
     logins: USER.LOGIN_COUNT,         // Send any data about user engagement (e.g. 39)
     project: USER.PROJECT_ID,         // Send any unique data for a user that might appear in any page URLs (e.g. 09876 or "12a34b56")
 
