@@ -190,19 +190,31 @@ div.dataTables_wrapper div.dataTables_length select {
 #overview_chart > .highcharts-container {
     width: 100% !important;
 }
+
+.tooltip {
+    pointer-events: none;
+  }
  @media (min-width: 1200px){
   #emptyMessage{
   margin-top: 50px;
  }
 }
-.header-inner .logo img{
-  width: auto;
+
+.launch-date-section{
+    position: relative;
+    text-align: right;
+    font-size:  12px;
+    line-height: 1.2;
 }
 
+/*.header-inner .logo img{
+  width: auto;
+}
+*/
 
 
 /*==================== table-reponsive ==================*/
-table.dataTable thead .sorting:before, 
+/*table.dataTable thead .sorting:before, 
 table.dataTable thead .sorting:after, 
 table.dataTable thead .sorting_asc:before, 
 table.dataTable thead .sorting_asc:after, 
@@ -253,7 +265,7 @@ table.dataTable thead .sorting_desc_disabled:before{
     width: 100% !important;
   }
 
-}
+}*/
 /*==================== table-reponsive ==================*/
 
 @media (max-width: 767px){
@@ -273,6 +285,9 @@ table.dataTable thead .sorting_desc_disabled:before{
     .top-page-header .setting-title .page-header {
       position: static;
     }
+    .launch-date-section{
+      text-align: left;
+    }
 }
 
 #refresh_message {
@@ -284,4 +299,12 @@ body .table > thead > tr > th, .table > tbody > tr > th,
 body .table > tfoot > tr > th, .table > thead > tr > td, 
 body .table > tbody > tr > td, .table > tfoot > tr > td{
   border-top: transparent;
+}
+
+.filter-section{
+    min-width: 343px;
+    right: -50px;
+    overflow-x: auto;
+    transform: scale(0.90);
+    transform-origin: center center;
 }
