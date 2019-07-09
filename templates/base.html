@@ -42,7 +42,7 @@
 
     // Optional - company properties:
     company: {                        // For B2B products, send company / account information here
-      plan: {{if eq role "admin"}}"Basic"{{else}}{{plan}}{{end}} || null             // Send null when no value exists (e.g. "Gold", "Advanced")
+      plan: {{if eq role "admin"}}"Basic"{{else}}{{plan}}{{end}} || "Free"             // Send null when no value exists (e.g. "Gold", "Advanced")
     }
   });
 </script>
