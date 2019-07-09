@@ -325,7 +325,11 @@ func Base(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params.Role = role.Name()
-	getTemplate(r, w, "dashboard").ExecuteTemplate(w, "base", params)
+	err = getTemplate(r, w, "dashboard").ExecuteTemplate(w, "base", params)
+
+	if err != nil {
+		log.Error(err)
+	}
 }
 
 // Campaigns handles the default path and template execution
@@ -903,6 +907,14 @@ func getTemplate(r *http.Request, w http.ResponseWriter, tmpl string) *template.
 			}
 
 			return role.Name()
+		},
+
+		"plan": func() string {
+			if s := ctx.Get(r, "user").(models.User).GetSubscription(); s != nil {
+				return models.GetPlanNameById(s.PlanId)
+			}
+
+			return ""
 		},
 	})
 
