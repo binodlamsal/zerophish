@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/mail"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -23,6 +24,7 @@ type Group struct {
 	Name         string    `json:"name"`
 	ModifiedDate time.Time `json:"modified_date"`
 	Targets      []Target  `json:"targets" sql:"-"`
+	CreatorId    int64     `json:"creator,omitemtpy" gorm:"-"`
 }
 
 // GroupSummaries is a struct representing the overview of Groups.
@@ -264,9 +266,10 @@ func GetGroups(uid int64) ([]Group, error) {
 // Where:
 // own - return items that belong to this user,
 // customers - customers' items
+// uid-xxx - items of user with uid xxx
 // Note: empty "filter" will be treated as "own"
 func GetGroupSummaries(uid int64, filter string) (GroupSummaries, error) {
-	if filter != "own" && filter != "customers" {
+	if filter != "own" && filter != "customers" && !strings.HasPrefix(filter, "uid-") {
 		filter = "own"
 	}
 
@@ -305,6 +308,18 @@ func GetGroupSummaries(uid int64, filter string) (GroupSummaries, error) {
 		} else {
 			query = db.Table("groups").Where("user_id = ?", uid)
 		}
+	} else if strings.HasPrefix(filter, "uid-") {
+		uid, err := strconv.Atoi(strings.TrimPrefix(filter, "uid-"))
+
+		if err != nil {
+			return gs, fmt.Errorf("Couldn't parse uid from filter %s: %s", filter, err.Error())
+		}
+
+		if !user.CanManageUserWithId(int64(uid)) {
+			return gs, fmt.Errorf("Not enough permissions to access resources of user with id %d", uid)
+		}
+
+		query = db.Table("groups").Where("user_id = ?", uid)
 	} else { // customers
 		cuids, err := GetCustomerIds(uid)
 

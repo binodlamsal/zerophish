@@ -33,6 +33,12 @@ function save(e) {
   );
   var t = {
     name: $("#name").val(),
+    creator:
+      parseInt(
+        $("#creator")
+          .find(":selected")
+          .val()
+      ) || 0,
     targets: a
   };
   -1 != e
@@ -70,29 +76,67 @@ function dismiss() {
   $("#name").val("");
   $("#modal\\.flashes").empty();
   $("#lms-modal\\.flashes").empty();
+  $("#firstName").val("");
+  $("#lastName").val("");
+  $("#email").val("");
+  $("#position").val("");
+
+  if ($("#creator").length) {
+    $("#creator")
+      .val("")
+      .change();
+  }
 }
 
 function edit(e) {
-  if (
-    ((targets = $("#targetsTable").dataTable({
-      autoWidth: false,
-      destroy: !0,
-      columnDefs: [
-        {
-          orderable: !1,
-          targets: "no-sort"
-        }
-      ]
-    })),
-    $("#modal .modal-title").html("NEW GROUP"),
-    $("#modalSubmit")
-      .unbind("click")
-      .click(function() {
-        save(e);
-      }),
-    -1 == e)
-  );
-  else
+  groupId = e;
+
+  targets = $("#targetsTable").dataTable({
+    autoWidth: false,
+    destroy: !0,
+    columnDefs: [
+      {
+        orderable: !1,
+        targets: "no-sort"
+      }
+    ]
+  });
+
+  $("#modalSubmit")
+    .unbind("click")
+    .click(function() {
+      save(e);
+    });
+
+  if (-1 == e) {
+    $("#modal .modal-title").html("NEW GROUP");
+
+    if ($("#creator").length) {
+      $(".form-group[for=creator]").show();
+
+      api.users.get().success(function(r) {
+        $("#creator.form-control").select2({
+          placeholder: "You (" + user.username + ")",
+          allowClear: true,
+          data: r
+            .map(function(user) {
+              return { id: user.id, text: user.username, role: user.role };
+            })
+            .filter(function(_user) {
+              return (
+                _user.text !== user.username &&
+                _user.role !== "LMS User" &&
+                _user.role !== "Child User" &&
+                _user.role !== "Partner" &&
+                _user.role !== "Administrator"
+              );
+            })
+        });
+      });
+    }
+  } else {
+    $(".form-group[for=creator]").hide();
+
     api.groupId
       .get(e)
       .success(function(e) {
@@ -114,6 +158,8 @@ function edit(e) {
       .error(function() {
         errorFlash("Error fetching group");
       });
+  }
+
   $("#csvupload").fileupload({
     url: "/api/import/group",
     dataType: "json",
@@ -376,17 +422,38 @@ $(document).ready(function() {
   load("own");
 
   $("#targetForm").submit(function() {
-    if (
-      !$("#email")
-        .val()
-        .endsWith(_domain)
-    ) {
+    if ((_role == "partner" || _role == "child_user") && !_domain) {
       modalError(
-        "You may only add email addresses on your own domain (like user@" +
-          _domain +
-          ")"
+        'Please set your domain in the <a href="/settings">settings</a> first!'
       );
+
       return false;
+    }
+
+    var group = groups.find(function(g) {
+      return g.id == groupId;
+    });
+
+    var isOwner = groupId == -1 || (group && group.username === user.username);
+
+    if (
+      !$("#creator")
+        .find(":selected")
+        .val() &&
+      isOwner
+    ) {
+      if (
+        !$("#email")
+          .val()
+          .endsWith(_domain)
+      ) {
+        modalError(
+          "You may only add email addresses on your own domain (like user@" +
+            _domain +
+            ")"
+        );
+        return false;
+      }
     }
 
     addTarget(
@@ -617,6 +684,19 @@ $(document).ready(function() {
         modalError(e.responseJSON.message);
       });
   });
+
+  $.fn.select2.defaults.set("width", "100%"),
+    $.fn.select2.defaults.set("dropdownParent", $("#modal_body")),
+    $.fn.select2.defaults.set("theme", "bootstrap"),
+    $.fn.select2.defaults.set("sorter", function(e) {
+      return e.sort(function(e, a) {
+        return e.text.toLowerCase() > a.text.toLowerCase()
+          ? 1
+          : e.text.toLowerCase() < a.text.toLowerCase()
+          ? -1
+          : 0;
+      });
+    });
 });
 
 function delayedAlert(message) {

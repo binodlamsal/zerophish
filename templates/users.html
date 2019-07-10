@@ -79,8 +79,19 @@
                         aria-hidden="true"><img src="images/close.png" alt=""></span></button>
 
             </div>
-            <div class="modal-body">
+            <div class="modal-body" id="modal_body">
                 <div class="" id="modal.flashes"></div>
+
+                {{if or (eq role "admin") (eq role "partner") (eq role "child_user")}}
+                <div class="form-group" for="creator">
+                    <label for="creator">Creator <i class="fa fa-question-circle"
+                        data-toggle="tooltip" data-placement="right" data-original-title="You can create this group on another user's behalf"></i> :</label>
+                    <select class="form-control" placeholder="Yourself" id="creator">
+                        <option></option>
+                    </select>
+                </div>
+                {{end}}
+
                 <label class="control-label" for="name">Name:</label>
                 <div class="form-group">
                     <input type="text" class="form-control" ng-model="group.name" placeholder="Group name" id="name" data-toggle="tooltip" data-trigger='foucs' data-original-title="Give your group a name. For example ‘Whole Organisation’ , ‘Accounting

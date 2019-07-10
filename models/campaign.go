@@ -47,6 +47,7 @@ type Campaign struct {
 	RemoveNonClickers bool      `json:"remove_non_clickers"`
 	ClickersGroupId   int64     `json:"clickers_group_id"`
 	ClickersGroup     string    `json:"clickers_group,omitemtpy" gorm:"-"`
+	CreatorId         int64     `json:"creator,omitemtpy" gorm:"-"`
 }
 
 // CampaignResults is a struct representing the results from a campaign
@@ -730,6 +731,11 @@ func PostCampaign(c *Campaign, uid int64) (err error) {
 		}
 		totalRecipients += len(c.Groups[i].Targets)
 	}
+
+	if totalRecipients == 0 {
+		return errors.New("User group is empty")
+	}
+
 	// Check to make sure the template exists
 	t, err := GetTemplateByName(c.Template.Name, uid)
 	if err == gorm.ErrRecordNotFound {

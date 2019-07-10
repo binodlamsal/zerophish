@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -264,9 +265,12 @@ func GetPageOwnerId(id int64) (int64, error) {
 // GetPages returns the pages owned by the given user.
 // Optionally "filter" can be one of: own, public ,customers.
 // Where:
+// all - all items
 // own - return items that belong to this user,
 // public - public items
 // customers - customers' items
+// own-and-public - own and public items
+// public-and-uid-xxx - public and items of user with uid xxx
 // Note: empty "filter" will be treated as "own"
 func GetPages(uid int64, filter string) ([]Page, error) {
 	ps := []Page{}
@@ -282,7 +286,9 @@ func GetPages(uid int64, filter string) ([]Page, error) {
 		return ps, err
 	}
 
-	if filter != "own" && filter != "customers" && filter != "public" && filter != "own-and-public" {
+	if filter != "own" && filter != "customers" &&
+		filter != "public" && filter != "own-and-public" &&
+		!strings.HasPrefix(filter, "public-and-uid-") {
 		if !role.Is(Administrator) {
 			filter = "own"
 		} else if filter != "all" {
@@ -334,6 +340,18 @@ func GetPages(uid int64, filter string) ([]Page, error) {
 		}
 
 		query = query.Where("user_id IN (?)", cuids)
+	} else if strings.HasPrefix(filter, "public-and-uid-") {
+		uid, err := strconv.Atoi(strings.TrimPrefix(filter, "public-and-uid-"))
+
+		if err != nil {
+			return ps, fmt.Errorf("Couldn't parse uid from filter %s: %s", filter, err.Error())
+		}
+
+		if !user.CanManageUserWithId(int64(uid)) {
+			return ps, fmt.Errorf("Not enough permissions to access resources of user with id %d", uid)
+		}
+
+		query = query.Where("user_id = ? OR public = 1", uid)
 	} else { // all
 		if !role.Is(Administrator) {
 			return ps, err

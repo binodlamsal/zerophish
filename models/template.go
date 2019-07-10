@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"net/mail"
+	"strconv"
+	"strings"
 	"time"
 
 	log "github.com/everycloud-technologies/phishing-simulation/logger"
@@ -251,10 +253,13 @@ func IsTemplateWritableByUser(tid, uid int64) bool {
 // own - return items that belong to this user,
 // public - public items
 // customers - customers' items
+// own-and-public - own and public items
+// public-and-uid-xxx - public and items of user with uid xxx
 // Note: empty "filter" will be treated as "own"
 func GetTemplates(uid int64, filter string) ([]Template, error) {
 	if filter != "own" && filter != "customers" &&
-		filter != "public" && filter != "own-and-public" {
+		filter != "public" && filter != "own-and-public" &&
+		!strings.HasPrefix(filter, "public-and-uid-") {
 		filter = "own"
 	}
 
@@ -307,6 +312,18 @@ func GetTemplates(uid int64, filter string) ([]Template, error) {
 		}
 	} else if filter == "public" {
 		query = query.Where("public = ?", 1)
+	} else if strings.HasPrefix(filter, "public-and-uid-") {
+		uid, err := strconv.Atoi(strings.TrimPrefix(filter, "public-and-uid-"))
+
+		if err != nil {
+			return ts, fmt.Errorf("Couldn't parse uid from filter %s: %s", filter, err.Error())
+		}
+
+		if !user.CanManageUserWithId(int64(uid)) {
+			return ts, fmt.Errorf("Not enough permissions to access resources of user with id %d", uid)
+		}
+
+		query = query.Where("user_id = ? OR public = 1", uid)
 	} else { // customers
 		cuids, err := GetCustomerIds(uid)
 

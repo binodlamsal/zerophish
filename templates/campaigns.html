@@ -81,6 +81,17 @@
                         </div>
                         <div class="modal-body" id="modal_body">
                             <div class="" id="modal.flashes"></div>
+
+                            {{if or (eq role "admin") (eq role "partner") (eq role "child_user")}}
+                            <div class="form-group">
+                                <label for="creator">Creator <i class="fa fa-question-circle"
+                                    data-toggle="tooltip" data-placement="right" data-original-title="You can create this campaign on another user's behalf"></i> :</label>
+                                <select class="form-control" placeholder="Yourself" id="creator">
+                                    <option></option>
+                                </select>
+                            </div>
+                            {{end}}
+
                             <div class="form-group">
                                 <label for="name">Name:</label>
                                 <input type="text" class="form-control" id="name" placeholder="Campaign name" data-toggle="tooltip" data-placement="right" data-original-title="Give your campaign a name so you can find it later" data-trigger="focus" autofocus>

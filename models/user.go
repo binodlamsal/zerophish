@@ -656,6 +656,24 @@ func (u User) CanManageSubscriptions() bool {
 	return false
 }
 
+// CanManageUserWithId tells if this user can update/delete/impersonate a user with the given uid
+func (u User) CanManageUserWithId(uid int64) bool {
+	uids, err := GetUserIds(u.Id)
+
+	if err != nil {
+		log.Errorf("Could not find user ids owned by user %s: %s", u.Username, err.Error())
+		return false
+	}
+
+	for _, id := range uids {
+		if uid == id {
+			return true
+		}
+	}
+
+	return false
+}
+
 // HasTemplates tells if this user owns any email templates
 func (u User) HasTemplates() bool {
 	var count int64

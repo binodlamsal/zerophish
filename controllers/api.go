@@ -96,6 +96,43 @@ func API_Campaigns(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		uid := u.Id
+
+		if c.CreatorId != 0 {
+			if !u.CanManageUserWithId(c.CreatorId) {
+				err := fmt.Errorf(
+					"User %s (%d) doesn't have enough permissions to create a campaign on behalf of user with id %d",
+					u.Username, u.Id, c.CreatorId,
+				)
+
+				log.Error(err)
+				JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusForbidden)
+				return
+			}
+
+			creator, err := models.GetUser(c.CreatorId)
+
+			if err != nil {
+				err := fmt.Errorf("Couldn't find user with id %d to impersonate", c.CreatorId)
+				log.Error(err)
+				JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusNotFound)
+				return
+			}
+
+			if !creator.CanCreateCampaign() {
+				JSONResponse(
+					w, models.Response{
+						Success: false,
+						Message: "The user you're trying to create this campaign for has no active subscription.",
+					},
+					http.StatusConflict)
+
+				return
+			}
+
+			uid = c.CreatorId
+		}
+
 		proto := "http://"
 
 		if config.Conf.PhishConf.UseTLS || os.Getenv("VIA_PROXY") != "" {
@@ -115,7 +152,7 @@ func API_Campaigns(w http.ResponseWriter, r *http.Request) {
 			c.URL = proto + parsedURL.Hostname()
 		}
 
-		err = models.PostCampaign(&c, ctx.Get(r, "user_id").(int64))
+		err = models.PostCampaign(&c, uid)
 		if err != nil {
 			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusBadRequest)
 			return
@@ -313,6 +350,20 @@ func API_Users_Id(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 0, 64)
+	user := ctx.Get(r, "user").(models.User)
+
+	if !user.CanManageUserWithId(id) {
+		log.Error(
+			fmt.Errorf(
+				"User %s (%d) doesn't have permissions to access account of user with id %d",
+				user.Username, user.Id, id,
+			),
+		)
+
+		JSONResponse(w, models.Response{Success: false, Message: "Access denied"}, http.StatusForbidden)
+		return
+	}
+
 	c, err := models.GetUser(id)
 	if err != nil {
 		log.Error(err)
@@ -655,6 +706,42 @@ func API_Groups(w http.ResponseWriter, r *http.Request) {
 			JSONResponse(w, models.Response{Success: false, Message: "Invalid JSON structure"}, http.StatusBadRequest)
 			return
 		}
+
+		if g.CreatorId != 0 {
+			if !u.CanManageUserWithId(g.CreatorId) {
+				err := fmt.Errorf(
+					"User %s (%d) doesn't have enough permissions to create a group on behalf of user with id %d",
+					u.Username, u.Id, g.CreatorId,
+				)
+
+				log.Error(err)
+				JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusForbidden)
+				return
+			}
+
+			creator, err := models.GetUser(g.CreatorId)
+
+			if err != nil {
+				err := fmt.Errorf("Couldn't find user with id %d to impersonate", g.CreatorId)
+				log.Error(err)
+				JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusNotFound)
+				return
+			}
+
+			if !creator.CanCreateGroup() {
+				JSONResponse(
+					w, models.Response{
+						Success: false,
+						Message: "The user you're trying to create this group for has no active subscription.",
+					},
+					http.StatusConflict)
+
+				return
+			}
+
+			uid = g.CreatorId
+		}
+
 		_, err = models.GetGroupByName(g.Name, uid)
 		if err != gorm.ErrRecordNotFound {
 			JSONResponse(w, models.Response{Success: false, Message: "Group name already in use"}, http.StatusConflict)
@@ -672,7 +759,7 @@ func API_Groups(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if (u.IsPartner() || u.IsChildUser()) && g.ContainsTargetsOutsideOfDomain(u.Domain) {
+		if (u.IsPartner() || u.IsChildUser()) && g.CreatorId == 0 && g.ContainsTargetsOutsideOfDomain(u.Domain) {
 			JSONResponse(w,
 				models.Response{
 					Success: false,

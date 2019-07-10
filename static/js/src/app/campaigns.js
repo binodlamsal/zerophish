@@ -61,10 +61,19 @@ function launch() {
             remove_non_clickers: $("#remove_nonclickers_checkbox").prop(
               "checked"
             ),
-            clickers_group_id: parseInt(
-              $("#clickers_group_id").select2("data")[0].id
-            ),
-            clickers_group: $("#clickers_group").val()
+            clickers_group_id:
+              parseInt(
+                $("#clickers_group_id")
+                  .find(":selected")
+                  .val()
+              ) || 0,
+            clickers_group: $("#clickers_group").val(),
+            creator:
+              parseInt(
+                $("#creator")
+                  .find(":selected")
+                  .val()
+              ) || 0
           });
 
         if (
@@ -181,9 +190,16 @@ function sendTestEmail() {
 }
 
 function dismiss() {
-  $("#modal\\.flashes").empty(),
-    $("#name").val(""),
-    $("#template").select2("data", null),
+  $("#modal\\.flashes").empty();
+  $("#name").val("");
+
+  if ($("#creator").length) {
+    $("#creator")
+      .val("")
+      .change();
+  }
+
+  $("#template").select2("data", null),
     $("#page")
       .val("")
       .change(),
@@ -243,24 +259,96 @@ function deleteCampaign(e) {
 }
 
 function setupOptions() {
-  var addresses = {};
-  var pages = {};
+  if ($("#creator").length) {
+    api.users.get().success(function(r) {
+      $("#creator.form-control").select2({
+        placeholder: "You (" + user.username + ")",
+        allowClear: true,
+        data: r
+          .map(function(user) {
+            return { id: user.id, text: user.username, role: user.role };
+          })
+          .filter(function(_user) {
+            return (
+              _user.text !== user.username &&
+              _user.role !== "LMS User" &&
+              _user.role !== "Child User" &&
+              _user.role !== "Partner" &&
+              _user.role !== "Administrator"
+            );
+          })
+      });
 
-  api.groups.summary("own").success(function(e) {
-    if (0 == e.total) return (document.location = "/users?ref=campaigns"), !1;
+      $("#creator.form-control")
+        .off("select2:select")
+        .on("select2:select", function(e) {
+          loadTemplates("public-and-uid-" + e.params.data.id);
+          loadPages("public-and-uid-" + e.params.data.id);
+          loadGroups("uid-" + e.params.data.id, false);
+        });
+
+      $("#creator.form-control")
+        .off("select2:unselect")
+        .on("select2:unselect", function(e) {
+          loadTemplates("own-and-public");
+          loadPages("own-and-public");
+          loadGroups("own", false);
+        });
+    });
+  }
+
+  loadGroups("own", true);
+
+  if (!$("#template.form-control").hasClass("select2-hidden-accessible")) {
+    loadTemplates("own-and-public");
+  }
+
+  if (!$("#page.form-control").hasClass("select2-hidden-accessible")) {
+    loadPages("own-and-public");
+  }
+
+  api.SMTP.domains().success(function(e) {
+    if (0 == e.length) return modalError("No profiles found!"), !1;
+    var a = $.map(e, function(e) {
+        return ((e.id = e.name), (e.text = e.name + " (" + e.host + ")")), e;
+      }),
+      t = $("#profile.form-control");
+
+    t
+      .select2({
+        placeholder: "Select a Sending Profile",
+        data: a
+      })
+      .select2("val", a[0]),
+      1 === e.length && (t.val(a[0].id), t.trigger("change.select2"));
+  });
+}
+
+function loadGroups(filter, redirect) {
+  api.groups.summary(filter).success(function(e) {
+    if (redirect) {
+      if (0 == e.total) return (document.location = "/users?ref=campaigns"), !1;
+    }
+
     var a = $.map(e.groups, function(e) {
       return (e.text = e.name), e;
     });
-    $("#users.form-control").select2({
-      placeholder: "Select Groups",
-      data: a
-    });
+    $("#users.form-control")
+      .empty()
+      .select2({
+        placeholder: "Select Groups",
+        data: a
+      });
 
-    $("#clickers_group_id").select2({
-      placeholder: "Existing group...",
-      data: a,
-      allowClear: true
-    });
+    $("#clickers_group_id")
+      .empty()
+      .select2({
+        placeholder: "Existing group...",
+        data: a,
+        allowClear: true
+      })
+      .val(null)
+      .trigger("change");
 
     $("#clickers_group_id")
       .off("select2:select")
@@ -276,17 +364,22 @@ function setupOptions() {
           .trigger("change");
       });
   });
+}
 
-  if (!$("#template.form-control").hasClass("select2-hidden-accessible")) {
-    api.templates.get("own-and-public").success(function(e) {
-      if (0 == e.length) return modalError("No templates found!"), !1;
+function loadTemplates(filter) {
+  var addresses = {};
+  var pages = {};
+  var data = [];
+
+  api.templates.get(filter).success(function(e) {
+    if (e.length > 0) {
       var a = $.map(e, function(e) {
         addresses[e.id] = e.from_address;
         pages[e.id] = e.default_page_id;
         return (e.text = e.name), e;
       });
 
-      var data = a
+      data = a
         .map(function(t) {
           return {
             id: t.id,
@@ -318,42 +411,47 @@ function setupOptions() {
           children: data[group]
         };
       });
+    }
 
-      $("#template.form-control").change(function(event) {
-        $("#from_address").val(addresses[event.target.value]);
-        if (pages[event.target.value] !== 0) {
-          $("#page.form-control").val(pages[event.target.value]);
-          $("#page.form-control").trigger("change.select2");
-        }
+    $("#template.form-control").change(function(event) {
+      $("#from_address").val(addresses[event.target.value]);
+      if (pages[event.target.value] !== 0) {
+        $("#page.form-control").val(pages[event.target.value]);
+        $("#page.form-control").trigger("change.select2");
+      }
 
-        if ($(this).val() !== "") {
-          $("#preview-btn").prop("disabled", "");
-        } else {
-          $("#preview-btn").prop("disabled", "disabled");
-        }
-      });
+      if ($(this).val() !== "") {
+        $("#preview-btn").prop("disabled", "");
+      } else {
+        $("#preview-btn").prop("disabled", "disabled");
+      }
+    });
 
-      $("#template.form-control").select2({
+    $("#template.form-control")
+      .empty()
+      .select2({
         placeholder: "Select a Template",
         data: data
       });
 
-      if (e.length === 1) {
-        $("#template.form-control").val(a[0].id);
-        $("#template.form-control").trigger("change.select2");
-        $("#preview-btn").prop("disabled", "");
-      }
-    });
-  }
+    if (e.length === 1) {
+      $("#template.form-control").val(a[0].id);
+      $("#template.form-control").trigger("change.select2");
+      $("#preview-btn").prop("disabled", "");
+    }
+  });
+}
 
-  if (!$("#page.form-control").hasClass("select2-hidden-accessible")) {
-    api.pages.get("own-and-public").success(function(e) {
-      if (0 == e.length) return modalError("No pages found!"), !1;
+function loadPages(filter) {
+  var data = [];
+
+  api.pages.get(filter).success(function(e) {
+    if (e.length > 0) {
       var a = $.map(e, function(e) {
         return (e.text = e.name), e;
       });
 
-      var data = a
+      data = a
         .map(function(p) {
           return {
             id: p.id,
@@ -385,32 +483,18 @@ function setupOptions() {
           children: data[group]
         };
       });
+    }
 
-      $("#page.form-control").select2({
+    $("#page.form-control")
+      .empty()
+      .select2({
         placeholder: "Select a Landing Page",
         data: data
       });
 
-      1 === e.length &&
-        ($("#page.form-control").val(a[0].id),
-        $("#page.form-control").trigger("change.select2"));
-    });
-  }
-
-  api.SMTP.domains().success(function(e) {
-    if (0 == e.length) return modalError("No profiles found!"), !1;
-    var a = $.map(e, function(e) {
-        return ((e.id = e.name), (e.text = e.name + " (" + e.host + ")")), e;
-      }),
-      t = $("#profile.form-control");
-
-    t
-      .select2({
-        placeholder: "Select a Sending Profile",
-        data: a
-      })
-      .select2("val", a[0]),
-      1 === e.length && (t.val(a[0].id), t.trigger("change.select2"));
+    1 === e.length &&
+      ($("#page.form-control").val(a[0].id),
+      $("#page.form-control").trigger("change.select2"));
   });
 }
 
