@@ -7,10 +7,8 @@ function save(e) {
     (a.public = $("#publicly_available").prop("checked")),
     (editor = CKEDITOR.instances.html_editor),
     (a.html = editor.getData()),
-    (a.capture_credentials = $("#capture_credentials_checkbox").prop(
-      "checked"
-    )),
-    (a.capture_passwords = $("#capture_passwords_checkbox").prop("checked")),
+    (a.capture_credentials = false),
+    (a.capture_passwords = false),
     (a.redirect_url = $("#redirect_url_input").val()),
     -1 != e
       ? ((a.id = pages[e].id),
@@ -38,8 +36,6 @@ function dismiss() {
     $("#modal")
       .find("input[type='checkbox']")
       .prop("checked", !1),
-    $("#capture_passwords").hide(),
-    $("#redirect_url").hide(),
     $("#modal").modal("hide");
 }
 
@@ -77,11 +73,7 @@ function edit(e) {
     $("#name").val(a.name),
     $("#html_editor").val(a.html),
     $("#publicly_available").prop("checked", a.public),
-    $("#capture_credentials_checkbox").prop("checked", a.capture_credentials),
-    $("#capture_passwords_checkbox").prop("checked", a.capture_passwords),
-    $("#redirect_url_input").val(a.redirect_url),
-    a.capture_credentials &&
-      ($("#capture_passwords").show(), $("#redirect_url").show()));
+    $("#redirect_url_input").val(a.redirect_url));
 
   $("#category.form-control").val(a.tag);
   $("#category.form-control").trigger("change.select2");
@@ -262,9 +254,6 @@ $(document).ready(function() {
     }),
     $("#modal").on("hidden.bs.modal", function(e) {
       dismiss();
-    }),
-    $("#capture_credentials_checkbox").change(function() {
-      $("#capture_passwords").toggle(), $("#redirect_url").toggle();
     }),
     $("input[type=radio][name=filter]").change(function(event) {
       load(event.target.value);

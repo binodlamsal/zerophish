@@ -750,15 +750,6 @@ func API_Groups(w http.ResponseWriter, r *http.Request) {
 		g.ModifiedDate = time.Now().UTC()
 		g.UserId = uid
 
-		if !u.CanHaveXTargetsInAGroup(len(g.Targets)) {
-			JSONResponse(w,
-				models.Response{
-					Success: false,
-					Message: fmt.Sprintf("It's not possible to have %d targets in a group for this subscription plan", len(g.Targets)),
-				}, http.StatusConflict)
-			return
-		}
-
 		if (u.IsPartner() || u.IsChildUser()) && g.CreatorId == 0 && g.ContainsTargetsOutsideOfDomain(u.Domain) {
 			JSONResponse(w,
 				models.Response{
@@ -831,22 +822,6 @@ func API_Groups_Id(w http.ResponseWriter, r *http.Request) {
 		}
 
 		g.ModifiedDate = time.Now().UTC()
-		u, err := models.GetUser(uid)
-
-		if err != nil {
-			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
-			return
-		}
-
-		if !u.CanHaveXTargetsInAGroup(len(g.Targets)) {
-			JSONResponse(w,
-				models.Response{
-					Success: false,
-					Message: fmt.Sprintf("It's not possible to have %d targets in a group for this subscription plan", len(g.Targets)),
-				}, http.StatusConflict)
-			return
-		}
-
 		err = models.PutGroup(&g)
 
 		if err != nil {
