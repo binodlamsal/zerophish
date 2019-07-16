@@ -636,16 +636,6 @@ func (u User) CanCreateGroup() bool {
 	return count < 1
 }
 
-// CanHaveXTargetsInAGroup tells if this user is allowed to have X targets in a group,
-// the decision is made based on user's subscription status and plan
-func (u User) CanHaveXTargetsInAGroup(targets int) bool {
-	if u.IsAdministrator() || u.IsSubscribed() || targets <= 150 {
-		return true
-	}
-
-	return false
-}
-
 // CanManageSubscriptions tells if this user is allowed to manage customers' subscriptions,
 // the decision is made based on user's subscription status and plan
 func (u User) CanManageSubscriptions() bool {
