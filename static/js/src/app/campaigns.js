@@ -649,9 +649,11 @@ function load(filter) {
         {
           orderable: !1,
           targets: "no-sort"
-        }
+        },
+        { targets: 2, orderData: 5 },
+        { targets: 5, visible: false }
       ],
-      order: [[1, "desc"]]
+      order: [[2, "desc"]]
     });
   } else {
     campaignTable.clear();
@@ -715,7 +717,8 @@ function load(filter) {
                       e +
                       ")'>                    <i class='fa fa-copy'></i>                    </button></span>                    <button class='btn btn-danger' onclick='deleteCampaign(" +
                       e +
-                      ")' data-toggle='tooltip' data-placement='left' title='Delete Campaign'>                    <i class='fa fa-trash-o'></i>                    </button></div>"
+                      ")' data-toggle='tooltip' data-placement='left' title='Delete Campaign'>                    <i class='fa fa-trash-o'></i>                    </button></div>",
+                  moment(a.created_date).format("X")
                 ])
                 .draw(),
                 $('[data-toggle="tooltip"]').tooltip();

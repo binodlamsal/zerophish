@@ -377,9 +377,11 @@ function load(filter) {
         {
           className: "color-reported",
           targets: [6]
-        }
+        },
+        { targets: 2, orderData: 10 },
+        { targets: 10, visible: false }
       ],
-      order: [[1, "desc"]]
+      order: [[2, "desc"]]
     });
   } else {
     campaignTable.clear();
@@ -467,7 +469,8 @@ function load(filter) {
                   i +
                   ")' data-toggle='tooltip' data-placement='left' title='Delete Campaign'>\
                     <i class='fa fa-trash-o'></i>\
-                    </button></div>"
+                    </button></div>",
+              moment(campaign.created_date).format("X")
             ])
             .draw();
           $('[data-toggle="tooltip"]').tooltip();
