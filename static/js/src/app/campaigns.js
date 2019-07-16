@@ -550,7 +550,9 @@ var labels = {
   campaign = {};
 $(document).ready(function() {
   $("input[type=radio][name=filter]").change(function(event) {
-    load(event.target.value);
+    var filter = event.target.value;
+    sessionStorage.setItem("CampaignFilter", filter);
+    load(filter);
   });
 
   $("#during_certain_hours_checkbox").change(function(event) {
@@ -625,7 +627,13 @@ $(document).ready(function() {
       dismiss();
     });
 
-  load("own");
+  var filter = sessionStorage.getItem("CampaignFilter") || "own";
+
+  if ($("input[type=radio][name=filter]").val() != filter) {
+    $("input[type=radio][name=filter]").val([filter]);
+  }
+
+  load(filter);
 
   $.fn.select2.defaults.set("width", "100%"),
     $.fn.select2.defaults.set("dropdownParent", $("#modal_body")),
