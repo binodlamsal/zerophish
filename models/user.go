@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/everycloud-technologies/phishing-simulation/encryption"
+
 	"github.com/everycloud-technologies/phishing-simulation/bakery"
 	"github.com/everycloud-technologies/phishing-simulation/util"
 	"github.com/jinzhu/gorm"
@@ -24,25 +26,25 @@ const (
 
 // User represents the user model for gophish.
 type User struct {
-	Id              int64     `json:"id"`
-	Username        string    `json:"username" sql:"not null;unique"`
-	Email           string    `json:"email" sql:"not null;unique"`
-	Partner         int64     `json:"partner" sql:"not null"`
-	Hash            string    `json:"-"`
-	ApiKey          string    `json:"api_key" sql:"not null;unique"`
-	PlainApiKey     string    `json:"plain_api_key" gorm:"-"`
-	FullName        string    `json:"full_name" sql:"not null"`
-	Domain          string    `json:"domain"`
-	TimeZone        string    `json:"time_zone"`
-	NumOfUsers      int64     `json:"num_of_users"`
-	AdminEmail      string    `json:"admin_email" sql:"not null"`
-	EmailVerifiedAt time.Time `json:"email_verified_at"`
-	CreatedAt       time.Time `json:"created_at"`
-	UpdatedAt       time.Time `json:"updated_at"`
-	LastLoginAt     time.Time `json:"last_login_at"`
-	LastLoginIp     string    `json:"last_login_ip" sql:"not null"`
-	LastUserAgent   string    `json:"last_user_agent"`
-	ToBeDeleted     bool      `json:"to_be_deleted"`
+	Id              int64                      `json:"id"`
+	Username        string                     `json:"username" sql:"not null;unique"`
+	Email           encryption.EncryptedString `json:"email" sql:"not null;unique"`
+	Partner         int64                      `json:"partner" sql:"not null"`
+	Hash            string                     `json:"-"`
+	ApiKey          string                     `json:"api_key" sql:"not null;unique"`
+	PlainApiKey     string                     `json:"plain_api_key" gorm:"-"`
+	FullName        string                     `json:"full_name" sql:"not null"`
+	Domain          string                     `json:"domain"`
+	TimeZone        string                     `json:"time_zone"`
+	NumOfUsers      int64                      `json:"num_of_users"`
+	AdminEmail      encryption.EncryptedString `json:"admin_email" sql:"not null"`
+	EmailVerifiedAt time.Time                  `json:"email_verified_at"`
+	CreatedAt       time.Time                  `json:"created_at"`
+	UpdatedAt       time.Time                  `json:"updated_at"`
+	LastLoginAt     time.Time                  `json:"last_login_at"`
+	LastLoginIp     string                     `json:"last_login_ip" sql:"not null"`
+	LastUserAgent   string                     `json:"last_user_agent"`
+	ToBeDeleted     bool                       `json:"to_be_deleted"`
 }
 
 // BakeryUser stores relations between local user ids and bakery master user ids
@@ -211,7 +213,13 @@ func GetUserByAPIKey(key string) (User, error) {
 // error is thrown.
 func GetUserByUsername(username string) (User, error) {
 	u := User{}
-	err := db.Where("username = ?", username).Or("email = ?", username).First(&u).Error
+
+	err := db.
+		Where("username = ?", username).
+		Or("email = ?", encryption.EncryptedString{username}).
+		First(&u).
+		Error
+
 	return u, err
 }
 
@@ -296,7 +304,7 @@ func CreateUser(username, fullName, email, password string, rid int64, partner i
 	u := User{
 		Username:  username,
 		FullName:  fullName,
-		Email:     email,
+		Email:     encryption.EncryptedString{email},
 		Hash:      string(h),
 		ApiKey:    util.GenerateSecureKey(),
 		Partner:   partner,
@@ -969,6 +977,61 @@ func EncryptApiKeys() {
 		} else {
 			log.Error(err)
 		}
+	}
+
+	log.Info("Done.")
+}
+
+// EncryptUserEmails encrypts email and admin_email columns in users table
+func EncryptUserEmails() {
+	log.Info("Encrypting emails in users table...")
+
+	type user struct {
+		ID         int64  `json:"id"`
+		Email      string `json:"email" sql:"not null;unique"`
+		AdminEmail string `json:"admin_email" sql:"not null;unique"`
+	}
+
+	users := []user{}
+
+	err := db.
+		Table("users").
+		Where(`email LIKE "%@%" OR admin_email LIKE "%@%"`).
+		Find(&users).
+		Error
+
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	for _, u := range users {
+		email, err := encryption.Encrypt(u.Email)
+
+		if err != nil {
+			log.Error(err)
+			return
+		}
+
+		adminEmail, err := encryption.Encrypt(u.AdminEmail)
+
+		if err != nil {
+			log.Error(err)
+			return
+		}
+
+		err = db.
+			Table("users").
+			Where("id = ?", u.ID).
+			UpdateColumns(user{Email: email, AdminEmail: adminEmail}).
+			Error
+
+		if err != nil {
+			log.Error(err)
+			return
+		}
+
+		log.Infof("Encrypted emails of user with id %d", u.ID)
 	}
 
 	log.Info("Done.")
