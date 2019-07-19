@@ -295,7 +295,7 @@ func SSO(handler http.Handler) http.HandlerFunc {
 					_, err := usersync.PushUser(
 						user.Id,
 						user.Username,
-						user.Email, "", "",
+						user.Email.String(), "", "",
 						int64(rid),
 						models.GetUserBakeryID(user.Partner),
 						true,
@@ -333,7 +333,7 @@ func SSO(handler http.Handler) http.HandlerFunc {
 						partner = true
 					}
 
-					notifier.SendWelcomeEmail(user.Email, user.Username, user.Username, partner)
+					notifier.SendWelcomeEmail(user.Email.String(), user.Username, user.Username, partner)
 				}
 			} else if err != nil {
 				logoutWithError(fmt.Errorf("User lookup failed - %s", err.Error()))

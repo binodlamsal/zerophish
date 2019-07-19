@@ -13,6 +13,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/everycloud-technologies/phishing-simulation/encryption"
+
 	"github.com/everycloud-technologies/phishing-simulation/bakery"
 
 	ctx "github.com/everycloud-technologies/phishing-simulation/context"
@@ -143,7 +145,7 @@ func Register(r *http.Request) (bool, error) {
 		return false, err
 	}
 	u.Username = username
-	u.Email = newEmail
+	u.Email = encryption.EncryptedString{newEmail}
 	u.FullName = fullName
 	u.Hash = string(h)
 	u.ApiKey = util.GenerateSecureKey()
@@ -187,7 +189,7 @@ func Register(r *http.Request) (bool, error) {
 		uid, err := usersync.PushUser(
 			iu.Id,
 			iu.Username,
-			iu.Email,
+			iu.Email.String(),
 			iu.FullName,
 			newPassword,
 			ur.Rid,
@@ -216,7 +218,7 @@ func UpdateSettings(r *http.Request) error {
 	u := ctx.Get(r, "user").(models.User)
 	r.ParseForm() // Parses the request body
 
-	if u.Email != r.Form.Get("email") ||
+	if u.Email.String() != r.Form.Get("email") ||
 		u.Username != r.Form.Get("username") {
 		shouldPushUpdates = true
 	}
@@ -227,12 +229,12 @@ func UpdateSettings(r *http.Request) error {
 
 	u.UpdatedAt = time.Now().UTC()
 	u.Username = r.Form.Get("username")
-	u.Email = r.Form.Get("email")
+	u.Email = encryption.EncryptedString{r.Form.Get("email")}
 	u.FullName = r.Form.Get("full_name")
 	u.Domain = r.Form.Get("domain")
 	u.TimeZone = r.Form.Get("time_zone")
 	u.NumOfUsers, _ = strconv.ParseInt(r.Form.Get("num_of_users"), 10, 0)
-	u.AdminEmail = r.Form.Get("admin_email")
+	u.AdminEmail = encryption.EncryptedString{r.Form.Get("admin_email")}
 	newPassword := r.Form.Get("new_password")
 	confirmPassword := r.Form.Get("confirm_password")
 
@@ -242,7 +244,7 @@ func UpdateSettings(r *http.Request) error {
 		return err
 	}
 
-	if !util.IsEmail(u.Email) {
+	if !util.IsEmail(u.Email.String()) {
 		return ErrBadEmail
 	}
 
@@ -296,7 +298,7 @@ func UpdateSettings(r *http.Request) error {
 		if err := usersync.UpdateUser(
 			buid,
 			u.Username,
-			u.Email,
+			u.Email.String(),
 			newPassword,
 			role.Rid,
 			models.GetUserBakeryID(u.Partner),
@@ -369,7 +371,7 @@ func UpdateSettingsByAdmin(r *http.Request) error {
 	shouldPushUpdates := false
 	domainChanged := false
 
-	if u.Email != ud.Email ||
+	if u.Email.String() != ud.Email ||
 		u.Username != ud.Username ||
 		u.Partner != ud.Partner {
 		shouldPushUpdates = true
@@ -389,11 +391,11 @@ func UpdateSettingsByAdmin(r *http.Request) error {
 	}
 
 	u.Id = ud.Id
-	u.Email = ud.Email
+	u.Email = encryption.EncryptedString{ud.Email}
 	u.Domain = ud.Domain
 	u.TimeZone = ud.TimeZone
 	u.NumOfUsers = ud.NumOfUsers
-	u.AdminEmail = ud.AdminEmail
+	u.AdminEmail = encryption.EncryptedString{ud.AdminEmail}
 	u.Username = ud.Username
 	u.FullName = ud.FullName
 	u.ApiKey = ud.ApiKey
@@ -448,7 +450,7 @@ func UpdateSettingsByAdmin(r *http.Request) error {
 		if err := usersync.UpdateUser(
 			buid,
 			u.Username,
-			u.Email,
+			u.Email.String(),
 			newPassword,
 			ud.Role,
 			models.GetUserBakeryID(u.Partner),
@@ -525,7 +527,7 @@ func UpdateSettingsByAdmin(r *http.Request) error {
 
 		if !wasSubscribed && u.IsSubscribed() {
 			if os.Getenv("DONT_NOTIFY_USERS") == "" {
-				notifier.SendAccountUpgradeEmail(u.Email, u.FullName)
+				notifier.SendAccountUpgradeEmail(u.Email.String(), u.FullName)
 			}
 		}
 	}

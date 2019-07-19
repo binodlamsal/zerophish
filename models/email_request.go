@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/everycloud-technologies/phishing-simulation/config"
+	"github.com/everycloud-technologies/phishing-simulation/encryption"
 	log "github.com/everycloud-technologies/phishing-simulation/logger"
 	"github.com/everycloud-technologies/phishing-simulation/mailer"
 	"github.com/gophish/gomail"
@@ -49,7 +50,7 @@ func (s *EmailRequest) getFromAddress() string {
 // is valid.
 func (s *EmailRequest) Validate() error {
 	switch {
-	case s.Email == "":
+	case s.Email.String() == "":
 		return ErrEmailNotSpecified
 	case s.FromAddress == "" && s.SMTP.FromAddress == "":
 		return ErrFromAddressNotSpecified
@@ -204,4 +205,51 @@ func DeleteUserEmailRequests(uid int64) error {
 	}
 
 	return nil
+}
+
+// EncryptRequestEmails encrypts email column in email_requests table
+func EncryptRequestEmails() {
+	log.Info("Encrypting emails in email_requests table...")
+
+	type req struct {
+		ID    int64  `json:"id"`
+		Email string `json:"email" sql:"not null;unique"`
+	}
+
+	reqs := []req{}
+
+	err := db.
+		Table("email_requests").
+		Where(`email LIKE "%@%"`).
+		Find(&reqs).
+		Error
+
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	for _, r := range reqs {
+		email, err := encryption.Encrypt(r.Email)
+
+		if err != nil {
+			log.Error(err)
+			return
+		}
+
+		err = db.
+			Table("email_requests").
+			Where("id = ?", r.ID).
+			UpdateColumns(req{Email: email}).
+			Error
+
+		if err != nil {
+			log.Error(err)
+			return
+		}
+
+		log.Infof("Encrypted email of email_request with id %d", r.ID)
+	}
+
+	log.Info("Done.")
 }

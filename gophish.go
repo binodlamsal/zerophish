@@ -50,6 +50,7 @@ var (
 	configPath     = kingpin.Flag("config", "Location of config.json.").Default("./config.json").String()
 	disableMailer  = kingpin.Flag("disable-mailer", "Disable the mailer (for use with multi-system deployments)").Bool()
 	encryptApiKeys = kingpin.Flag("encrypt-api-keys", "Encrypt all unencrypted API keys and exit").Bool()
+	encryptEmails  = kingpin.Flag("encrypt-emails", "Encrypt all unencrypted emails and exit").Bool()
 )
 
 func main() {
@@ -97,6 +98,15 @@ func main() {
 
 	if *encryptApiKeys {
 		models.EncryptApiKeys()
+		return
+	}
+
+	if *encryptEmails {
+		models.EncryptUserEmails()
+		models.EncryptTargetEmails()
+		models.EncryptResultEmails()
+		models.EncryptRequestEmails()
+		models.EncryptEventEmails()
 		return
 	}
 
