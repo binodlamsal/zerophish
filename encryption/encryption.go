@@ -4,31 +4,33 @@
 package encryption
 
 import (
+	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/md5"
 	"database/sql/driver"
 	"encoding/base64"
-	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"os"
 	"reflect"
+	"strings"
 )
 
-var key []byte
+// A prefix which indicates encrypted content
+const marker = "·"
+
+var (
+	// Encryption key
+	key []byte
+
+	// Disabled indicates if encryption is disabled
+	Disabled bool
+)
 
 // EncryptedString is a wrappper around plain string allowing it to be transparently encrypted and decrypted
 type EncryptedString struct {
 	S string
-}
-
-func init() {
-	if os.Getenv("ENCRYPTION_KEY") != "" {
-		if err := SetKey([]byte(os.Getenv("ENCRYPTION_KEY"))); err != nil {
-			panic(err)
-		}
-	}
 }
 
 // SetKey sets encryption key
@@ -99,7 +101,7 @@ func (es EncryptedString) Value() (value driver.Value, err error) {
 
 // Encrypt AES-encrypts the given string and then base64-encode's it
 func Encrypt(text string) (string, error) {
-	if text == "" {
+	if Disabled || text == "" || strings.HasPrefix(text, marker) {
 		return text, nil
 	}
 
@@ -114,18 +116,19 @@ func Encrypt(text string) (string, error) {
 	iv := ciphertext[:aes.BlockSize]
 	hasher := md5.New()
 	hasher.Write(plaintext)
-	hash := hex.EncodeToString(hasher.Sum(nil))
+	hash := hasher.Sum(nil)
 	copy(iv, hash)
 	cipher.NewCFBEncrypter(block, iv).XORKeyStream(ciphertext[aes.BlockSize:], plaintext)
-	return base64.URLEncoding.EncodeToString(ciphertext), nil
+	return marker + base64.URLEncoding.EncodeToString(ciphertext), nil
 }
 
 // Decrypt base64-decodes and then AES decrypts the given string
 func Decrypt(cryptoText string) (string, error) {
-	if cryptoText == "" {
+	if Disabled || cryptoText == "" || !strings.HasPrefix(cryptoText, marker) {
 		return cryptoText, nil
 	}
 
+	cryptoText = strings.TrimPrefix(cryptoText, marker)
 	ciphertext, err := base64.URLEncoding.DecodeString(cryptoText)
 
 	if err != nil {
@@ -145,5 +148,12 @@ func Decrypt(cryptoText string) (string, error) {
 	iv := ciphertext[:aes.BlockSize]
 	ciphertext = ciphertext[aes.BlockSize:]
 	cipher.NewCFBDecrypter(block, iv).XORKeyStream(ciphertext, ciphertext)
+	hasher := md5.New()
+	hasher.Write(ciphertext)
+
+	if !bytes.Equal(hasher.Sum(nil), iv) {
+		return "", errors.New("unable to decrypt: incorrect encryption key")
+	}
+
 	return string(ciphertext), nil
 }

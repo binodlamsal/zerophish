@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/everycloud-technologies/phishing-simulation/encryption"
+
 	"bitbucket.org/liamstask/goose/lib/goose"
 
 	"github.com/everycloud-technologies/phishing-simulation/config"
@@ -114,7 +116,7 @@ func Setup() error {
 			Username: "admin",
 			Hash:     "$2a$10$IYkPp0.QsM81lYYPrQx6W.U6oQGw7wMpozrKhKAHUBVL4mkm/EvAS", //gophish
 		}
-		initUser.ApiKey = generateSecureKey()
+		initUser.ApiKey = encryption.EncryptedString{generateSecureKey()}
 		err = db.Save(&initUser).Error
 		if err != nil {
 			log.Error(err)

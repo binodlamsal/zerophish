@@ -1,17 +1,14 @@
 package models
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/mail"
 	"net/url"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
-	"github.com/everycloud-technologies/phishing-simulation/bakery"
 	"github.com/everycloud-technologies/phishing-simulation/encryption"
 	log "github.com/everycloud-technologies/phishing-simulation/logger"
 	"github.com/everycloud-technologies/phishing-simulation/usersync"
@@ -1001,35 +998,6 @@ func ProcessCampaignTargets(id int64) error {
 	return nil
 }
 
-// AfterFind decrypts encrypted passwords stored in event details
-func (e *Event) AfterFind() (err error) {
-	var detailsWithPassword struct {
-		Payload struct {
-			Password []string `json:"password"`
-		} `json:"payload"`
-	}
-
-	if e.Details != "" {
-		err := json.Unmarshal([]byte(e.Details), &detailsWithPassword)
-
-		if err != nil {
-			return nil
-		}
-
-		if encPwd := detailsWithPassword.Payload.Password; len(encPwd) > 0 {
-			pwd, err := bakery.Decrypt(encPwd[0])
-
-			if err != nil {
-				return nil
-			}
-
-			e.Details = strings.Replace(e.Details, encPwd[0], pwd, 1)
-		}
-	}
-
-	return
-}
-
 // AfterCreate creates a new user with "lms_user" role whenever EVENT_CLICKED event occurs,
 // additionally links newly created LMS users to relevant LMS campaigns.
 func (e *Event) AfterCreate(tx *gorm.DB) error {
@@ -1159,5 +1127,47 @@ func EncryptEventEmails() {
 		log.Infof("Encrypted email of event with id %d", e.ID)
 	}
 
+	log.Info("Done.")
+}
+
+// DecryptEventEmails decrypts email column in events table
+func DecryptEventEmails() {
+	log.Info("Decrypting emails in events table...")
+
+	type event struct {
+		ID    int64                      `json:"id"`
+		Email encryption.EncryptedString `json:"email" sql:"not null;unique"`
+	}
+
+	events := []event{}
+
+	err := db.
+		Table("events").
+		Find(&events).
+		Error
+
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	encryption.Disabled = true
+
+	for _, e := range events {
+		err = db.
+			Table("events").
+			Where("id = ?", e.ID).
+			UpdateColumns(e).
+			Error
+
+		if err != nil {
+			log.Error(err)
+			return
+		}
+
+		log.Infof("Decrypted email of event with id %d", e.ID)
+	}
+
+	encryption.Disabled = false
 	log.Info("Done.")
 }

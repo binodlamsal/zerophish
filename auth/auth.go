@@ -148,7 +148,7 @@ func Register(r *http.Request) (bool, error) {
 	u.Email = encryption.EncryptedString{newEmail}
 	u.FullName = fullName
 	u.Hash = string(h)
-	u.ApiKey = util.GenerateSecureKey()
+	u.ApiKey = encryption.EncryptedString{util.GenerateSecureKey()}
 	u.CreatedAt = time.Now().UTC()
 	u.UpdatedAt = time.Now().UTC()
 
@@ -398,7 +398,7 @@ func UpdateSettingsByAdmin(r *http.Request) error {
 	u.AdminEmail = encryption.EncryptedString{ud.AdminEmail}
 	u.Username = ud.Username
 	u.FullName = ud.FullName
-	u.ApiKey = ud.ApiKey
+	u.ApiKey = encryption.EncryptedString{ud.ApiKey}
 	u.Partner = ud.Partner
 	u.UpdatedAt = time.Now().UTC()
 
