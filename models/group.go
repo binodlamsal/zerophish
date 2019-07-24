@@ -909,3 +909,45 @@ func EncryptTargetEmails() {
 
 	log.Info("Done.")
 }
+
+// DecryptTargetEmails decrypts email column in targets table
+func DecryptTargetEmails() {
+	log.Info("Decrypting emails in targets table...")
+
+	type target struct {
+		ID    int64                      `json:"id"`
+		Email encryption.EncryptedString `json:"email" sql:"not null;unique"`
+	}
+
+	targets := []target{}
+
+	err := db.
+		Table("targets").
+		Find(&targets).
+		Error
+
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	encryption.Disabled = true
+
+	for _, t := range targets {
+		err = db.
+			Table("targets").
+			Where("id = ?", t.ID).
+			UpdateColumns(t).
+			Error
+
+		if err != nil {
+			log.Error(err)
+			return
+		}
+
+		log.Infof("Decrypted email of target with id %d", t.ID)
+	}
+
+	encryption.Disabled = false
+	log.Info("Done.")
+}

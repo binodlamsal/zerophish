@@ -28,10 +28,16 @@ THE SOFTWARE.
 import (
 	"compress/gzip"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"sync"
+
+	"github.com/jinzhu/gorm"
 
 	"gopkg.in/alecthomas/kingpin.v2"
 
@@ -39,21 +45,71 @@ import (
 	"github.com/everycloud-technologies/phishing-simulation/auth"
 	"github.com/everycloud-technologies/phishing-simulation/config"
 	"github.com/everycloud-technologies/phishing-simulation/controllers"
+	"github.com/everycloud-technologies/phishing-simulation/encryption"
 	log "github.com/everycloud-technologies/phishing-simulation/logger"
 	"github.com/everycloud-technologies/phishing-simulation/mailer"
 	"github.com/everycloud-technologies/phishing-simulation/models"
 	"github.com/everycloud-technologies/phishing-simulation/util"
+	"github.com/everycloud-technologies/phishing-simulation/worker"
 	"github.com/gorilla/handlers"
+	"github.com/howeyc/gopass"
 )
 
 var (
 	configPath     = kingpin.Flag("config", "Location of config.json.").Default("./config.json").String()
 	disableMailer  = kingpin.Flag("disable-mailer", "Disable the mailer (for use with multi-system deployments)").Bool()
 	encryptApiKeys = kingpin.Flag("encrypt-api-keys", "Encrypt all unencrypted API keys and exit").Bool()
+	decryptApiKeys = kingpin.Flag("decrypt-api-keys", "Decrypt all encrypted API keys and exit").Bool()
 	encryptEmails  = kingpin.Flag("encrypt-emails", "Encrypt all unencrypted emails and exit").Bool()
+	decryptEmails  = kingpin.Flag("decrypt-emails", "Decrypt all encrypted emails and exit").Bool()
 )
 
 func main() {
+	// Setup encryption
+	if os.Getenv("ENCRYPTION_DISABLE") == "" {
+		encKey := os.Getenv("ENCRYPTION_KEY")
+
+		if encKey != "" {
+			if len(encKey) == 32 {
+				if err := encryption.SetKey([]byte(encKey)); err != nil {
+					log.Fatal(err)
+				}
+			} else if len(encKey) == 64 {
+				key, err := hex.DecodeString(encKey)
+
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				if err := encryption.SetKey(key); err != nil {
+					log.Fatal(err)
+				}
+			} else {
+				log.Fatal(errors.New("wrong encryption key length (must be 32 character string or 64 bytes hex-encoded string)"))
+			}
+		} else {
+			fmt.Printf("Enter passphrase: ")
+			passphrase, err := gopass.GetPasswdMasked()
+
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			h := sha256.New()
+			h.Write(passphrase)
+			key := h.Sum(nil)
+
+			if err := encryption.SetKey(key); err != nil {
+				log.Fatal(err)
+			}
+		}
+
+		log.Info("Encryption is enabled")
+	} else {
+		encryption.Disabled = true
+		log.Info("Encryption is disabled")
+	}
+
 	// Load the version
 
 	version, err := ioutil.ReadFile("./VERSION")
@@ -68,17 +124,16 @@ func main() {
 
 	// Load the config
 	err = config.LoadConfig(*configPath)
-	// Just warn if a contact address hasn't been configured
+
 	if err != nil {
 		log.Fatal(err)
 	}
-	if config.Conf.ContactAddress == "" {
-		log.Warnf("No contact address has been configured.")
-		log.Warnf("Please consider adding a contact_address entry in your config.json")
-	}
+
 	config.Version = string(version)
 
+	// Setup logging
 	err = log.Setup()
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -86,12 +141,9 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Provide the option to disable the built-in mailer
-	if !*disableMailer {
-		go mailer.Mailer.Start(ctx)
-	}
 	// Setup the global variables and settings
 	err = models.Setup()
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -99,15 +151,47 @@ func main() {
 	if *encryptApiKeys {
 		models.EncryptApiKeys()
 		return
+	} else if *decryptApiKeys {
+		models.DecryptApiKeys()
+		return
 	}
 
 	if *encryptEmails {
+		if encryption.Disabled {
+			log.Fatal("Unable to encrypt emails because encryption is disabled.")
+		}
+
 		models.EncryptUserEmails()
 		models.EncryptTargetEmails()
 		models.EncryptResultEmails()
 		models.EncryptRequestEmails()
 		models.EncryptEventEmails()
 		return
+	} else if *decryptEmails {
+		if encryption.Disabled {
+			log.Fatal("Unable to decrypt emails because encryption is disabled.")
+		}
+
+		models.DecryptUserEmails()
+		models.DecryptTargetEmails()
+		models.DecryptResultEmails()
+		models.DecryptRequestEmails()
+		models.DecryptEventEmails()
+		return
+	}
+
+	// Validate encryption key by attempting to retrieve a single user record from the database
+	if _, err := models.GetUser(1); err != nil && err != gorm.ErrRecordNotFound {
+		log.Fatal(err)
+	}
+
+	w := worker.New()
+	controllers.SetWorker(w)
+	go w.Start()
+
+	// Provide the option to disable the built-in mailer
+	if !*disableMailer {
+		go mailer.Mailer.Start(ctx)
 	}
 
 	// Unlock any maillogs that may have been locked for processing

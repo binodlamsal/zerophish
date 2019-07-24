@@ -253,3 +253,45 @@ func EncryptRequestEmails() {
 
 	log.Info("Done.")
 }
+
+// DecryptRequestEmails decrypts email column in email_requests table
+func DecryptRequestEmails() {
+	log.Info("Decrypting emails in email_requests table...")
+
+	type req struct {
+		ID    int64                      `json:"id"`
+		Email encryption.EncryptedString `json:"email" sql:"not null;unique"`
+	}
+
+	reqs := []req{}
+
+	err := db.
+		Table("email_requests").
+		Find(&reqs).
+		Error
+
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	encryption.Disabled = true
+
+	for _, r := range reqs {
+		err = db.
+			Table("email_requests").
+			Where("id = ?", r.ID).
+			UpdateColumns(r).
+			Error
+
+		if err != nil {
+			log.Error(err)
+			return
+		}
+
+		log.Infof("Decrypted email of email_request with id %d", r.ID)
+	}
+
+	encryption.Disabled = false
+	log.Info("Done.")
+}

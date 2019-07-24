@@ -38,9 +38,9 @@ import (
 // Worker is the worker that processes phishing events and updates campaigns.
 var Worker *worker.Worker
 
-func init() {
-	Worker = worker.New()
-	go Worker.Start()
+// SetWorker sets worker instance
+func SetWorker(w *worker.Worker) {
+	Worker = w
 }
 
 // API (/api/reset) resets a user's API key
@@ -48,7 +48,7 @@ func API_Reset(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case r.Method == "POST":
 		u := ctx.Get(r, "user").(models.User)
-		u.ApiKey = util.GenerateSecureKey()
+		u.ApiKey = encryption.EncryptedString{util.GenerateSecureKey()}
 		err := models.PutUser(&u)
 		if err != nil {
 			http.Error(w, "Error setting API Key", http.StatusInternalServerError)
