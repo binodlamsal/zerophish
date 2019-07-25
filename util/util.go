@@ -19,7 +19,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unicode/utf8"
 
 	log "github.com/gophish/gophish/logger"
 	"github.com/gophish/gophish/models"
@@ -262,37 +261,4 @@ func IsValidDomain(domain string) bool {
 	return regexp.
 		MustCompile(`^(([a-zA-Z]{1})|([a-zA-Z]{1}[a-zA-Z]{1})|([a-zA-Z]{1}[0-9]{1})|([0-9]{1}[a-zA-Z]{1})|([a-zA-Z0-9][a-zA-Z0-9-_]{1,61}[a-zA-Z0-9]))\.([a-zA-Z]{2,6}|[a-zA-Z0-9-]{2,30}\.[a-zA-Z]{2,24})$`).
 		MatchString(domain)
-}
-
-// Reverse reverses given string
-func Reverse(s string) string {
-	size := len(s)
-	buf := make([]byte, size)
-	for start := 0; start < size; {
-		r, n := utf8.DecodeRuneInString(s[start:])
-		start += n
-		utf8.EncodeRune(buf[size-start:], r)
-	}
-	return string(buf)
-}
-
-// Rot13 rotates given rune by 13 positions
-func Rot13(r rune) rune {
-	switch {
-	case r >= 'A' && r <= 'Z':
-		return 'A' + (r-'A'+13)%26
-	case r >= 'a' && r <= 'z':
-		return 'a' + (r-'a'+13)%26
-	}
-	return r
-}
-
-// Obfuscate obfuscates given string
-func Obfuscate(s string) string {
-	return Reverse(strings.Map(Rot13, s))
-}
-
-// Deobfuscate deobfuscates given string
-func Deobfuscate(s string) string {
-	return strings.Map(Rot13, Reverse(s))
 }

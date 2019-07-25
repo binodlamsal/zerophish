@@ -1,15 +1,17 @@
 package models
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/mail"
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
-	"github.com/everycloud-technologies/phishing-simulation/encryption"
+	"github.com/everycloud-technologies/phishing-simulation/bakery"
 	log "github.com/everycloud-technologies/phishing-simulation/logger"
 	"github.com/everycloud-technologies/phishing-simulation/usersync"
 	"github.com/everycloud-technologies/phishing-simulation/util"
@@ -97,12 +99,12 @@ type CampaignStats struct {
 // Event contains the fields for an event
 // that occurs during the campaign
 type Event struct {
-	Id         int64                      `json:"-"`
-	CampaignId int64                      `json:"-"`
-	Email      encryption.EncryptedString `json:"email"`
-	Time       time.Time                  `json:"time"`
-	Message    string                     `json:"message"`
-	Details    string                     `json:"details"`
+	Id         int64     `json:"-"`
+	CampaignId int64     `json:"-"`
+	Email      string    `json:"email"`
+	Time       time.Time `json:"time"`
+	Message    string    `json:"message"`
+	Details    string    `json:"details"`
 }
 
 // EventDetails is a struct that wraps common attributes we want to store
@@ -290,7 +292,7 @@ func (c *Campaign) GetClickers() ([]Target, error) {
 		Find(&results).Error
 
 	for _, r := range results {
-		t, err := GetTargetByEmail(r.Email.String())
+		t, err := GetTargetByEmail(r.Email)
 
 		if err != nil {
 			return clickers, err
@@ -312,7 +314,7 @@ func (c *Campaign) GetNonClickers() ([]Target, error) {
 		Find(&results).Error
 
 	for _, r := range results {
-		t, err := GetTargetByEmail(r.Email.String())
+		t, err := GetTargetByEmail(r.Email)
 
 		if err != nil {
 			return nonclickers, err
@@ -791,10 +793,10 @@ func PostCampaign(c *Campaign, uid int64) (err error) {
 		for _, t := range g.Targets {
 			// Remove duplicate results - we should only
 			// send emails to unique email addresses.
-			if _, ok := resultMap[t.Email.String()]; ok {
+			if _, ok := resultMap[t.Email]; ok {
 				continue
 			}
-			resultMap[t.Email.String()] = true
+			resultMap[t.Email] = true
 			sendDate := c.generateSendDate(recipientIndex, totalRecipients)
 			r := &Result{
 				BaseRecipient: BaseRecipient{
@@ -998,6 +1000,35 @@ func ProcessCampaignTargets(id int64) error {
 	return nil
 }
 
+// AfterFind decrypts encrypted passwords stored in event details
+func (e *Event) AfterFind() (err error) {
+	var detailsWithPassword struct {
+		Payload struct {
+			Password []string `json:"password"`
+		} `json:"payload"`
+	}
+
+	if e.Details != "" {
+		err := json.Unmarshal([]byte(e.Details), &detailsWithPassword)
+
+		if err != nil {
+			return nil
+		}
+
+		if encPwd := detailsWithPassword.Payload.Password; len(encPwd) > 0 {
+			pwd, err := bakery.Decrypt(encPwd[0])
+
+			if err != nil {
+				return nil
+			}
+
+			e.Details = strings.Replace(e.Details, encPwd[0], pwd, 1)
+		}
+	}
+
+	return
+}
+
 // AfterCreate creates a new user with "lms_user" role whenever EVENT_CLICKED event occurs,
 // additionally links newly created LMS users to relevant LMS campaigns.
 func (e *Event) AfterCreate(tx *gorm.DB) error {
@@ -1030,12 +1061,12 @@ func (e *Event) AfterCreate(tx *gorm.DB) error {
 		partner = campaignOwner.Partner
 	}
 
-	fullname := GetTargetsFullName(e.Email.String(), coid)
-	username := util.GenerateUsername(fullname, e.Email.String())
+	fullname := GetTargetsFullName(e.Email, coid)
+	username := util.GenerateUsername(fullname, e.Email)
 
 	u, err := CreateUser(
 		username, fullname,
-		e.Email.String(), "qwerty", LMSUser, partner,
+		e.Email, "qwerty", LMSUser, partner,
 	)
 
 	if err != nil {
@@ -1047,7 +1078,7 @@ func (e *Event) AfterCreate(tx *gorm.DB) error {
 		uid, err := usersync.PushUser(
 			u.Id,
 			u.Username,
-			u.Email.String(),
+			u.Email,
 			u.FullName,
 			"qwerty",
 			LMSUser,
@@ -1081,93 +1112,4 @@ func (e *Event) AfterCreate(tx *gorm.DB) error {
 	}
 
 	return nil
-}
-
-// EncryptEventEmails encrypts email column in events table
-func EncryptEventEmails() {
-	log.Info("Encrypting emails in events table...")
-
-	type event struct {
-		ID    int64  `json:"id"`
-		Email string `json:"email" sql:"not null;unique"`
-	}
-
-	events := []event{}
-
-	err := db.
-		Table("events").
-		Where(`email LIKE "%@%"`).
-		Find(&events).
-		Error
-
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	for _, e := range events {
-		email, err := encryption.Encrypt(e.Email)
-
-		if err != nil {
-			log.Error(err)
-			return
-		}
-
-		err = db.
-			Table("events").
-			Where("id = ?", e.ID).
-			UpdateColumns(event{Email: email}).
-			Error
-
-		if err != nil {
-			log.Error(err)
-			return
-		}
-
-		log.Infof("Encrypted email of event with id %d", e.ID)
-	}
-
-	log.Info("Done.")
-}
-
-// DecryptEventEmails decrypts email column in events table
-func DecryptEventEmails() {
-	log.Info("Decrypting emails in events table...")
-
-	type event struct {
-		ID    int64                      `json:"id"`
-		Email encryption.EncryptedString `json:"email" sql:"not null;unique"`
-	}
-
-	events := []event{}
-
-	err := db.
-		Table("events").
-		Find(&events).
-		Error
-
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	encryption.Disabled = true
-
-	for _, e := range events {
-		err = db.
-			Table("events").
-			Where("id = ?", e.ID).
-			UpdateColumns(e).
-			Error
-
-		if err != nil {
-			log.Error(err)
-			return
-		}
-
-		log.Infof("Decrypted email of event with id %d", e.ID)
-	}
-
-	encryption.Disabled = false
-	log.Info("Done.")
 }

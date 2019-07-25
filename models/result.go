@@ -7,7 +7,6 @@ import (
 	"net"
 	"time"
 
-	"github.com/everycloud-technologies/phishing-simulation/encryption"
 	log "github.com/everycloud-technologies/phishing-simulation/logger"
 	"github.com/jinzhu/gorm"
 	"github.com/oschwald/maxminddb-golang"
@@ -212,93 +211,4 @@ func GetResult(rid string) (Result, error) {
 	r := Result{}
 	err := db.Where("r_id=?", rid).First(&r).Error
 	return r, err
-}
-
-// EncryptResultEmails encrypts email column in results table
-func EncryptResultEmails() {
-	log.Info("Encrypting emails in results table...")
-
-	type result struct {
-		ID    int64  `json:"id"`
-		Email string `json:"email" sql:"not null;unique"`
-	}
-
-	results := []result{}
-
-	err := db.
-		Table("results").
-		Where(`email LIKE "%@%"`).
-		Find(&results).
-		Error
-
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	for _, r := range results {
-		email, err := encryption.Encrypt(r.Email)
-
-		if err != nil {
-			log.Error(err)
-			return
-		}
-
-		err = db.
-			Table("results").
-			Where("id = ?", r.ID).
-			UpdateColumns(result{Email: email}).
-			Error
-
-		if err != nil {
-			log.Error(err)
-			return
-		}
-
-		log.Infof("Encrypted email of result with id %d", r.ID)
-	}
-
-	log.Info("Done.")
-}
-
-// DecryptResultEmails decrypts email column in results table
-func DecryptResultEmails() {
-	log.Info("Decrypting emails in results table...")
-
-	type result struct {
-		ID    int64                      `json:"id"`
-		Email encryption.EncryptedString `json:"email" sql:"not null;unique"`
-	}
-
-	results := []result{}
-
-	err := db.
-		Table("results").
-		Find(&results).
-		Error
-
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	encryption.Disabled = true
-
-	for _, r := range results {
-		err = db.
-			Table("results").
-			Where("id = ?", r.ID).
-			UpdateColumns(r).
-			Error
-
-		if err != nil {
-			log.Error(err)
-			return
-		}
-
-		log.Infof("Decrypted email of result with id %d", r.ID)
-	}
-
-	encryption.Disabled = false
-	log.Info("Done.")
 }
