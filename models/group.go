@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/everycloud-technologies/phishing-simulation/encryption"
 	"github.com/everycloud-technologies/phishing-simulation/usersync"
 
 	log "github.com/everycloud-technologies/phishing-simulation/logger"
@@ -62,20 +63,20 @@ type Target struct {
 // BaseRecipient contains the fields for a single recipient. This is the base
 // struct used in members of groups and campaign results.
 type BaseRecipient struct {
-	Email     string `json:"email"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Position  string `json:"position"`
-	IsLMSUser bool   `json:"is_lms_user" gorm:"-"`
+	Email     encryption.EncryptedString `json:"email"`
+	FirstName string                     `json:"first_name"`
+	LastName  string                     `json:"last_name"`
+	Position  string                     `json:"position"`
+	IsLMSUser bool                       `json:"is_lms_user" gorm:"-"`
 }
 
 // FormatAddress returns the email address to use in the "To" header of the email
 func (r *BaseRecipient) FormatAddress() string {
-	addr := r.Email
+	addr := r.Email.String()
 	if r.FirstName != "" && r.LastName != "" {
 		a := &mail.Address{
 			Name:    fmt.Sprintf("%s %s", r.FirstName, r.LastName),
-			Address: r.Email,
+			Address: r.Email.String(),
 		}
 		addr = a.String()
 	}
@@ -84,11 +85,11 @@ func (r *BaseRecipient) FormatAddress() string {
 
 // FormatAddress returns the email address to use in the "To" header of the email
 func (t *Target) FormatAddress() string {
-	addr := t.Email
+	addr := t.Email.String()
 	if t.FirstName != "" && t.LastName != "" {
 		a := &mail.Address{
 			Name:    fmt.Sprintf("%s %s", t.FirstName, t.LastName),
-			Address: t.Email,
+			Address: t.Email.String(),
 		}
 		addr = a.String()
 	}
@@ -153,7 +154,7 @@ func (g *Group) ContainsTargetsOutsideOfDomain(domain string) bool {
 	}
 
 	for _, t := range g.Targets {
-		if !strings.HasSuffix(t.Email, domain) {
+		if !strings.HasSuffix(t.Email.String(), domain) {
 			return true
 		}
 	}
@@ -506,7 +507,7 @@ func PutGroup(g *Group) error {
 		tExists = false
 		// Is the target still in the group?
 		for _, nt := range g.Targets {
-			if t.Email == nt.Email {
+			if t.Email.Equals(nt.Email) {
 				tExists = true
 				break
 			}
@@ -526,7 +527,7 @@ func PutGroup(g *Group) error {
 			}
 
 			// Delete related LMS user (if any)
-			if u, err := GetLMSUser(t.Email); err == nil {
+			if u, err := GetLMSUser(t.Email.String()); err == nil {
 				if buid, err := DeleteUser(u.Id); err == nil {
 					if os.Getenv("USERSYNC_DISABLE") == "" {
 						usersync.DeleteTrainingCampaigns(u.Id)
@@ -546,7 +547,7 @@ func PutGroup(g *Group) error {
 		// Check and see if the target already exists in the db
 		tExists = false
 		for _, t := range ts {
-			if t.Email == nt.Email {
+			if t.Email.Equals(nt.Email) {
 				tExists = true
 				nt.Id = t.Id
 				break
@@ -588,7 +589,7 @@ func DeleteGroup(g *Group) error {
 		}
 
 		// Delete related LMS user (if any)
-		if u, err := GetLMSUser(t.Email); err == nil {
+		if u, err := GetLMSUser(t.Email.String()); err == nil {
 			if buid, err := DeleteUser(u.Id); err == nil {
 				if os.Getenv("USERSYNC_DISABLE") == "" {
 					usersync.DeleteTrainingCampaigns(u.Id)
@@ -640,7 +641,7 @@ func DeleteUserGroups(uid int64) error {
 }
 
 func insertTargetIntoGroup(t Target, gid int64) error {
-	if _, err = mail.ParseAddress(t.Email); err != nil {
+	if _, err = mail.ParseAddress(t.Email.String()); err != nil {
 		log.WithFields(logrus.Fields{
 			"email": t.Email,
 		}).Error("Invalid email")
@@ -739,7 +740,7 @@ func GetGroupOwnerId(id int64) (int64, error) {
 
 // GetTargetByEmail finds and returns target with the given email
 func GetTargetByEmail(email string) (t Target, err error) {
-	err = db.Where("email = ?", email).First(&t).Error
+	err = db.Where("email = ?", encryption.EncryptedString{email}).First(&t).Error
 	return
 }
 
@@ -834,7 +835,7 @@ func GetTargetsFullName(email string, oid int64) string {
 
 	for _, g := range groups {
 		for _, t := range g.Targets {
-			if t.Email == email {
+			if t.Email.String() == email {
 				return t.FirstName + " " + t.LastName
 			}
 		}
@@ -860,4 +861,93 @@ func DeleteGroupTarget(id int64) error {
 	}
 
 	return nil
+}
+
+// EncryptTargetEmails encrypts email column in targets table
+func EncryptTargetEmails() {
+	log.Info("Encrypting emails in targets table...")
+
+	type target struct {
+		ID    int64  `json:"id"`
+		Email string `json:"email" sql:"not null;unique"`
+	}
+
+	targets := []target{}
+
+	err := db.
+		Table("targets").
+		Where(`email LIKE "%@%"`).
+		Find(&targets).
+		Error
+
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	for _, t := range targets {
+		email, err := encryption.Encrypt(t.Email)
+
+		if err != nil {
+			log.Error(err)
+			return
+		}
+
+		err = db.
+			Table("targets").
+			Where("id = ?", t.ID).
+			UpdateColumns(target{Email: email}).
+			Error
+
+		if err != nil {
+			log.Error(err)
+			return
+		}
+
+		log.Infof("Encrypted email of target with id %d", t.ID)
+	}
+
+	log.Info("Done.")
+}
+
+// DecryptTargetEmails decrypts email column in targets table
+func DecryptTargetEmails() {
+	log.Info("Decrypting emails in targets table...")
+
+	type target struct {
+		ID    int64                      `json:"id"`
+		Email encryption.EncryptedString `json:"email" sql:"not null;unique"`
+	}
+
+	targets := []target{}
+
+	err := db.
+		Table("targets").
+		Find(&targets).
+		Error
+
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	encryption.Disabled = true
+
+	for _, t := range targets {
+		err = db.
+			Table("targets").
+			Where("id = ?", t.ID).
+			UpdateColumns(t).
+			Error
+
+		if err != nil {
+			log.Error(err)
+			return
+		}
+
+		log.Infof("Decrypted email of target with id %d", t.ID)
+	}
+
+	encryption.Disabled = false
+	log.Info("Done.")
 }
