@@ -201,6 +201,11 @@ func pad(data []byte) []byte {
 func unpad(data []byte) []byte {
 	length := len(data)
 	unpadding := int(data[length-1])
+
+	if unpadding > 16 {
+		return data
+	}
+
 	return data[:(length - unpadding)]
 }
 
