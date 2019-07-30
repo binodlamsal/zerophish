@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 import (
+	"bufio"
 	"compress/gzip"
 	"context"
 	"crypto/sha256"
@@ -66,6 +67,8 @@ var (
 
 func main() {
 	// Setup encryption
+	const pipe = "input.pipe"
+
 	if os.Getenv("ENCRYPTION_DISABLE") == "" {
 		encKey := os.Getenv("ENCRYPTION_KEY")
 
@@ -87,6 +90,21 @@ func main() {
 			} else {
 				log.Fatal(errors.New("wrong encryption key length (must be 32 character string or 64 bytes hex-encoded string)"))
 			}
+		} else if input, err := os.OpenFile(pipe, os.O_RDONLY, os.ModeNamedPipe); err == nil {
+			passphrase, err := bufio.NewReader(input).ReadBytes('\n')
+
+			if err == nil {
+				h := sha256.New()
+				h.Write(passphrase)
+				key := h.Sum(nil)
+
+				if err := encryption.SetKey(key); err != nil {
+					os.Remove(pipe)
+					log.Fatal(err)
+				}
+			}
+
+			os.Remove(pipe)
 		} else {
 			fmt.Printf("Enter passphrase: ")
 			passphrase, err := gopass.GetPasswdMasked()
