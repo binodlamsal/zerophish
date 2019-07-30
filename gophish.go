@@ -95,7 +95,7 @@ func main() {
 
 			if err == nil {
 				h := sha256.New()
-				h.Write(passphrase)
+				h.Write(passphrase[:len(passphrase)-1])
 				key := h.Sum(nil)
 
 				if err := encryption.SetKey(key); err != nil {
