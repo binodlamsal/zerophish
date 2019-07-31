@@ -1032,6 +1032,9 @@ func (e *Event) AfterFind() (err error) {
 // AfterCreate creates a new user with "lms_user" role whenever EVENT_CLICKED event occurs,
 // additionally links newly created LMS users to relevant LMS campaigns.
 func (e *Event) AfterCreate(tx *gorm.DB) error {
+	// temporarily disabled
+	return nil
+
 	if e.Message != EVENT_CLICKED {
 		return nil
 	}
