@@ -798,6 +798,7 @@ func PostCampaign(c *Campaign, uid int64) (err error) {
 			}
 			resultMap[t.Email] = true
 			sendDate := c.generateSendDate(recipientIndex, totalRecipients)
+
 			r := &Result{
 				BaseRecipient: BaseRecipient{
 					Email:     t.Email,
@@ -812,6 +813,33 @@ func PostCampaign(c *Campaign, uid int64) (err error) {
 				Reported:     false,
 				ModifiedDate: c.CreatedDate,
 			}
+
+			if c.StartTime != "" && c.EndTime != "" && c.TimeZone != "" {
+				if !util.IsLocalBusinessTime(sendDate, c.StartTime, c.EndTime, c.TimeZone) {
+					datePart := sendDate.UTC().Format("2006-01-02")
+					timePart := c.StartTime
+					loc, _ := time.LoadLocation(c.TimeZone)
+					newSendDate, _ := time.ParseInLocation("2006-01-02 3:04 PM", datePart+" "+timePart, loc)
+					newSendDate = newSendDate.UTC()
+					now := time.Now().UTC()
+
+					if newSendDate.Before(now) {
+						newSendDate = newSendDate.Add(24 * time.Hour)
+					}
+
+					r.SendDate = newSendDate
+
+					if !c.SendByDate.IsZero() && newSendDate.After(c.SendByDate) {
+						r.Status = STATUS_CANCELLED
+					} else {
+						log.Infof(
+							"The send time (%s) of email (%s) is not within campaign's (%d) business time (%s - %s %s) - re-scheduled to %s\n",
+							sendDate.Format(time.RFC3339), t.Email, c.Id, c.StartTime, c.EndTime, c.TimeZone, newSendDate.Format(time.RFC3339),
+						)
+					}
+				}
+			}
+
 			if r.SendDate.Before(c.CreatedDate) || r.SendDate.Equal(c.CreatedDate) {
 				r.Status = STATUS_SENDING
 			}
@@ -827,7 +855,12 @@ func PostCampaign(c *Campaign, uid int64) (err error) {
 				}).Error(err)
 			}
 			c.Results = append(c.Results, *r)
-			log.Infof("Creating maillog for %s to send at %s\n", r.Email, sendDate)
+
+			if r.Status == STATUS_CANCELLED {
+				continue
+			}
+
+			log.Infof("Creating maillog for %s to send at %s\n", r.Email, r.SendDate)
 			err = GenerateMailLog(c, r, sendDate)
 			if err != nil {
 				log.Error(err)
