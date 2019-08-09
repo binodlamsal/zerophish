@@ -215,6 +215,8 @@
     var isSubscribed = {{.Subscribed}};
     var _role = {{.Role}};
     var _domain = (_role == "partner" || _role == "child_user") ? {{.User.Domain}} : "";
+    var _partner = _role == "child_user" ? {{.User.Partner}} : 0;
+    var _child_user_ids = _role == "partner" ? {{.ChildUserIds}} : [];
 </script>
 <script src="/js/dist/app/users.min.js"></script>
 {{end}}
