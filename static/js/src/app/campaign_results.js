@@ -24,6 +24,9 @@ var statuses = {
   Completed: {
     label: "label-success"
   },
+  Cancelled: {
+    label: "label-info"
+  },
   "Email Opened": {
     color: "#f9bf3b",
     label: "label-warning",

@@ -442,12 +442,13 @@ func Templates(w http.ResponseWriter, r *http.Request) {
 func Users(w http.ResponseWriter, r *http.Request) {
 	// Example of using session - will be removed.
 	params := struct {
-		User       models.User
-		Subscribed bool
-		Role       string
-		Title      string
-		Flashes    []interface{}
-		Token      string
+		User         models.User
+		ChildUserIds []int64
+		Subscribed   bool
+		Role         string
+		Title        string
+		Flashes      []interface{}
+		Token        string
 	}{
 		Title: "Users & Groups",
 		User:  ctx.Get(r, "user").(models.User),
@@ -466,6 +467,19 @@ func Users(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params.Role = role.Name()
+
+	if params.Role == "child_user" {
+		if partner, err := models.GetUser(params.User.Partner); err == nil {
+			params.User.Domain = partner.Domain
+		}
+	}
+
+	if params.Role == "partner" {
+		if cuids, err := models.GetChildUserIds(params.User.Id); err == nil {
+			params.ChildUserIds = cuids
+		}
+	}
+
 	getTemplate(r, w, "users").ExecuteTemplate(w, "base", params)
 }
 

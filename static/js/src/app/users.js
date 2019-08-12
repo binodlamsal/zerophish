@@ -175,8 +175,30 @@ function edit(e) {
     done: function(e, a) {
       var skipped = 0;
 
+      var group = groups.find(function(g) {
+        return g.id == groupId;
+      });
+
       $.each(a.result, function(e, a) {
-        if (a.email.endsWith(_domain)) {
+        if (
+          a.email.endsWith(_domain) ||
+          (_role == "child_user" &&
+            ((groupId == -1 &&
+              $("#creator")
+                .find(":selected")
+                .val()) ||
+              (group &&
+                group.user_id !== _partner &&
+                group.username !== user.username))) ||
+          (_role == "partner" &&
+            ((groupId == -1 &&
+              $("#creator")
+                .find(":selected")
+                .val()) ||
+              (group &&
+                group.username !== user.username &&
+                !_child_user_ids.includes(group.user_id))))
+        ) {
           addTarget(a.first_name, a.last_name, a.email, a.position);
         } else {
           skipped++;
@@ -434,7 +456,15 @@ $(document).ready(function() {
       return g.id == groupId;
     });
 
-    var isOwner = groupId == -1 || (group && group.username === user.username);
+    var isOwner =
+      groupId == -1 ||
+      (group &&
+        _role == "child_user" &&
+        (group.username === user.username || group.user_id == _partner)) ||
+      (group &&
+        _role == "partner" &&
+        (group.username === user.username ||
+          _child_user_ids.includes(group.user_id)));
 
     if (
       !$("#creator")

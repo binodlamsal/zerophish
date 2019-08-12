@@ -56,7 +56,7 @@ function launch() {
               ? $("#end_time").val()
               : "",
             time_zone: $("#during_certain_hours_checkbox").prop("checked")
-              ? $("#time_zone").select2("data")[0].text
+              ? $("#time_zone").val()
               : "",
             remove_non_clickers: $("#remove_nonclickers_checkbox").prop(
               "checked"
@@ -575,6 +575,12 @@ $(document).ready(function() {
       placeholder: "Select Timezone",
       data: moment.tz.names()
     });
+
+    if (_timezone) {
+      $("#time_zone")
+        .val(_timezone)
+        .trigger("change");
+    }
   }, 1000);
 
   $("#launch_date").datetimepicker({

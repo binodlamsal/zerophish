@@ -36,6 +36,7 @@ const (
 	STATUS_UNKNOWN       string = "Unknown"
 	STATUS_SCHEDULED     string = "Scheduled"
 	STATUS_RETRY         string = "Retrying"
+	STATUS_CANCELLED     string = "Cancelled"
 	ERROR                string = "Error"
 )
 
