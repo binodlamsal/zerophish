@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/everycloud-technologies/phishing-simulation/encryption"
 	"github.com/everycloud-technologies/phishing-simulation/job"
 
 	"github.com/PuerkitoBio/goquery"
@@ -37,9 +38,9 @@ import (
 // Worker is the worker that processes phishing events and updates campaigns.
 var Worker *worker.Worker
 
-func init() {
-	Worker = worker.New()
-	go Worker.Start()
+// SetWorker sets worker instance
+func SetWorker(w *worker.Worker) {
+	Worker = w
 }
 
 // API (/api/reset) resets a user's API key
@@ -47,7 +48,7 @@ func API_Reset(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case r.Method == "POST":
 		u := ctx.Get(r, "user").(models.User)
-		u.ApiKey = util.GenerateSecureKey()
+		u.ApiKey = encryption.EncryptedString{util.GenerateSecureKey()}
 		err := models.PutUser(&u)
 		if err != nil {
 			http.Error(w, "Error setting API Key", http.StatusInternalServerError)
@@ -253,7 +254,7 @@ func API_Users(w http.ResponseWriter, r *http.Request) {
 			uid, err := usersync.PushUser(
 				iu.Id,
 				iu.Username,
-				iu.Email, "",
+				iu.Email.String(), "",
 				ud.Password,
 				ud.Role,
 				models.GetUserBakeryID(ud.Partner),
@@ -284,7 +285,7 @@ func API_Users(w http.ResponseWriter, r *http.Request) {
 				partner = true
 			}
 
-			notifier.SendWelcomeEmail(iu.Email, iu.FullName, iu.Username, partner)
+			notifier.SendWelcomeEmail(iu.Email.String(), iu.FullName, iu.Username, partner)
 		}
 
 		JSONResponse(w, models.Response{Success: true, Message: "User has been created"}, http.StatusOK)
@@ -372,7 +373,7 @@ func API_Users_Id(w http.ResponseWriter, r *http.Request) {
 	}
 	switch {
 	case r.Method == "GET":
-		JSONResponse(w, c, http.StatusOK)
+		JSONResponse(w, &c, http.StatusOK)
 
 	case r.Method == "DELETE":
 		buid, err := models.DeleteUser(id)
@@ -939,8 +940,8 @@ func API_Groups_Id_LMS(w http.ResponseWriter, r *http.Request) {
 
 			for i, t := range targets {
 				fullname := t.FirstName + " " + t.LastName
-				username := util.GenerateUsername(fullname, t.Email)
-				u, err := models.CreateUser(username, fullname, t.Email, "qwerty", models.LMSUser, partner)
+				username := util.GenerateUsername(fullname, t.Email.String())
+				u, err := models.CreateUser(username, fullname, t.Email.String(), "qwerty", models.LMSUser, partner)
 
 				if err != nil {
 					j.Progress <- calcProgress(i, len(targets))
@@ -952,7 +953,7 @@ func API_Groups_Id_LMS(w http.ResponseWriter, r *http.Request) {
 					buid, err := usersync.PushUser(
 						u.Id,
 						u.Username,
-						u.Email,
+						u.Email.String(),
 						u.FullName,
 						"qwerty",
 						models.LMSUser,
@@ -1008,7 +1009,7 @@ func API_Groups_Id_LMS(w http.ResponseWriter, r *http.Request) {
 			}
 
 			for i, t := range targets {
-				u, err := models.GetUserByUsername(t.Email)
+				u, err := models.GetUserByUsername(t.Email.String())
 
 				if err != nil {
 					j.Progress <- calcProgress(i, len(targets))
@@ -1886,7 +1887,7 @@ func API_User(w http.ResponseWriter, r *http.Request) {
 
 				if u.Partner != 0 {
 					if partner, err := models.GetUser(u.Partner); err == nil {
-						partnerAddr = partner.Email
+						partnerAddr = partner.Email.String()
 						partnerName = partner.FullName
 					}
 				}
@@ -1993,7 +1994,7 @@ func API_UserSync(w http.ResponseWriter, r *http.Request) {
 			&models.User{
 				Id:       u.Id,
 				Username: props.Username,
-				Email:    props.Email,
+				Email:    encryption.EncryptedString{props.Email},
 				FullName: props.FullName,
 				Domain:   props.Domain,
 				Partner:  props.Partner,
@@ -2083,14 +2084,14 @@ func API_PhishAlarm(w http.ResponseWriter, r *http.Request) {
 
 	to := u.Email
 
-	if u.AdminEmail != "" {
+	if u.AdminEmail.String() != "" {
 		to = u.AdminEmail
 	}
 
-	notifier.SendPhishAlarmEmail(to, props.From, props.ID, props.Subject, props.Body)
+	notifier.SendPhishAlarmEmail(to.String(), props.From, props.ID, props.Subject, props.Body)
 
 	LoggableJSONResponse(w,
-		models.Response{Success: true, Message: "Phish alarm e-mail sent to " + to},
+		models.Response{Success: true, Message: "Phish alarm e-mail sent to " + to.String()},
 		http.StatusOK, "phishalarm.POST ->")
 }
 
