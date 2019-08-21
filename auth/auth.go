@@ -488,7 +488,7 @@ func UpdateSettingsByAdmin(r *http.Request) error {
 						return err
 					}
 				} else {
-					err = models.DeleteSubscription(s.Id)
+					err = models.DeleteSubscription(s)
 
 					if err != nil {
 						return err
