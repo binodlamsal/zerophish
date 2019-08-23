@@ -283,7 +283,7 @@ func UpdateSettings(r *http.Request) error {
 			a = &models.Avatar{UserId: u.Id, Data: r.Form.Get("avatar")}
 		} else {
 			if r.Form.Get("avatar") == "DELETE" {
-				return models.DeleteAvatar(a.Id)
+				return models.DeleteAvatar(a)
 			}
 
 			a.Data = r.Form.Get("avatar")

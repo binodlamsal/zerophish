@@ -769,18 +769,21 @@ func GetUserRole(uid int64) (UserRole, error) {
 
 // DeleteUserRoles deletes all roles of a given uid
 func DeleteUserRoles(uid int64) error {
+	GetCache().DeleteEntry("user", uid, "role")
 	err = db.Delete(UserRole{}, "uid = ?", uid).Error
 	return err
 }
 
 // DeleteUserSubscriptions deletes all subscriptions of a given uid
 func DeleteUserSubscriptions(uid int64) error {
+	GetCache().DeleteEntry("user", uid, "subscription")
 	err = db.Delete(Subscription{}, "user_id = ?", uid).Error
 	return err
 }
 
 // DeleteUserAvatar deletes avatar of a given uid
 func DeleteUserAvatar(uid int64) error {
+	GetCache().DeleteEntry("user", uid, "avatar")
 	err = db.Delete(Avatar{}, "user_id = ?", uid).Error
 	return err
 }
@@ -924,8 +927,6 @@ func (u *User) BeforeUpdate(scope *gorm.Scope) error {
 		}
 	}
 
-	GetCache().DeleteEntry("user", u.Id, "avatar")
-	GetCache().DeleteEntry("user", u.Id, "role")
 	return nil
 }
 

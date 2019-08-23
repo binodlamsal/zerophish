@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"time"
 
 	log "github.com/everycloud-technologies/phishing-simulation/logger"
 	gcache "github.com/patrickmn/go-cache"
@@ -12,6 +13,7 @@ import (
 var cache *Cache
 var logOps bool
 var disable bool
+var ttl time.Duration
 
 // Cache wrapper around go-cache
 type Cache struct {
@@ -19,7 +21,14 @@ type Cache struct {
 }
 
 func init() {
-	cache = &Cache{gcache.New(gcache.NoExpiration, 0)}
+	ttl = gcache.NoExpiration
+
+	if minutes, err := strconv.Atoi(os.Getenv("CACHE_TTL_MINUTES")); err == nil {
+		ttl = time.Duration(minutes) * time.Minute
+		log.Infof("models.cache: TTL set to %s", ttl)
+	}
+
+	cache = &Cache{gcache.New(ttl, ttl)}
 
 	if os.Getenv("CACHE_DISABLE") != "" {
 		disable = true
@@ -28,6 +37,20 @@ func init() {
 	if os.Getenv("CACHE_LOG_OPS") != "" {
 		logOps = true
 	}
+
+	cache.c.OnEvicted(func(key string, val interface{}) {
+		if logOps {
+			log.Infof("models.cache: auto-delete %s", key)
+		}
+	})
+
+	ticker := time.NewTicker(5 * time.Minute)
+
+	go func() {
+		for _ = range ticker.C {
+			log.Infof("models.cache: items: %d", cache.c.ItemCount())
+		}
+	}()
 }
 
 // GetCache returns singleton instance of the model cache

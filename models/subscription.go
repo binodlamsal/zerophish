@@ -5,7 +5,6 @@ import (
 	"time"
 
 	log "github.com/everycloud-technologies/phishing-simulation/logger"
-	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 )
 
@@ -87,11 +86,6 @@ func (s *Subscription) ChangeExpirationDate(expDate time.Time) error {
 }
 
 func (s *Subscription) BeforeSave() error {
-	GetCache().DeleteUserSubscription(s)
-	return nil
-}
-
-func (s *Subscription) BeforeUpdate(scope *gorm.Scope) error {
 	GetCache().DeleteUserSubscription(s)
 	return nil
 }
