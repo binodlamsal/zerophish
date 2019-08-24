@@ -5,6 +5,7 @@ function save(e) {
   (a.name = $("#name").val()),
     (a.tag = parseInt($("#category").val())),
     (a.public = $("#publicly_available").prop("checked")),
+    (a.shared = $("#shared").prop("checked")),
     (editor = CKEDITOR.instances.html_editor),
     (a.html = editor.getData()),
     (a.capture_credentials = false),
@@ -73,6 +74,7 @@ function edit(e) {
     $("#name").val(a.name),
     $("#html_editor").val(a.html),
     $("#publicly_available").prop("checked", a.public),
+    $("#shared").prop("checked", a.shared),
     $("#redirect_url_input").val(a.redirect_url));
 
   $("#category.form-control").val(a.tag);

@@ -27,6 +27,7 @@ type Template struct {
 	Tags          Tags         `json:"tags"`
 	DefaultPageId int64        `json:"default_page_id" gorm:"column:default_page_id"`
 	Public        bool         `json:"public" gorm:"column:public"`
+	Shared        bool         `json:"shared" gorm:"column:shared"`
 	ModifiedDate  time.Time    `json:"modified_date"`
 	Attachments   []Attachment `json:"attachments"`
 	Writable      bool         `json:"writable" gorm:"-"`
@@ -179,14 +180,18 @@ func IsTemplateAccessibleByUser(tid, uid int64) bool {
 		return true
 	}
 
-	uids, err := GetUserIds(uid)
+	u, err := GetUser(uid)
 
 	if err != nil {
 		log.Error(err)
 		return false
 	}
 
-	u, err := GetUser(uid)
+	if t.Shared && oid == u.Partner {
+		return true
+	}
+
+	uids, err := GetUserIds(uid)
 
 	if err != nil {
 		log.Error(err)
@@ -311,7 +316,26 @@ func GetTemplates(uid int64, filter string) ([]Template, error) {
 			}
 		}
 	} else if filter == "public" {
-		query = query.Where("public = ?", 1)
+		if role.Is(Customer) && user.Partner != 0 {
+			creators := []int64{}
+			partner, err := GetUser(user.Partner)
+
+			if err != nil {
+				return ts, err
+			}
+
+			cids, err := GetChildUserIds(partner.Id)
+
+			if err != nil {
+				return ts, err
+			}
+
+			creators = append(creators, partner.Id)
+			creators = append(creators, cids...)
+			query = query.Where("public = 1 OR (shared = 1 AND user_id IN (?))", creators)
+		} else {
+			query = query.Where("public = 1")
+		}
 	} else if strings.HasPrefix(filter, "public-and-uid-") {
 		uid, err := strconv.Atoi(strings.TrimPrefix(filter, "public-and-uid-"))
 
@@ -538,6 +562,18 @@ func PutTemplate(t *Template) error {
 		log.Error(err)
 		return err
 	}
+
+	// Update boolean fields separately (reason: http://jinzhu.me/gorm/crud.html#update)
+	err = db.Model(&t).Updates(map[string]interface{}{
+		"public": t.Public,
+		"shared": t.Shared,
+	}).Error
+
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
 	return nil
 }
 
