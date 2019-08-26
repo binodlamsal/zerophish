@@ -10,6 +10,7 @@ function save(e) {
   t.name = $("#name").val();
   t.tag = parseInt($("#category").val());
   t.public = $("#publicly_available").prop("checked");
+  t.shared = $("#shared").prop("checked");
   t.subject = $("#subject").val();
   t.rating = parseInt($("input[name=stars]:checked").val());
   t.html = CKEDITOR.instances.html_editor.getData();
@@ -169,6 +170,7 @@ function edit(e) {
     ((t = templates[e]),
     $("#modal .modal-title").html("EDIT TEMPLATE"),
     $("#publicly_available").prop("checked", t.public),
+    $("#shared").prop("checked", t.shared),
     $("#name").val(t.name),
     $("#from_address").val(t.from_address),
     $("#subject").val(t.subject),

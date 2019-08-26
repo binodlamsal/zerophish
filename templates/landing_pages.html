@@ -120,10 +120,21 @@
                          <label for="publicly_available" class="checkbx">
                             <input id="publicly_available" type="checkbox">
                             <span class="checkbox-btn"><img src="images/tick.png" alt=""></span> Publicly available <i class="fa fa-question-circle"
-                            data-toggle="tooltip" data-placement="right" title="Check this box it you’d like to make this template available to
-                            your all your customers or leave it unticked to use just in your own account.”"></i>
+                            data-toggle="tooltip" data-placement="right" title="Check this box if you’d like to make this template available to
+                            all users or leave it unticked to use just in your own account.”"></i>
                         </label>
                     </div>
+                    {{end}}
+
+                    {{if or (eq .Role "partner") (eq .Role "child_user")}}
+                    <div class="checkbox checkbox-primary">
+                        <label for="shared" class="checkbx">
+                           <input id="shared" type="checkbox">
+                           <span class="checkbox-btn"><img src="images/tick.png" alt=""></span> Shared <i class="fa fa-question-circle"
+                           data-toggle="tooltip" data-placement="right" title="Check this box if you’d like to make this template available to
+                           your all your customers or leave it unticked to use just in your own account.”"></i>
+                       </label>
+                   </div>
                     {{end}}
                 </div>
                 <div id="redirect_url">
