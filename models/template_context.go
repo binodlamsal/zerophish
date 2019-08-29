@@ -6,6 +6,8 @@ import (
 	"net/url"
 	"path"
 	"text/template"
+
+	"github.com/everycloud-technologies/phishing-simulation/encryption"
 )
 
 // TemplateContext is an interface that allows both campaigns and email
@@ -104,7 +106,7 @@ func ValidateTemplate(text string) error {
 	}
 	td := Result{
 		BaseRecipient: BaseRecipient{
-			Email:     "foo@bar.com",
+			Email:     encryption.EncryptedString{"foo@bar.com"},
 			FirstName: "Foo",
 			LastName:  "Bar",
 			Position:  "Test",

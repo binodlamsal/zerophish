@@ -703,10 +703,13 @@ function load(filter) {
                   a.stats.clicked +
                   "<br><br>Submitted Credentials: " +
                   a.stats.submitted_data +
-                  "<br><br>Errors : " +
+                  "<br><br>Errors: " +
                   a.stats.error +
-                  "Reported : " +
-                  a.stats.reported;
+                  "<br><br>Reported: " +
+                  a.stats.email_reported +
+                  "<br><br>Phish Risk: " +
+                  Math.round((a.stats.clicked / a.stats.total) * 100) +
+                  "%";
               }
               campaignTable.row
                 .add([

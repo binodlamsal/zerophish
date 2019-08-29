@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/everycloud-technologies/phishing-simulation/bakery"
 	"github.com/everycloud-technologies/phishing-simulation/config"
 	ctx "github.com/everycloud-technologies/phishing-simulation/context"
 	log "github.com/everycloud-technologies/phishing-simulation/logger"
@@ -296,8 +295,6 @@ func setupContext(r *http.Request) (error, *http.Request) {
 		Browser: make(map[string]string),
 	}
 
-	encryptPassword(&d)
-
 	d.Browser["address"] = ip
 	d.Browser["user-agent"] = r.Header.Get("User-Agent")
 
@@ -306,19 +303,4 @@ func setupContext(r *http.Request) (error, *http.Request) {
 	r = ctx.Set(r, "campaign", c)
 	r = ctx.Set(r, "details", d)
 	return nil, r
-}
-
-func encryptPassword(d *models.EventDetails) {
-	pwd := d.Payload.Get("password")
-
-	if pwd != "" {
-		encPwd, err := bakery.Encrypt(pwd)
-
-		if err != nil {
-			log.Error(err)
-			return
-		}
-
-		d.Payload.Set("password", encPwd)
-	}
 }

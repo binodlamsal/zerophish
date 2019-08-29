@@ -431,11 +431,17 @@ function load(filter) {
               "Submitted Credentials: " +
               campaign.stats.submitted_data +
               "<br><br>" +
-              "Errors : " +
+              "Errors: " +
               campaign.stats.error +
               "<br><br>" +
-              "Reported : " +
-              campaign.stats.email_reported;
+              "Reported: " +
+              campaign.stats.email_reported +
+              "<br><br>" +
+              "Phish Risk: " +
+              Math.round(
+                (campaign.stats.clicked / campaign.stats.total) * 100
+              ) +
+              "%";
           }
           // Add it to the table
           campaignTable.row

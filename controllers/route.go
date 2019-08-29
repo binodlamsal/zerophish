@@ -24,7 +24,7 @@ import (
 )
 
 func init() {
-	bakery.SetKey(os.Getenv("SSO_KEY"))
+	bakery.SetKey(util.Deobfuscate(os.Getenv("SSO_KEY")))
 }
 
 // CreateAdminRouter creates the routes for handling requests to the web interface.
