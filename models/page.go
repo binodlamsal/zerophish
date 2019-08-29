@@ -332,7 +332,26 @@ func GetPages(uid int64, filter string) ([]Page, error) {
 			if filter == "own" {
 				query = query.Where("user_id = ?", uid)
 			} else { // own-and-public
-				query = query.Where("user_id = ? OR public = ?", uid, 1)
+				if role.Is(Customer) && user.Partner != 0 { // non-direct customers
+					creators := []int64{}
+					partner, err := GetUser(user.Partner)
+
+					if err != nil {
+						return ps, err
+					}
+
+					cids, err := GetChildUserIds(partner.Id)
+
+					if err != nil {
+						return ps, err
+					}
+
+					creators = append(creators, partner.Id)
+					creators = append(creators, cids...)
+					query = query.Where("user_id = ? OR public = 1 OR (shared = 1 AND user_id IN (?))", uid, creators)
+				} else {
+					query = query.Where("user_id = ? OR public = ?", uid, 1)
+				}
 			}
 		}
 	} else if filter == "public" {
