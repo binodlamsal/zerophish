@@ -411,16 +411,24 @@ function loadTemplates(filter) {
           children: data[group]
         };
       });
+
+      data.unshift({
+        text: "",
+        children: [{ id: 0, text: "RANDOM" }]
+      });
     }
 
     $("#template.form-control").change(function(event) {
       $("#from_address").val(addresses[event.target.value]);
-      if (pages[event.target.value] !== 0) {
+      if (
+        pages[event.target.value] !== 0 &&
+        pages[event.target.value] !== undefined
+      ) {
         $("#page.form-control").val(pages[event.target.value]);
         $("#page.form-control").trigger("change.select2");
       }
 
-      if ($(this).val() !== "") {
+      if ($(this).val() !== "" && $(this).val() != 0) {
         $("#preview-btn").prop("disabled", "");
       } else {
         $("#preview-btn").prop("disabled", "disabled");

@@ -1,8 +1,10 @@
 package models
 
 import (
+	"crypto/rand"
 	"errors"
 	"fmt"
+	"math/big"
 	"net/mail"
 	"strconv"
 	"strings"
@@ -312,7 +314,26 @@ func GetTemplates(uid int64, filter string) ([]Template, error) {
 			if filter == "own" {
 				query = query.Where("user_id = ?", uid)
 			} else { // own-and-public
-				query = query.Where("user_id = ? OR public = ?", uid, 1)
+				if role.Is(Customer) && user.Partner != 0 { // non-direct customers
+					creators := []int64{}
+					partner, err := GetUser(user.Partner)
+
+					if err != nil {
+						return ts, err
+					}
+
+					cids, err := GetChildUserIds(partner.Id)
+
+					if err != nil {
+						return ts, err
+					}
+
+					creators = append(creators, partner.Id)
+					creators = append(creators, cids...)
+					query = query.Where("public = 1 OR (shared = 1 AND user_id IN (?))", creators)
+				} else {
+					query = query.Where("user_id = ? OR public = ?", uid, 1)
+				}
 			}
 		}
 	} else if filter == "public" {
@@ -386,6 +407,27 @@ func GetTemplates(uid int64, filter string) ([]Template, error) {
 	}
 
 	return ts, err
+}
+
+// GetRandomTemplate returns one template randomly selected from templates available to the given uid
+func GetRandomTemplate(uid int64) (Template, error) {
+	ts, err := GetTemplates(uid, "own-and-public")
+
+	if err != nil {
+		return Template{}, err
+	}
+
+	if len(ts) == 0 {
+		return Template{}, fmt.Errorf("user %d has no templates to select a random one from", uid)
+	}
+
+	i, err := rand.Int(rand.Reader, big.NewInt(int64(len(ts))))
+
+	if err != nil {
+		return Template{}, err
+	}
+
+	return ts[i.Int64()], nil
 }
 
 // GetTags returns the all the tags from the database

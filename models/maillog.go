@@ -151,6 +151,17 @@ func (m *MailLog) Generate(msg *gomail.Message) error {
 		return err
 	}
 
+	if c.TemplateId == 0 {
+		t, err := GetRandomTemplate(c.UserId)
+
+		if err != nil {
+			return err
+		}
+
+		c.Template = t
+		log.Infof("selected random template: %s", t.Name)
+	}
+
 	var from *mail.Address
 
 	if from, err = mail.ParseAddress(c.FromAddress); err != nil {
