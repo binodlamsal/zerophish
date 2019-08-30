@@ -434,6 +434,12 @@ func GetPage(id int64) (Page, error) {
 // GetPageByName returns the page, if it exists, specified by the given name and user_id.
 func GetPageByName(n string, uid int64) (Page, error) {
 	p := Page{}
+	u, err := GetUser(uid)
+
+	if err != nil {
+		return p, err
+	}
+
 	role, err := GetUserRole(uid)
 
 	if err != nil {
@@ -445,12 +451,6 @@ func GetPageByName(n string, uid int64) (Page, error) {
 			return p, gorm.ErrRecordNotFound
 		}
 	} else if role.IsOneOf([]int64{Partner, ChildUser}) {
-		u, err := GetUser(uid)
-
-		if err != nil {
-			return p, err
-		}
-
 		partner := u.Partner
 
 		if role.Is(Partner) {
@@ -472,11 +472,38 @@ func GetPageByName(n string, uid int64) (Page, error) {
 			return p, gorm.ErrRecordNotFound
 		}
 	} else { // customer
-		if db.
-			Where("user_id=? and name=?", uid, n).
-			Or("public = ? and name=?", 1, n).
-			First(&p).RecordNotFound() {
-			return p, gorm.ErrRecordNotFound
+		if u.Partner != 0 { // non-direct customers
+			creators := []int64{}
+			partner, err := GetUser(u.Partner)
+
+			if err != nil {
+				return p, err
+			}
+
+			cids, err := GetChildUserIds(partner.Id)
+
+			if err != nil {
+				return p, err
+			}
+
+			creators = append(creators, partner.Id)
+			creators = append(creators, cids...)
+
+			if db.
+				Where(
+					"name = ? AND (user_id = ? OR public = 1 OR (shared = 1 AND user_id IN (?)))",
+					n, uid, creators,
+				).
+				First(&p).RecordNotFound() {
+				return p, gorm.ErrRecordNotFound
+			}
+		} else {
+			if db.
+				Where("user_id=? and name=?", uid, n).
+				Or("public = ? and name=?", 1, n).
+				First(&p).RecordNotFound() {
+				return p, gorm.ErrRecordNotFound
+			}
 		}
 	}
 
