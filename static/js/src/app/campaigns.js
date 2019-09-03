@@ -34,6 +34,7 @@ function launch() {
             name: $("#name").val(),
             from_address: $("#from_address").val(),
             template: {
+              id: parseInt($("#template").select2("data")[0].id),
               name: $("#template").select2("data")[0].text
             },
             url: $("#url").val(),
@@ -406,15 +407,19 @@ function loadTemplates(filter) {
         }, {});
 
       data = Object.keys(data).map(function(group) {
+        children = data[group];
+
+        if (children.length > 1) {
+          children.unshift({
+            id: 1000000 + children[0].category.id,
+            text: "RANDOM (" + children[0].category.name + ")"
+          });
+        }
+
         return {
           text: group,
-          children: data[group]
+          children: children
         };
-      });
-
-      data.unshift({
-        text: "",
-        children: [{ id: 0, text: "RANDOM" }]
       });
     }
 

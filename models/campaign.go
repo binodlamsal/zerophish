@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/everycloud-technologies/phishing-simulation/encryption"
@@ -210,7 +211,7 @@ func (c *Campaign) getDetails() error {
 		return err
 	}
 
-	if c.TemplateId != 0 {
+	if c.TemplateId != 0 && c.TemplateId < 1000000 {
 		err = db.Table("templates").Where("id=?", c.TemplateId).Find(&c.Template).Error
 		if err != nil {
 			if err != gorm.ErrRecordNotFound {
@@ -739,7 +740,7 @@ func PostCampaign(c *Campaign, uid int64) (err error) {
 		return errors.New("User group is empty")
 	}
 
-	if c.Template.Name != "RANDOM" {
+	if !strings.HasPrefix(c.Template.Name, "RANDOM") {
 		// Check to make sure the template exists
 		t, err := GetTemplateByName(c.Template.Name, uid)
 		if err == gorm.ErrRecordNotFound {
@@ -754,6 +755,7 @@ func PostCampaign(c *Campaign, uid int64) (err error) {
 		c.Template = t
 		c.TemplateId = t.Id
 	} else {
+		c.TemplateId = c.Template.Id
 		c.Template = Template{}
 	}
 
