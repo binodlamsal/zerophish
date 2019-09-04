@@ -276,6 +276,7 @@ func RandomString(length int) string {
 	}
 
 	return string(b)
+}
 
 // Reverse reverses given string
 func Reverse(s string) string {
