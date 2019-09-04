@@ -283,7 +283,7 @@ func UpdateSettings(r *http.Request) error {
 			a = &models.Avatar{UserId: u.Id, Data: r.Form.Get("avatar")}
 		} else {
 			if r.Form.Get("avatar") == "DELETE" {
-				return models.DeleteAvatar(a.Id)
+				return models.DeleteAvatar(a)
 			}
 
 			a.Data = r.Form.Get("avatar")
@@ -488,7 +488,7 @@ func UpdateSettingsByAdmin(r *http.Request) error {
 						return err
 					}
 				} else {
-					err = models.DeleteSubscription(s.Id)
+					err = models.DeleteSubscription(s)
 
 					if err != nil {
 						return err

@@ -647,7 +647,8 @@ function load() {
         { targets: 4, orderData: 6 },
         { targets: 6, visible: false }
       ],
-      order: [[4, "desc"]]
+      order: [[4, "desc"]],
+      deferRender: true
     });
   } else {
     peopleTable.clear();
@@ -744,9 +745,8 @@ function load() {
               if (isOwner) {
                 $(row.node()).addClass("table-info");
               }
-
-              row.draw();
-            }))
+            }),
+            peopleTable.draw())
           : $("#emptyMessage").show();
     })
     .error(function() {

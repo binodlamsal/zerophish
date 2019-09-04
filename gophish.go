@@ -203,6 +203,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	if os.Getenv("CACHE_DISABLE") == "" {
+		models.WarmUpCache()
+	}
+
 	w := worker.New()
 	controllers.SetWorker(w)
 	go w.Start()

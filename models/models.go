@@ -126,3 +126,20 @@ func Setup() error {
 	}
 	return nil
 }
+
+// WarmUpCache pre-caches frequently used models and associations
+func WarmUpCache() {
+	log.Info("Warming up cache...")
+	users := []User{}
+	err = db.Order("id asc").Find(&users).Error
+
+	if err != nil {
+		log.Error(err)
+	}
+
+	for _, user := range users {
+		_, _ = GetUserRole(user.Id)
+		_ = user.GetAvatar()
+		_ = user.GetSubscription()
+	}
+}
