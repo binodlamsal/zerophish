@@ -12,6 +12,7 @@ import (
 	"io"
 	"io/ioutil"
 	"math/big"
+	mrand "math/rand"
 	"net/http"
 	"net/mail"
 	"os"
@@ -263,6 +264,18 @@ func IsValidDomain(domain string) bool {
 		MustCompile(`^(([a-zA-Z]{1})|([a-zA-Z]{1}[a-zA-Z]{1})|([a-zA-Z]{1}[0-9]{1})|([0-9]{1}[a-zA-Z]{1})|([a-zA-Z0-9][a-zA-Z0-9-_]{1,61}[a-zA-Z0-9]))\.([a-zA-Z]{2,6}|[a-zA-Z0-9-]{2,30}\.[a-zA-Z]{2,24})$`).
 		MatchString(domain)
 }
+
+// RandomString returns random string of the given length
+func RandomString(length int) string {
+	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	mrand.Seed(time.Now().UnixNano())
+	b := make([]byte, length)
+
+	for i := range b {
+		b[i] = letters[mrand.Intn(len(letters))]
+	}
+
+	return string(b)
 
 // Reverse reverses given string
 func Reverse(s string) string {

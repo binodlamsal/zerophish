@@ -1081,6 +1081,10 @@ func (e *Event) AfterCreate(tx *gorm.DB) error {
 	fullname := GetTargetsFullName(e.Email.String(), coid)
 	username := util.GenerateUsername(fullname, e.Email.String())
 
+	if UserExists(username) {
+		username = username + strings.ToLower(util.RandomString(3))
+	}
+
 	u, err := CreateUser(
 		username, fullname,
 		e.Email.String(), "qwerty", LMSUser, partner,

@@ -940,7 +940,12 @@ func API_Groups_Id_LMS(w http.ResponseWriter, r *http.Request) {
 
 			for i, t := range targets {
 				fullname := t.FirstName + " " + t.LastName
-				username := util.GenerateUsername(fullname, t.Email.String())
+				username := util.GenerateUsername(fullname, t.Email)
+
+				if models.UserExists(username) {
+					username = username + strings.ToLower(util.RandomString(3))
+				}
+
 				u, err := models.CreateUser(username, fullname, t.Email.String(), "qwerty", models.LMSUser, partner)
 
 				if err != nil {

@@ -151,6 +151,15 @@ func (ur UserRole) IsOneOf(rids []int64) bool {
 	return false
 }
 
+// UserExists tells if a user with the given username exists
+func UserExists(username string) bool {
+	if _, err := GetUserByUsername(username); err == nil {
+		return true
+	}
+
+	return false
+}
+
 // GetUser returns the user that the given id corresponds to. If no user is found, an
 // error is thrown.
 func GetUser(id int64) (User, error) {
