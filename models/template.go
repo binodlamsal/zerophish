@@ -330,7 +330,7 @@ func GetTemplates(uid int64, filter string) ([]Template, error) {
 
 					creators = append(creators, partner.Id)
 					creators = append(creators, cids...)
-					query = query.Where("public = 1 OR (shared = 1 AND user_id IN (?))", creators)
+					query = query.Where("user_id = ? OR public = 1 OR (shared = 1 AND user_id IN (?))", uid, creators)
 				} else {
 					query = query.Where("user_id = ? OR public = ?", uid, 1)
 				}
@@ -409,8 +409,9 @@ func GetTemplates(uid int64, filter string) ([]Template, error) {
 	return ts, err
 }
 
-// GetRandomTemplate returns one template randomly selected from templates available to the given uid
-func GetRandomTemplate(uid int64) (Template, error) {
+// GetRandomTemplate returns one template randomly selected from templates
+// available to the given uid that belong to the given category id
+func GetRandomTemplate(uid, cid int64) (Template, error) {
 	ts, err := GetTemplates(uid, "own-and-public")
 
 	if err != nil {
@@ -421,13 +422,25 @@ func GetRandomTemplate(uid int64) (Template, error) {
 		return Template{}, fmt.Errorf("user %d has no templates to select a random one from", uid)
 	}
 
-	i, err := rand.Int(rand.Reader, big.NewInt(int64(len(ts))))
+	tsInCat := []Template{}
+
+	for _, t := range ts {
+		if t.TagsId == cid {
+			tsInCat = append(tsInCat, t)
+		}
+	}
+
+	if len(tsInCat) == 0 {
+		return Template{}, fmt.Errorf("user %d has no templates in category %d to select a random one from", uid, cid)
+	}
+
+	i, err := rand.Int(rand.Reader, big.NewInt(int64(len(tsInCat))))
 
 	if err != nil {
 		return Template{}, err
 	}
 
-	return ts[i.Int64()], nil
+	return tsInCat[i.Int64()], nil
 }
 
 // GetTags returns the all the tags from the database

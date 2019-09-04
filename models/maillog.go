@@ -151,8 +151,9 @@ func (m *MailLog) Generate(msg *gomail.Message) error {
 		return err
 	}
 
-	if c.TemplateId == 0 {
-		t, err := GetRandomTemplate(c.UserId)
+	if c.TemplateId > 1000000 {
+		cid := c.TemplateId - 1000000
+		t, err := GetRandomTemplate(c.UserId, cid)
 
 		if err != nil {
 			return err
