@@ -1,8 +1,10 @@
 package models
 
 import (
+	"crypto/rand"
 	"errors"
 	"fmt"
+	"math/big"
 	"net/mail"
 	"strconv"
 	"strings"
@@ -312,7 +314,26 @@ func GetTemplates(uid int64, filter string) ([]Template, error) {
 			if filter == "own" {
 				query = query.Where("user_id = ?", uid)
 			} else { // own-and-public
-				query = query.Where("user_id = ? OR public = ?", uid, 1)
+				if role.Is(Customer) && user.Partner != 0 { // non-direct customers
+					creators := []int64{}
+					partner, err := GetUser(user.Partner)
+
+					if err != nil {
+						return ts, err
+					}
+
+					cids, err := GetChildUserIds(partner.Id)
+
+					if err != nil {
+						return ts, err
+					}
+
+					creators = append(creators, partner.Id)
+					creators = append(creators, cids...)
+					query = query.Where("user_id = ? OR public = 1 OR (shared = 1 AND user_id IN (?))", uid, creators)
+				} else {
+					query = query.Where("user_id = ? OR public = ?", uid, 1)
+				}
 			}
 		}
 	} else if filter == "public" {
@@ -388,6 +409,40 @@ func GetTemplates(uid int64, filter string) ([]Template, error) {
 	return ts, err
 }
 
+// GetRandomTemplate returns one template randomly selected from templates
+// available to the given uid that belong to the given category id
+func GetRandomTemplate(uid, cid int64) (Template, error) {
+	ts, err := GetTemplates(uid, "own-and-public")
+
+	if err != nil {
+		return Template{}, err
+	}
+
+	if len(ts) == 0 {
+		return Template{}, fmt.Errorf("user %d has no templates to select a random one from", uid)
+	}
+
+	tsInCat := []Template{}
+
+	for _, t := range ts {
+		if t.TagsId == cid {
+			tsInCat = append(tsInCat, t)
+		}
+	}
+
+	if len(tsInCat) == 0 {
+		return Template{}, fmt.Errorf("user %d has no templates in category %d to select a random one from", uid, cid)
+	}
+
+	i, err := rand.Int(rand.Reader, big.NewInt(int64(len(tsInCat))))
+
+	if err != nil {
+		return Template{}, err
+	}
+
+	return tsInCat[i.Int64()], nil
+}
+
 // GetTags returns the all the tags from the database
 func GetTags(uid int64) ([]Tags, error) {
 	tg := []Tags{}
@@ -438,6 +493,11 @@ func GetTemplate(id int64) (Template, error) {
 // GetTemplateByName returns the template, if it exists, specified by the given name and user_id.
 func GetTemplateByName(n string, uid int64) (Template, error) {
 	t := Template{}
+	u, err := GetUser(uid)
+
+	if err != nil {
+		return t, err
+	}
 
 	role, err := GetUserRole(uid)
 
@@ -450,12 +510,6 @@ func GetTemplateByName(n string, uid int64) (Template, error) {
 			return t, gorm.ErrRecordNotFound
 		}
 	} else if role.IsOneOf([]int64{Partner, ChildUser}) {
-		u, err := GetUser(uid)
-
-		if err != nil {
-			return t, err
-		}
-
 		partner := u.Partner
 
 		if role.Is(Partner) {
@@ -477,11 +531,38 @@ func GetTemplateByName(n string, uid int64) (Template, error) {
 			return t, gorm.ErrRecordNotFound
 		}
 	} else { //customer
-		if db.
-			Where("user_id=? and name=?", uid, n).
-			Or("public = ? and name=?", 1, n).
-			First(&t).RecordNotFound() {
-			return t, gorm.ErrRecordNotFound
+		if u.Partner != 0 { // non-direct customers
+			creators := []int64{}
+			partner, err := GetUser(u.Partner)
+
+			if err != nil {
+				return t, err
+			}
+
+			cids, err := GetChildUserIds(partner.Id)
+
+			if err != nil {
+				return t, err
+			}
+
+			creators = append(creators, partner.Id)
+			creators = append(creators, cids...)
+
+			if db.
+				Where(
+					"name = ? AND (user_id = ? OR public = 1 OR (shared = 1 AND user_id IN (?)))",
+					n, uid, creators,
+				).
+				First(&t).RecordNotFound() {
+				return t, gorm.ErrRecordNotFound
+			}
+		} else {
+			if db.
+				Where("user_id=? and name=?", uid, n).
+				Or("public = ? and name=?", 1, n).
+				First(&t).RecordNotFound() {
+				return t, gorm.ErrRecordNotFound
+			}
 		}
 	}
 

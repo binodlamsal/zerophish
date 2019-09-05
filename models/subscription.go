@@ -27,19 +27,20 @@ func PostSubscription(s *Subscription) error {
 	return err
 }
 
-// DeleteSubscription deletes subscription specified by the given id
-func DeleteSubscription(id int64) error {
+// DeleteSubscription deletes given subscription
+func DeleteSubscription(s *Subscription) error {
 	log.WithFields(logrus.Fields{
-		"subscription_id": id,
+		"subscription_id": s.Id,
 	}).Info("Deleting subscription")
 
 	// Delete the campaign
-	err = db.Delete(&Subscription{Id: id}).Error
+	err = db.Delete(s).Error
 
 	if err != nil {
 		log.Error(err)
 	}
 
+	GetCache().DeleteUserSubscription(s)
 	return err
 }
 
@@ -82,6 +83,11 @@ func (s *Subscription) ChangeExpirationDate(expDate time.Time) error {
 	}
 
 	return err
+}
+
+func (s *Subscription) BeforeSave() error {
+	GetCache().DeleteUserSubscription(s)
+	return nil
 }
 
 // MarshalJSON is a custom JSON marshaller with support of a few computed props

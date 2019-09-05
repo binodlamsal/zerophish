@@ -151,6 +151,15 @@ func (ur UserRole) IsOneOf(rids []int64) bool {
 	return false
 }
 
+// UserExists tells if a user with the given username exists
+func UserExists(username string) bool {
+	if _, err := GetUserByUsername(username); err == nil {
+		return true
+	}
+
+	return false
+}
+
 // GetUser returns the user that the given id corresponds to. If no user is found, an
 // error is thrown.
 func GetUser(id int64) (User, error) {
@@ -545,12 +554,18 @@ func (u User) GetLogo() *Logo {
 
 // GetAvatar returns Avatar which was assigned to this user or nil
 func (u User) GetAvatar() *Avatar {
+	if a, found := GetCache().GetUserAvatar(u.Id); found {
+		return a
+	}
+
 	a := Avatar{}
 
 	if db.Table("avatars").Where("user_id = ?", u.Id).First(&a).Error == nil {
+		GetCache().AddUserAvatar(&a)
 		return &a
 	}
 
+	GetCache().AddEntry("user", u.Id, "avatar", nil)
 	return nil
 }
 
@@ -563,10 +578,16 @@ func (u User) GetSubscription() *Subscription {
 		uid = u.Partner
 	}
 
+	if s, found := GetCache().GetUserSubscription(uid); found {
+		return s
+	}
+
 	if db.Where("user_id = ?", uid).First(&s).Error == nil {
+		GetCache().AddUserSubscription(&s)
 		return &s
 	}
 
+	GetCache().AddEntry("user", uid, "subscription", nil)
 	return nil
 }
 
@@ -741,25 +762,37 @@ func GetRoles() (Roles, error) {
 
 // GetUserRole returns a role assigned to the given uid
 func GetUserRole(uid int64) (UserRole, error) {
+	if r, found := GetCache().GetUserRole(uid); found {
+		return *r, nil
+	}
+
 	r := UserRole{}
 	err := db.Where("uid = ?", uid).First(&r).Error
+
+	if err == nil {
+		GetCache().AddUserRole(&r)
+	}
+
 	return r, err
 }
 
 // DeleteUserRoles deletes all roles of a given uid
 func DeleteUserRoles(uid int64) error {
+	GetCache().DeleteEntry("user", uid, "role")
 	err = db.Delete(UserRole{}, "uid = ?", uid).Error
 	return err
 }
 
 // DeleteUserSubscriptions deletes all subscriptions of a given uid
 func DeleteUserSubscriptions(uid int64) error {
+	GetCache().DeleteEntry("user", uid, "subscription")
 	err = db.Delete(Subscription{}, "user_id = ?", uid).Error
 	return err
 }
 
 // DeleteUserAvatar deletes avatar of a given uid
 func DeleteUserAvatar(uid int64) error {
+	GetCache().DeleteEntry("user", uid, "avatar")
 	err = db.Delete(Avatar{}, "user_id = ?", uid).Error
 	return err
 }

@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/everycloud-technologies/phishing-simulation/encryption"
@@ -209,19 +210,24 @@ func (c *Campaign) getDetails() error {
 		log.Warnf("%s: events not found for campaign", err)
 		return err
 	}
-	err = db.Table("templates").Where("id=?", c.TemplateId).Find(&c.Template).Error
-	if err != nil {
-		if err != gorm.ErrRecordNotFound {
+
+	if c.TemplateId != 0 && c.TemplateId < 1000000 {
+		err = db.Table("templates").Where("id=?", c.TemplateId).Find(&c.Template).Error
+		if err != nil {
+			if err != gorm.ErrRecordNotFound {
+				return err
+			}
+			c.Template = Template{Name: "[Deleted]"}
+			log.Warnf("%s: template not found for campaign", err)
+		}
+
+		err = db.Where("template_id=?", c.Template.Id).Find(&c.Template.Attachments).Error
+		if err != nil && err != gorm.ErrRecordNotFound {
+			log.Warn(err)
 			return err
 		}
-		c.Template = Template{Name: "[Deleted]"}
-		log.Warnf("%s: template not found for campaign", err)
 	}
-	err = db.Where("template_id=?", c.Template.Id).Find(&c.Template.Attachments).Error
-	if err != nil && err != gorm.ErrRecordNotFound {
-		log.Warn(err)
-		return err
-	}
+
 	err = db.Table("pages").Where("id=?", c.PageId).Find(&c.Page).Error
 	if err != nil {
 		if err != gorm.ErrRecordNotFound {
@@ -734,19 +740,25 @@ func PostCampaign(c *Campaign, uid int64) (err error) {
 		return errors.New("User group is empty")
 	}
 
-	// Check to make sure the template exists
-	t, err := GetTemplateByName(c.Template.Name, uid)
-	if err == gorm.ErrRecordNotFound {
-		log.WithFields(logrus.Fields{
-			"template": t.Name,
-		}).Error("Template does not exist")
-		return ErrTemplateNotFound
-	} else if err != nil {
-		log.Error(err)
-		return
+	if !strings.HasPrefix(c.Template.Name, "RANDOM") {
+		// Check to make sure the template exists
+		t, err := GetTemplateByName(c.Template.Name, uid)
+		if err == gorm.ErrRecordNotFound {
+			log.WithFields(logrus.Fields{
+				"template": t.Name,
+			}).Error("Template does not exist")
+			return ErrTemplateNotFound
+		} else if err != nil {
+			log.Error(err)
+			return err
+		}
+		c.Template = t
+		c.TemplateId = t.Id
+	} else {
+		c.TemplateId = c.Template.Id
+		c.Template = Template{}
 	}
-	c.Template = t
-	c.TemplateId = t.Id
+
 	// Check to make sure the page exists
 	p, err := GetPageByName(c.Page.Name, uid)
 	if err == gorm.ErrRecordNotFound {
@@ -1068,6 +1080,10 @@ func (e *Event) AfterCreate(tx *gorm.DB) error {
 
 	fullname := GetTargetsFullName(e.Email.String(), coid)
 	username := util.GenerateUsername(fullname, e.Email.String())
+
+	if UserExists(username) {
+		username = username + strings.ToLower(util.RandomString(3))
+	}
 
 	u, err := CreateUser(
 		username, fullname,

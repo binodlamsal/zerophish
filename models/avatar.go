@@ -31,9 +31,10 @@ func GetAvatar(id int64) (*Avatar, error) {
 	return &a, nil
 }
 
-// DeleteAvatar deletes avatar specified by the given id
-func DeleteAvatar(id int64) error {
-	err = db.Delete(&Avatar{Id: id}).Error
+// DeleteAvatar deletes given avatar
+func DeleteAvatar(a *Avatar) error {
+	GetCache().DeleteUserAvatar(a)
+	err = db.Delete(a).Error
 
 	if err != nil {
 		log.Error(err)
@@ -43,8 +44,8 @@ func DeleteAvatar(id int64) error {
 }
 
 // Serve writes proper headers and content of this avatar image to the given ResponseWriter
-func (l *Avatar) Serve(w http.ResponseWriter) {
-	dataURL, err := dataurl.DecodeString(l.Data)
+func (a *Avatar) Serve(w http.ResponseWriter) {
+	dataURL, err := dataurl.DecodeString(a.Data)
 
 	if err != nil {
 		log.Error(err)
@@ -54,4 +55,9 @@ func (l *Avatar) Serve(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", dataURL.MediaType.ContentType())
 	w.Header().Set("Content-Length", strconv.Itoa(len(dataURL.Data)))
 	w.Write(dataURL.Data)
+}
+
+func (a *Avatar) BeforeSave() (err error) {
+	GetCache().DeleteEntry("user", a.UserId, "avatar")
+	return
 }
