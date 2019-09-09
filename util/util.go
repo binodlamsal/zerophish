@@ -310,3 +310,10 @@ func Obfuscate(s string) string {
 func Deobfuscate(s string) string {
 	return strings.Map(Rot13, Reverse(s))
 }
+
+// Benchmark logs time since start with a named label
+// Usage: defer util.Benchmark(time.Now(), "something")
+func Benchmark(start time.Time, name string) {
+	elapsed := time.Since(start)
+	log.Infof("%s took %s", name, elapsed)
+}

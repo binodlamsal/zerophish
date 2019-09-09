@@ -120,6 +120,10 @@ func (ur UserRole) Name() string {
 
 // DisplayName returns this role's display name
 func (ur UserRole) DisplayName() string {
+	if rname, found := GetCache().GetRoleDisplayName(ur.Rid); found {
+		return rname
+	}
+
 	role := Role{}
 	err := db.Where("rid = ?", ur.Rid).First(&role).Error
 
@@ -127,6 +131,7 @@ func (ur UserRole) DisplayName() string {
 		return "Unknown"
 	}
 
+	GetCache().AddRoleDisplayName(ur.Rid, role.DisplayName)
 	return role.DisplayName
 }
 
@@ -163,8 +168,18 @@ func UserExists(username string) bool {
 // GetUser returns the user that the given id corresponds to. If no user is found, an
 // error is thrown.
 func GetUser(id int64) (User, error) {
+	if u, found := GetCache().GetUserById(id); found {
+		return *u, nil
+	}
+
 	u := User{}
 	err := db.Where("id=?", id).First(&u).Error
+
+	if err != nil {
+		return User{}, err
+	}
+
+	GetCache().AddUser(&u)
 	return u, err
 }
 
@@ -924,6 +939,7 @@ func (u *User) BeforeSave() (err error) {
 		u.CreatedAt = time.Now().UTC()
 	}
 
+	GetCache().DeleteUser(u)
 	return
 }
 
