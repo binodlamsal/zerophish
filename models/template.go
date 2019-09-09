@@ -287,16 +287,10 @@ func GetTemplates(uid int64, filter string) ([]Template, error) {
 
 	if filter == "own" || filter == "own-and-public" {
 		if role.IsOneOf([]int64{Partner, ChildUser}) {
-			u, err := GetUser(uid)
-
-			if err != nil {
-				return ts, err
-			}
-
-			partner := u.Partner
+			partner := user.Partner
 
 			if role.Is(Partner) {
-				partner = u.Id
+				partner = user.Id
 			}
 
 			cuids, err := GetChildUserIds(partner)
