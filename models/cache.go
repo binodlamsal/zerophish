@@ -11,6 +11,7 @@ import (
 )
 
 var cache *Cache
+var hits, misses, deletions uint64
 var logOps bool
 var disable bool
 var ttl time.Duration
@@ -44,11 +45,11 @@ func init() {
 		}
 	})
 
-	ticker := time.NewTicker(5 * time.Minute)
+	ticker := time.NewTicker(1 * time.Minute)
 
 	go func() {
 		for _ = range ticker.C {
-			log.Infof("models.cache: items: %d", cache.c.ItemCount())
+			log.Infof("models.cache: items: %d, hits: %d, misses: %d, deletions: %d", cache.c.ItemCount(), hits, misses, deletions)
 		}
 	}()
 }
@@ -67,6 +68,24 @@ func (cache *Cache) AddEntry(prefix string, id int64, suffix string, val interfa
 	key := fmt.Sprintf("%s.%s.%s", prefix, strconv.FormatInt(id, 10), suffix)
 	cache.c.SetDefault(key, val)
 	logCacheAdd(key)
+}
+
+// AddRoleDisplayName adds a given role display name to the cache
+func (cache *Cache) AddRoleDisplayName(rid int64, name string) {
+	if disable {
+		return
+	}
+
+	cache.AddEntry("role", rid, "display_name", name)
+}
+
+// AddUser adds a given user to the cache
+func (cache *Cache) AddUser(u *User) {
+	if disable {
+		return
+	}
+
+	cache.AddEntry("user", u.Id, "", u)
 }
 
 // AddUserSubscription adds a given subscription to the cache
@@ -100,6 +119,50 @@ func (cache *Cache) AddUserRole(r *UserRole) {
 	key := fmt.Sprintf("user.%s.role", strconv.FormatInt(r.Uid, 10))
 	cache.c.SetDefault(key, r)
 	logCacheAdd(key)
+}
+
+// GetRoleDisplayName finds and returns cached display name of a role with the given rid
+func (cache *Cache) GetRoleDisplayName(rid int64) (string, bool) {
+	if disable {
+		return "", false
+	}
+
+	key := fmt.Sprintf("role.%s.display_name", strconv.FormatInt(rid, 10))
+
+	if val, found := cache.c.Get(key); found {
+		if rname, ok := val.(string); ok {
+			logCacheGet(key, true)
+			return rname, true
+		}
+
+		logCacheGet(key, true)
+		return "", true
+	}
+
+	logCacheGet(key, false)
+	return "", false
+}
+
+// GetUserById finds and returns cached user with a given id
+func (cache *Cache) GetUserById(uid int64) (*User, bool) {
+	if disable {
+		return nil, false
+	}
+
+	key := fmt.Sprintf("user.%s", strconv.FormatInt(uid, 10))
+
+	if val, found := cache.c.Get(key); found {
+		if u, ok := val.(*User); ok {
+			logCacheGet(key, true)
+			return u, true
+		}
+
+		logCacheGet(key, true)
+		return nil, true
+	}
+
+	logCacheGet(key, false)
+	return nil, false
 }
 
 // GetUserSubscription finds and returns cached subscription by its user id
@@ -212,6 +275,17 @@ func (cache *Cache) DeleteUserRole(r *UserRole) {
 	logCacheDel(key)
 }
 
+// DeleteUser removes a given user from the cache
+func (cache *Cache) DeleteUser(u *User) {
+	if disable {
+		return
+	}
+
+	key := fmt.Sprintf("user.%s", u.Id)
+	cache.c.Delete(key)
+	logCacheDel(key)
+}
+
 func logCacheAdd(key string) {
 	if logOps {
 		log.Infof("models.cache: add %s", key)
@@ -219,12 +293,20 @@ func logCacheAdd(key string) {
 }
 
 func logCacheGet(key string, hit bool) {
+	if hit {
+		hits++
+	} else {
+		misses++
+	}
+
 	if logOps && !hit {
 		log.Infof("models.cache: miss %s", key)
 	}
 }
 
 func logCacheDel(key string) {
+	deletions++
+
 	if logOps {
 		log.Infof("models.cache: delete %s", key)
 	}
