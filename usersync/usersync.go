@@ -33,7 +33,7 @@ var APIUser = os.Getenv("USERSYNC_API_USER")
 var APIPassword = os.Getenv("USERSYNC_API_PASSWORD")
 
 // SlaveURL URL to identify origin website
-const SlaveURL = "https://awareness.everycloud.com/"
+const SlaveURL = "https://simulation.everycloud.com/"
 
 func init() {
 	if Debug {
