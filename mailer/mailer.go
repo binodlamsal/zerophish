@@ -6,8 +6,8 @@ import (
 	"io"
 	"net/textproto"
 
-	"github.com/gophish/gomail"
 	log "github.com/everycloud-technologies/phishing-simulation/logger"
+	"github.com/gophish/gomail"
 	"github.com/sirupsen/logrus"
 )
 
@@ -45,7 +45,7 @@ type Dialer interface {
 type Mail interface {
 	Backoff(reason error) error
 	Error(err error) error
-	Success() error
+	Success(details interface{}) error
 	Generate(msg *gomail.Message) error
 	GetDialer() (Dialer, error)
 }
@@ -214,6 +214,10 @@ func sendMail(ctx context.Context, dialer Dialer, ms []Mail) {
 		log.WithFields(logrus.Fields{
 			"email": message.GetHeader("To")[0],
 		}).Info("Email sent")
-		m.Success()
+		details := struct {
+			TemplateName string `json:"template_name"`
+		}{TemplateName: message.GetHeader("X-Template")[0]}
+
+		m.Success(details)
 	}
 }

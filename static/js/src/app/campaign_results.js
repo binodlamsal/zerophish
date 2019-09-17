@@ -402,6 +402,12 @@ function renderTimeline(data) {
   $.each(campaign.timeline, function(i, event) {
     if (!event.email || event.email == record.email) {
       // Add the event
+      var details = {};
+
+      if (event.details) {
+        details = JSON.parse(event.details);
+      }
+
       results +=
         '<div class="timeline-entry">' + '    <div class="timeline-bar"></div>';
       results +=
@@ -413,14 +419,16 @@ function renderTimeline(data) {
         '"></i></div>' +
         '    <div class="timeline-message">' +
         escapeHtml(event.message) +
+        (details.template_name !== undefined
+          ? " [" + details.template_name + "]"
+          : "") +
         '    <span class="timeline-date">' +
         moment
           .utc(event.time)
           .local()
           .format("MMMM Do YYYY h:mm:ss a") +
         "</span>";
-      if (event.details) {
-        details = JSON.parse(event.details);
+      if (details) {
         if (
           event.message == "Clicked Link" ||
           event.message == "Submitted Data"

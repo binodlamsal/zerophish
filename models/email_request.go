@@ -73,7 +73,7 @@ func (s *EmailRequest) Error(err error) error {
 
 // Success returns nil on the ErrorChan to indicate that the email was sent
 // successfully.
-func (s *EmailRequest) Success() error {
+func (s *EmailRequest) Success(details interface{}) error {
 	s.ErrorChan <- nil
 	return nil
 }

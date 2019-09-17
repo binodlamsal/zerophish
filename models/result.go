@@ -58,8 +58,8 @@ func (r *Result) createEvent(status string, details interface{}) (*Event, error)
 
 // HandleEmailSent updates a Result to indicate that the email has been
 // successfully sent to the remote SMTP server
-func (r *Result) HandleEmailSent() error {
-	event, err := r.createEvent(EVENT_SENT, nil)
+func (r *Result) HandleEmailSent(details interface{}) error {
+	event, err := r.createEvent(EVENT_SENT, details)
 	if err != nil {
 		return err
 	}
