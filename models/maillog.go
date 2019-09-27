@@ -115,12 +115,12 @@ func (m *MailLog) Error(e error) error {
 
 // Success deletes the maillog from the database and updates the underlying
 // campaign result.
-func (m *MailLog) Success() error {
+func (m *MailLog) Success(details interface{}) error {
 	r, err := GetResult(m.RId)
 	if err != nil {
 		return err
 	}
-	err = r.HandleEmailSent()
+	err = r.HandleEmailSent(details)
 	if err != nil {
 		return err
 	}
@@ -201,6 +201,8 @@ func (m *MailLog) Generate(msg *gomail.Message) error {
 		// Add our header immediately
 		msg.SetHeader(key, value)
 	}
+
+	msg.SetHeader("X-Template", c.Template.Name)
 
 	// Parse remaining templates
 	subject, err := ExecuteTemplate(c.Template.Subject, ptx)
