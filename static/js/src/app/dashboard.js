@@ -381,7 +381,8 @@ function load(filter) {
         { targets: 2, orderData: 10 },
         { targets: 10, visible: false }
       ],
-      order: [[2, "desc"]]
+      order: [[2, "desc"]],
+      deferRender: true
     });
   } else {
     campaignTable.clear();
