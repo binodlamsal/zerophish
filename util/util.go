@@ -209,7 +209,8 @@ func IsLocalBusinessTime(utcTime time.Time, startTime string, endTime string, tz
 		loc, _ = time.LoadLocation("UTC")
 	}
 
-	yearAndDate := utcTime.Format("2006-01-02")
+	foreignTime := utcTime.In(loc)
+	yearAndDate := foreignTime.Format("2006-01-02")
 	sTime, err := time.ParseInLocation("2006-01-02 3:04 PM", yearAndDate+" "+startTime, loc)
 
 	if err != nil {
@@ -224,7 +225,7 @@ func IsLocalBusinessTime(utcTime time.Time, startTime string, endTime string, tz
 		return false
 	}
 
-	return utcTime.After(sTime.UTC()) && utcTime.Before(eTime.UTC())
+	return foreignTime.After(sTime) && foreignTime.Before(eTime)
 }
 
 // GenerateSecureKey creates a secure key to use
