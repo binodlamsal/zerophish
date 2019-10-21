@@ -28,3 +28,5 @@ gophish_admin.key
 *.exe
 gophish.db*
 gophish
+phishing-simulation
+config.json
