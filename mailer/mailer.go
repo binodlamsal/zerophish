@@ -214,9 +214,16 @@ func sendMail(ctx context.Context, dialer Dialer, ms []Mail) {
 		log.WithFields(logrus.Fields{
 			"email": message.GetHeader("To")[0],
 		}).Info("Email sent")
+
 		details := struct {
 			TemplateName string `json:"template_name"`
-		}{TemplateName: message.GetHeader("X-Template")[0]}
+		}{}
+
+		if len(message.GetHeader("X-Template")) > 0 {
+			details.TemplateName = message.GetHeader("X-Template")[0]
+		} else {
+			details.TemplateName = "Unknown"
+		}
 
 		m.Success(details)
 	}
