@@ -28,14 +28,20 @@ type LoggingConfig struct {
 
 // Config represents the configuration information.
 type Config struct {
-	AdminConf      AdminServer   `json:"admin_server"`
-	PhishConf      PhishServer   `json:"phish_server"`
-	DBName         string        `json:"db_name"`
-	DBPath         string        `json:"db_path"`
-	MigrationsPath string        `json:"migrations_prefix"`
-	TestFlag       bool          `json:"test_flag"`
-	ContactAddress string        `json:"contact_address"`
-	Logging        LoggingConfig `json:"logging"`
+	AdminConf           AdminServer   `json:"admin_server"`
+	PhishConf           PhishServer   `json:"phish_server"`
+	DBName              string        `json:"db_name"`
+	DBPath              string        `json:"db_path"`
+	MigrationsPath      string        `json:"migrations_prefix"`
+	TestFlag            bool          `json:"test_flag"`
+	ContactAddress      string        `json:"contact_address"`
+	Logging             LoggingConfig `json:"logging"`
+	SsoKey              string        `json:"sso_key"`
+	ViaProxy            string        `json:"via_proxy"`
+	Production          string        `json:"production"`
+	UserSyncApiUser     string        `json:"usersync_api_user"`
+	UserSyncApiPassword string        `json:"usersync_api_password"`
+	ByPassSso           string        `json:"bypass_sso"`
 }
 
 // Conf contains the initialized configuration struct
