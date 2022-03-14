@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/everycloud-technologies/phishing-simulation/encryption"
-	"github.com/everycloud-technologies/phishing-simulation/usersync"
+	"github.com/binodlamsal/zerophish/encryption"
+	"github.com/binodlamsal/zerophish/usersync"
 
-	log "github.com/everycloud-technologies/phishing-simulation/logger"
+	log "github.com/binodlamsal/zerophish/logger"
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 )

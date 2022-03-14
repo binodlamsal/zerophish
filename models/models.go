@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/everycloud-technologies/phishing-simulation/encryption"
+	"github.com/binodlamsal/zerophish/encryption"
 
 	"bitbucket.org/liamstask/goose/lib/goose"
 
-	"github.com/everycloud-technologies/phishing-simulation/config"
-	log "github.com/everycloud-technologies/phishing-simulation/logger"
+	"github.com/binodlamsal/zerophish/config"
+	log "github.com/binodlamsal/zerophish/logger"
 	_ "github.com/go-sql-driver/mysql" // Blank import needed to import mysql
 	"github.com/jinzhu/gorm"
 	_ "github.com/mattn/go-sqlite3" // Blank import needed to import sqlite3

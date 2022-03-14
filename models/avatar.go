@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	log "github.com/everycloud-technologies/phishing-simulation/logger"
+	log "github.com/binodlamsal/zerophish/logger"
 	"github.com/vincent-petithory/dataurl"
 )
 

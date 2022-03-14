@@ -7,8 +7,8 @@ import (
 	"net"
 	"time"
 
-	"github.com/everycloud-technologies/phishing-simulation/encryption"
-	log "github.com/everycloud-technologies/phishing-simulation/logger"
+	"github.com/binodlamsal/zerophish/encryption"
+	log "github.com/binodlamsal/zerophish/logger"
 	"github.com/jinzhu/gorm"
 	"github.com/oschwald/maxminddb-golang"
 )

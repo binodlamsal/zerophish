@@ -4,7 +4,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/everycloud-technologies/phishing-simulation/config"
+	"github.com/binodlamsal/zerophish/config"
 	"github.com/sirupsen/logrus"
 )
 

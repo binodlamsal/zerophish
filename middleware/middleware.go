@@ -13,13 +13,13 @@ import (
 
 	"github.com/jinzhu/gorm"
 
-	"github.com/everycloud-technologies/phishing-simulation/auth"
-	"github.com/everycloud-technologies/phishing-simulation/bakery"
-	ctx "github.com/everycloud-technologies/phishing-simulation/context"
-	log "github.com/everycloud-technologies/phishing-simulation/logger"
-	"github.com/everycloud-technologies/phishing-simulation/models"
-	"github.com/everycloud-technologies/phishing-simulation/notifier"
-	"github.com/everycloud-technologies/phishing-simulation/usersync"
+	"github.com/binodlamsal/zerophish/auth"
+	"github.com/binodlamsal/zerophish/bakery"
+	ctx "github.com/binodlamsal/zerophish/context"
+	log "github.com/binodlamsal/zerophish/logger"
+	"github.com/binodlamsal/zerophish/models"
+	"github.com/binodlamsal/zerophish/notifier"
+	"github.com/binodlamsal/zerophish/usersync"
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/sessions"
 )

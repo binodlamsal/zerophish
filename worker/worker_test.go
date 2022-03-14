@@ -1,8 +1,8 @@
 package worker
 
 import (
-	"github.com/everycloud-technologies/phishing-simulation/config"
-	"github.com/everycloud-technologies/phishing-simulation/models"
+	"github.com/binodlamsal/zerophish/config"
+	"github.com/binodlamsal/zerophish/models"
 	"github.com/stretchr/testify/suite"
 )
 

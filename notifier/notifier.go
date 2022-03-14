@@ -3,7 +3,7 @@ package notifier
 import (
 	"os"
 
-	log "github.com/everycloud-technologies/phishing-simulation/logger"
+	log "github.com/binodlamsal/zerophish/logger"
 	m "github.com/keighl/mandrill"
 )
 

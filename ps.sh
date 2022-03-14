@@ -2,7 +2,7 @@
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
 processName=Phishing-Simulation
 process=phishing-simulation
-appDirectory=/root/go/src/github.com/everycloud-technologies/phishing-simulation
+appDirectory=/root/go/src/github.com/binodlamsal/zerophish
 logfile=/var/log/phishing-simulation/phishing-simulation.log
 errfile=/var/log/phishing-simulation/phishing-simulation.error
 

@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/everycloud-technologies/phishing-simulation/config"
-	ctx "github.com/everycloud-technologies/phishing-simulation/context"
-	log "github.com/everycloud-technologies/phishing-simulation/logger"
-	"github.com/everycloud-technologies/phishing-simulation/models"
+	"github.com/binodlamsal/zerophish/config"
+	ctx "github.com/binodlamsal/zerophish/context"
+	log "github.com/binodlamsal/zerophish/logger"
+	"github.com/binodlamsal/zerophish/models"
 	"github.com/gorilla/mux"
 )
 

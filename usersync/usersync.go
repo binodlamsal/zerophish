@@ -14,7 +14,7 @@ import (
 	"strings"
 
 	"github.com/Jeffail/gabs"
-	log "github.com/everycloud-technologies/phishing-simulation/logger"
+	log "github.com/binodlamsal/zerophish/logger"
 )
 
 // Debug if set to true will route all API requests to a local endpoint

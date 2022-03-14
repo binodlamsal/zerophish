@@ -12,7 +12,7 @@ RUN gulp
 # Build Golang binary
 FROM golang:1.13.1 AS build-golang
 
-WORKDIR /go/src/github.com/everycloud-technologies/phishing-simulation/
+WORKDIR /go/src/github.com/binodlamsal/zerophish/
 COPY . .
 RUN go get -v && go build -v
 
@@ -24,13 +24,13 @@ RUN useradd -m -d /opt/gophish -s /bin/bash app
 
 RUN apt-get update && \
 	apt-get install --no-install-recommends -y jq libcap2-bin && \
-	apt-get clean 
+	apt-get clean
 
 WORKDIR /opt/gophish
-COPY --from=build-golang /go/src/github.com/everycloud-technologies/phishing-simulation/ ./
+COPY --from=build-golang /go/src/github.com/binodlamsal/zerophish/ ./
 COPY --from=build-js /build/static/js/dist/ ./static/js/dist/
 COPY --from=build-js /build/static/css/dist/ ./static/css/dist/
-COPY --from=build-golang /go/src/github.com/everycloud-technologies/phishing-simulation/config.json ./
+COPY --from=build-golang /go/src/github.com/binodlamsal/zerophish/config.json ./
 RUN chown app. config.json
 
 RUN setcap 'cap_net_bind_service=+ep' /opt/everycloud-technologies/phishing-simulation/

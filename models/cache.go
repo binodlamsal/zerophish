@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	log "github.com/everycloud-technologies/phishing-simulation/logger"
+	log "github.com/binodlamsal/zerophish/logger"
 	gcache "github.com/patrickmn/go-cache"
 )
 

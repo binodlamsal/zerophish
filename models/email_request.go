@@ -7,10 +7,10 @@ import (
 	"net/mail"
 	"strings"
 
-	"github.com/everycloud-technologies/phishing-simulation/config"
-	"github.com/everycloud-technologies/phishing-simulation/encryption"
-	log "github.com/everycloud-technologies/phishing-simulation/logger"
-	"github.com/everycloud-technologies/phishing-simulation/mailer"
+	"github.com/binodlamsal/zerophish/config"
+	"github.com/binodlamsal/zerophish/encryption"
+	log "github.com/binodlamsal/zerophish/logger"
+	"github.com/binodlamsal/zerophish/mailer"
 	"github.com/gophish/gomail"
 )
 

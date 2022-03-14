@@ -3,9 +3,9 @@ package worker
 import (
 	"time"
 
-	log "github.com/everycloud-technologies/phishing-simulation/logger"
-	"github.com/everycloud-technologies/phishing-simulation/mailer"
-	"github.com/everycloud-technologies/phishing-simulation/models"
+	log "github.com/binodlamsal/zerophish/logger"
+	"github.com/binodlamsal/zerophish/mailer"
+	"github.com/binodlamsal/zerophish/models"
 	"github.com/sirupsen/logrus"
 )
 

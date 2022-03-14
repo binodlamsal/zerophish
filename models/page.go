@@ -10,7 +10,7 @@ import (
 	"github.com/jinzhu/gorm"
 
 	"github.com/PuerkitoBio/goquery"
-	log "github.com/everycloud-technologies/phishing-simulation/logger"
+	log "github.com/binodlamsal/zerophish/logger"
 )
 
 // Page contains the fields used for a Page model

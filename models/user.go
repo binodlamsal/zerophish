@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/everycloud-technologies/phishing-simulation/encryption"
+	"github.com/binodlamsal/zerophish/encryption"
 
-	"github.com/everycloud-technologies/phishing-simulation/bakery"
-	"github.com/everycloud-technologies/phishing-simulation/util"
+	"github.com/binodlamsal/zerophish/bakery"
+	"github.com/binodlamsal/zerophish/util"
 	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
 
-	log "github.com/everycloud-technologies/phishing-simulation/logger"
+	log "github.com/binodlamsal/zerophish/logger"
 )
 
 // Roles

@@ -10,10 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/everycloud-technologies/phishing-simulation/config"
-	log "github.com/everycloud-technologies/phishing-simulation/logger"
-	"github.com/everycloud-technologies/phishing-simulation/mailer"
-	"github.com/everycloud-technologies/phishing-simulation/util"
+	"github.com/binodlamsal/zerophish/config"
+	log "github.com/binodlamsal/zerophish/logger"
+	"github.com/binodlamsal/zerophish/mailer"
+	"github.com/binodlamsal/zerophish/util"
 	"github.com/gophish/gomail"
 )
 

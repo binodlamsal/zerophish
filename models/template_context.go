@@ -7,7 +7,7 @@ import (
 	"path"
 	"text/template"
 
-	"github.com/everycloud-technologies/phishing-simulation/encryption"
+	"github.com/binodlamsal/zerophish/encryption"
 )
 
 // TemplateContext is an interface that allows both campaigns and email

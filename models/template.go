@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/everycloud-technologies/phishing-simulation/logger"
+	log "github.com/binodlamsal/zerophish/logger"
 	"github.com/jinzhu/gorm"
 )
 
